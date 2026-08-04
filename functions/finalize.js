@@ -31,14 +31,22 @@ function reply(statusCode, payload) {
   };
 }
 
+// A current-format key (sb_secret_...) is not a JWT and is rejected in the
+// Authorization header. A legacy key IS a JWT and PostgREST reads the role from
+// that header, so omitting it drops the request silently to anon. See the fuller
+// note in submit.js.
+function authHeaders() {
+  const headers = { apikey: SERVICE_KEY };
+  if (!/^sb_(secret|publishable)_/.test(SERVICE_KEY)) {
+    headers.Authorization = 'Bearer ' + SERVICE_KEY;
+  }
+  return headers;
+}
+
 async function listFolder(prefix) {
   const res = await fetch(SUPABASE_URL + '/storage/v1/object/list/' + BUCKET, {
     method: 'POST',
-    headers: {
-      apikey: SERVICE_KEY,
-      Authorization: 'Bearer ' + SERVICE_KEY,
-      'Content-Type': 'application/json'
-    },
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ prefix, limit: 100, offset: 0 })
   });
   const text = await res.text();
@@ -117,8 +125,7 @@ exports.handler = async function (event) {
       {
         method: 'PATCH',
         headers: {
-          apikey: SERVICE_KEY,
-          Authorization: 'Bearer ' + SERVICE_KEY,
+          ...authHeaders(),
           'Content-Type': 'application/json',
           Prefer: 'return=minimal'
         },
