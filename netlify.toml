@@ -1,0 +1,32 @@
+# WHISPERS OF KINDNESS - Netlify configuration
+#
+# These two lines replace the old habit of dragging a folder and trusting that
+# nothing private was sitting in it.
+#
+#   publish    the ONLY folder the internet can see. Anything outside it is
+#              part of the repo but is never served, at any address.
+#   functions  server-side code. Netlify runs these. It does not hand out the
+#              source.
+#
+# So a file is public only if it is inside public/. That is now a rule the
+# host enforces, not something to remember at deploy time.
+
+[build]
+  publish   = "public"
+  functions = "functions"
+
+
+# Node version for functions. Set explicitly so a future change on Netlify's
+# side cannot quietly move it. 20 has fetch built in, which is why the
+# submission function needs no packages at all.
+[build.environment]
+  NODE_VERSION = "20"
+
+
+# Security headers for every page served.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"

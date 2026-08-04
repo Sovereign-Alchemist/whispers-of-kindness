@@ -1,0 +1,17 @@
+# Never commit secrets. A secret committed to Git stays in the history even
+# after the file is deleted, so this is a stricter line than a local file.
+.env
+.env.*
+*.pem
+*.key
+
+# Installed packages. Netlify installs these on its own build machines.
+node_modules/
+
+# Netlify's local cache
+.netlify/
+
+# Operating system clutter
+Thumbs.db
+desktop.ini
+.DS_Store

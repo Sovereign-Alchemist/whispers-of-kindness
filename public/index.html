@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whispers of Kindness · Kindness whispers</title>
+<meta name="description" content="An archive of human kindness, gathered through family recipes. Hand-collaged recipe cards mailed monthly, with the story of the person behind them.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Caveat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   WHISPERS OF KINDNESS · SHARED DESIGN SYSTEM
+   Every future phase (submission form, membership desk, member
+   area, archive) inherits these variables. Reference them,
+   never redefine them.
+   ============================================================ */
+:root{
+  --paper:        #F0EBDE;   /* background, aged paper        */
+  --ink:          #3F3934;   /* text, dark brown ink          */
+  --olive:        #7A8352;   /* primary                       */
+  --rose:         #D67B88;   /* accent                        */
+  --chartreuse:   #B1C036;   /* highlight, sparingly          */
+  --plum:         #7C466C;   /* ephemera only                 */
+  --teal:         #3E8382;   /* ephemera only                 */
+  --paper-light:  #F7F3E8;   /* a lifted sheet on the paper   */
+  --paper-card:   #FBF8EF;   /* index card stock              */
+  --ink-soft:     #6B635B;   /* faded ink for secondary text  */
+  --oak:          #A9835B;   /* warm wood, desk surfaces      */
+  --walnut:       #6E4F35;   /* darker wood                   */
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'EB Garamond', Georgia, serif;
+  --font-hand:    'Caveat', cursive;
+
+  --shadow-soft:  0 2px 6px rgba(63,57,52,.10), 0 12px 28px rgba(63,57,52,.12);
+  --shadow-lift:  0 4px 10px rgba(63,57,52,.12), 0 22px 44px rgba(63,57,52,.16);
+
+  --measure: 62ch;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; }
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+  *, *::before, *::after{ animation:none !important; transition:none !important; }
+}
+
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:1.14rem;
+  line-height:1.65;
+  overflow-x:hidden;
+}
+
+/* Paper grain over everything, very quiet */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  z-index:2000;
+  opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.04'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+a{ color:var(--olive); }
+a:focus-visible, button:focus-visible, input:focus-visible{
+  outline:2px solid var(--olive);
+  outline-offset:3px;
+  border-radius:2px;
+}
+
+/* ---------- header ---------- */
+header{
+  position:sticky; top:0; z-index:100;
+  background:color-mix(in srgb, var(--paper) 92%, white 8%);
+  border-bottom:1px solid rgba(63,57,52,.14);
+  backdrop-filter:blur(4px);
+}
+.header-inner{
+  max-width:1100px; margin:0 auto;
+  padding:.8rem 1.4rem;
+  display:flex; align-items:baseline; gap:1.6rem;
+}
+.wordmark{
+  font-family:var(--font-display);
+  font-weight:600; font-size:1.18rem;
+  letter-spacing:.02em;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.wordmark span{ color:var(--olive); }
+nav{ margin-left:auto; display:flex; align-items:baseline; gap:1.4rem; }
+nav a{
+  font-family:var(--font-body);
+  font-size:.98rem;
+  color:var(--ink-soft);
+  text-decoration:none;
+  border-bottom:1px solid transparent;
+  padding-bottom:2px;
+}
+nav a:hover{ color:var(--ink); border-bottom-color:var(--rose); }
+/* Inactive sign-in slot. Phase four turns this on. */
+.signin{
+  font-size:.92rem;
+  color:rgba(63,57,52,.38);
+  border:1px solid rgba(63,57,52,.22);
+  border-radius:3px;
+  padding:.28rem .7rem .3rem;
+  cursor:default;
+  user-select:none;
+}
+@media (max-width:720px){
+  nav a:not(.signin){ display:none; }
+}
+
+/* ---------- shared section bones ---------- */
+section{ position:relative; padding:6.5rem 1.4rem; }
+.inner{ max-width:1100px; margin:0 auto; }
+.kicker{
+  font-family:var(--font-hand);
+  font-size:1.5rem;
+  color:var(--olive);
+  display:block;
+  margin-bottom:.4rem;
+  transform:rotate(-1.2deg);
+  transform-origin:left;
+}
+h2{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:clamp(1.9rem, 4vw, 2.6rem);
+  line-height:1.15;
+  margin-bottom:1.4rem;
+}
+.rule{
+  width:64px; height:2px;
+  background:var(--olive);
+  opacity:.55;
+  margin:0 0 2.2rem;
+  border:0;
+}
+
+/* fade-in on scroll */
+.reveal{ opacity:0; transform:translateY(18px); transition:opacity .9s ease, transform .9s ease; }
+.reveal.in{ opacity:1; transform:none; }
+@media (prefers-reduced-motion: reduce){
+  .reveal{ opacity:1; transform:none; }
+}
+
+/* ---------- hero ---------- */
+.hero{
+  min-height:88vh;
+  display:flex; align-items:center;
+  padding-top:4rem;
+  background:
+    radial-gradient(ellipse 75% 60% at 50% 28%,
+      rgba(255,250,236,.85) 0%,
+      rgba(247,240,224,.4) 45%,
+      rgba(240,235,222,0) 78%),
+    var(--paper);
+}
+.hero .inner{ text-align:center; max-width:820px; }
+.hero-eyebrow{
+  font-family:var(--font-hand);
+  font-size:1.45rem;
+  color:var(--olive);
+  display:inline-block;
+  transform:rotate(-1.4deg);
+  margin-bottom:1.1rem;
+}
+h1{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:clamp(2.9rem, 8vw, 5.4rem);
+  line-height:1.05;
+  letter-spacing:.005em;
+  margin-bottom:1.2rem;
+}
+.hero-tagline{
+  font-family:var(--font-hand);
+  font-size:clamp(1.7rem, 3.4vw, 2.3rem);
+  color:var(--ink-soft);
+  transform:rotate(-.8deg);
+  display:inline-block;
+  margin-bottom:1.8rem;
+}
+.hero-tagline em{ font-style:normal; color:var(--rose); }
+.hero-line{
+  max-width:46ch;
+  margin:0 auto 2.4rem;
+  color:var(--ink-soft);
+  font-size:1.16rem;
+}
+/* the fall stamp, a piece of ephemera */
+.stamp{
+  display:inline-block;
+  font-family:var(--font-hand);
+  font-size:1.15rem;
+  color:var(--plum);
+  border:1.6px solid var(--plum);
+  border-radius:4px;
+  padding:.35rem 1rem .4rem;
+  transform:rotate(2.4deg);
+  position:relative;
+  opacity:.85;
+  background:
+    radial-gradient(circle at 4px 4px, transparent 2.4px, rgba(124,70,108,.06) 2.4px);
+}
+.hero-scroll{
+  margin-top:4rem;
+  font-size:.95rem;
+  color:var(--ink-soft);
+  opacity:.7;
+}
+.hero-scroll a{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-soft); }
+
+/* ---------- the story, set as a letter ---------- */
+.story{ background:var(--paper); }
+.letter-wrap{ display:flex; justify-content:center; }
+.letter{
+  position:relative;
+  background:var(--paper-light);
+  max-width:680px;
+  padding:3.6rem 3.2rem 3.2rem;
+  transform:rotate(-.6deg);
+  box-shadow:var(--shadow-lift);
+  /* a torn top edge */
+  clip-path:polygon(
+    0% 1.4%, 2% .4%, 5% 1.6%, 8% .5%, 12% 1.5%, 16% .3%, 20% 1.3%, 24% .6%,
+    28% 1.6%, 33% .4%, 37% 1.4%, 42% .5%, 46% 1.5%, 51% .3%, 55% 1.2%, 60% .6%,
+    64% 1.5%, 69% .4%, 73% 1.3%, 78% .5%, 82% 1.4%, 87% .3%, 91% 1.3%, 95% .5%,
+    98% 1.4%, 100% .8%,
+    100% 100%, 0% 100%);
+}
+/* faint ruled lines on the letter */
+.letter::before{
+  content:"";
+  position:absolute; inset:0;
+  background:repeating-linear-gradient(
+    to bottom,
+    transparent 0 27px,
+    rgba(122,131,82,.10) 27px 28px);
+  pointer-events:none;
+}
+/* a strip of teal tape at the top */
+.tape{
+  position:absolute;
+  top:-12px; left:50%;
+  width:110px; height:26px;
+  transform:translateX(-50%) rotate(-1.6deg);
+  background:rgba(62,131,130,.32);
+  box-shadow:0 1px 3px rgba(63,57,52,.15);
+}
+.letter .kicker{ position:relative; }
+.letter p{
+  position:relative;
+  margin-bottom:1.15rem;
+  font-size:1.15rem;
+}
+.letter p:last-of-type{ margin-bottom:0; }
+.letter .opening{
+  font-family:var(--font-display);
+  font-size:1.5rem;
+  font-style:italic;
+  color:var(--ink);
+  margin-bottom:1.3rem;
+}
+/* the postage stamp on the letter */
+.postage{
+  position:absolute;
+  top:1.6rem; right:1.6rem;
+  width:66px; height:80px;
+  transform:rotate(3.5deg);
+  background:var(--paper-card);
+  border:1px solid rgba(63,57,52,.15);
+  box-shadow:0 1px 4px rgba(63,57,52,.12);
+  padding:7px;
+}
+.postage-inner{
+  width:100%; height:100%;
+  border:1.4px solid var(--plum);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:2px;
+  color:var(--plum);
+  font-family:var(--font-hand);
+  font-size:.8rem;
+  text-align:center;
+  line-height:1.1;
+}
+.postage-inner .heart{ font-size:1.3rem; line-height:1; }
+@media (max-width:600px){
+  .letter{ padding:3rem 1.6rem 2.4rem; }
+  .postage{ display:none; }
+}
+
+/* ---------- how it works, recipe cards ---------- */
+.how{ background:linear-gradient(to bottom, var(--paper), color-mix(in srgb, var(--paper) 94%, var(--olive) 6%) 55%, var(--paper)); }
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(270px, 1fr));
+  gap:2.4rem;
+  margin-top:3rem;
+  align-items:start;
+}
+.card{
+  background:var(--paper-card);
+  border-radius:3px;
+  box-shadow:var(--shadow-soft);
+  padding:1.9rem 1.7rem 1.7rem;
+  position:relative;
+  /* index card ruling */
+  background-image:
+    linear-gradient(to bottom, transparent 58px, rgba(214,123,136,.5) 58px, rgba(214,123,136,.5) 59.5px, transparent 59.5px),
+    repeating-linear-gradient(to bottom, transparent 0 86px, rgba(122,131,82,.14) 86px 87px);
+}
+.card:nth-child(1){ transform:rotate(-1.3deg); }
+.card:nth-child(2){ transform:rotate(.9deg); margin-top:1.6rem; }
+.card:nth-child(3){ transform:rotate(-.7deg); }
+.card:hover{ box-shadow:var(--shadow-lift); }
+.card h3{
+  font-family:var(--font-hand);
+  font-weight:600;
+  font-size:1.75rem;
+  color:var(--ink);
+  margin-bottom:1.05rem;
+}
+.card h3 .no{
+  color:var(--rose);
+  font-size:1.2rem;
+  margin-right:.4rem;
+}
+.card p{ font-size:1.07rem; color:var(--ink); }
+.card p + p{ margin-top:.8rem; }
+.card .aside{
+  font-family:var(--font-hand);
+  font-size:1.2rem;
+  color:var(--olive);
+  margin-top:1rem;
+  transform:rotate(-.8deg);
+  display:inline-block;
+}
+.how-close{
+  margin-top:3.4rem;
+  max-width:var(--measure);
+  color:var(--ink-soft);
+  font-size:1.12rem;
+}
+@media (max-width:720px){
+  .card:nth-child(2){ margin-top:0; }
+}
+
+/* ---------- invitation ---------- */
+.invite .inner{
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+  gap:4rem;
+  align-items:start;
+}
+@media (max-width:860px){
+  .invite .inner{ grid-template-columns:1fr; gap:3rem; }
+}
+.invite-copy p{ max-width:var(--measure); margin-bottom:1.1rem; }
+.questions{
+  margin:1.8rem 0 2rem;
+  background:var(--paper-light);
+  box-shadow:var(--shadow-soft);
+  transform:rotate(-.5deg);
+  padding:1.8rem 2rem 1.6rem;
+  max-width:560px;
+}
+.questions .kicker{ margin-bottom:.7rem; }
+.questions ul{ list-style:none; }
+.questions li{
+  padding:.5rem 0 .5rem 1.5rem;
+  position:relative;
+  font-size:1.08rem;
+  border-bottom:1px solid rgba(122,131,82,.18);
+}
+.questions li:last-child{ border-bottom:0; }
+.questions li::before{
+  content:"·";
+  position:absolute; left:.3rem;
+  color:var(--rose);
+  font-weight:bold;
+  font-size:1.3rem;
+  line-height:1.2;
+}
+.contact-lines{ font-size:1.08rem; }
+.contact-lines strong{ font-weight:500; }
+.contact-lines .addr{
+  display:block;
+  margin-top:.5rem;
+  color:var(--ink-soft);
+  white-space:pre-line;
+}
+.gift-line{
+  font-family:var(--font-hand);
+  font-size:1.5rem;
+  color:var(--olive);
+  transform:rotate(-1deg);
+  display:inline-block;
+  margin-top:1.6rem;
+}
+
+/* the waiting list card */
+.waitlist{
+  background:var(--paper-card);
+  box-shadow:var(--shadow-lift);
+  padding:2.2rem 2rem;
+  transform:rotate(.8deg);
+  position:relative;
+}
+.waitlist::before{
+  content:"";
+  position:absolute;
+  top:-11px; left:32px;
+  width:92px; height:24px;
+  transform:rotate(-2deg);
+  background:rgba(214,123,136,.30);
+  box-shadow:0 1px 3px rgba(63,57,52,.14);
+}
+.waitlist h3{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:1.55rem;
+  margin-bottom:.7rem;
+}
+.waitlist p{ color:var(--ink-soft); font-size:1.05rem; margin-bottom:1.4rem; }
+.waitlist form{ display:flex; flex-direction:column; gap:.9rem; }
+.waitlist input[type="email"]{
+  font-family:var(--font-body);
+  font-size:1.05rem;
+  color:var(--ink);
+  background:var(--paper-light);
+  border:1px solid rgba(63,57,52,.28);
+  border-radius:3px;
+  padding:.75rem .9rem;
+}
+.waitlist input::placeholder{ color:rgba(63,57,52,.42); }
+.waitlist button{
+  font-family:var(--font-body);
+  font-size:1.05rem;
+  color:var(--paper-light);
+  background:var(--olive);
+  border:0;
+  border-radius:3px;
+  padding:.8rem 1rem;
+  cursor:pointer;
+  transition:background .25s ease;
+}
+.waitlist button:hover{ background:color-mix(in srgb, var(--olive) 85%, var(--ink) 15%); }
+.waitlist .fine{
+  font-family:var(--font-hand);
+  font-size:1.15rem;
+  color:var(--ink-soft);
+  margin:1.1rem 0 0;
+}
+.form-thanks{
+  display:none;
+  font-family:var(--font-hand);
+  font-size:1.4rem;
+  color:var(--olive);
+  padding:1rem 0 0;
+}
+
+/* ============================================================
+   PHOTOGRAPHIC SKIN (version two)
+   Photos live in images/ beside this file. All base variables
+   and components above are unchanged; these rules layer on top.
+   ============================================================ */
+
+/* ---- hero over the envelope photograph ---- */
+.hero{
+  background:
+    linear-gradient(rgba(30,20,12,.42), rgba(30,20,12,.60)),
+    url('images/hero-desk.jpg') center 32% / cover no-repeat;
+}
+.hero h1{ color:#F4EFE2; text-shadow:0 2px 10px rgba(0,0,0,.5); }
+.hero .hero-eyebrow{ color:#D8DCB4; text-shadow:0 1px 4px rgba(0,0,0,.5); }
+.hero .hero-tagline{ color:rgba(244,239,226,.92); text-shadow:0 1px 5px rgba(0,0,0,.5); }
+.hero .hero-tagline em{ color:#E9A7B1; }
+.hero .hero-line{ color:rgba(244,239,226,.85); text-shadow:0 1px 4px rgba(0,0,0,.5); }
+.hero .stamp{
+  color:#F4EFE2;
+  border-color:rgba(244,239,226,.75);
+  background:rgba(30,20,12,.25);
+}
+.hero .hero-scroll{ color:rgba(244,239,226,.75); }
+.hero .hero-scroll a{ color:inherit; border-bottom-color:rgba(244,239,226,.6); }
+
+/* ---- photographs set as prints, like snapshots laid on the page ---- */
+.print{
+  background:#FDFBF4;
+  padding:10px 10px 12px;
+  box-shadow:var(--shadow-lift);
+  display:inline-block;
+  margin:0;
+}
+.print img{ display:block; width:100%; height:auto; }
+.print figcaption{
+  font-family:var(--font-hand);
+  font-size:1.1rem;
+  color:var(--ink-soft);
+  text-align:center;
+  padding-top:9px;
+}
+
+/* the bundle of letters beside the story letter */
+.letter-wrap{ align-items:center; gap:3rem; }
+.print-bundle{ width:250px; flex:0 0 auto; transform:rotate(2.4deg); }
+@media (max-width:980px){ .print-bundle{ display:none; } }
+
+/* the archivist's hands beside the how-it-works heading */
+.how-close-row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:3rem; margin-top:3.4rem;
+}
+.how-close-row .how-close{ margin-top:0; }
+.print-hands{
+  width:225px; flex:0 0 auto;
+  transform:rotate(1.8deg);
+}
+@media (max-width:860px){ .print-hands{ display:none; } }
+
+/* the invitation, laid over the stuffed envelope photograph */
+.invite{
+  background:
+    linear-gradient(rgba(240,235,222,.76), rgba(240,235,222,.58) 45%, rgba(240,235,222,.70)),
+    url('images/envelope.jpg') center / cover no-repeat;
+}
+/* the invitation photographs */
+.invite-side{ display:flex; flex-direction:column; gap:0; }
+.print-blank{
+  width:78%;
+  align-self:flex-end;
+  transform:rotate(2.2deg);
+  margin-bottom:-2.6rem;
+  z-index:1;
+}
+.invite-side .waitlist{ position:relative; z-index:2; }
+
+/* ---- the membership desk, laid over the sea of old recipe cards ---- */
+.desk{
+  position:relative;
+  overflow:hidden;
+  padding:6.5rem 1.4rem 7.5rem;
+  color:var(--paper-light);
+  background:
+    linear-gradient(rgba(28,19,11,.32), rgba(28,19,11,.46)),
+    url('images/cards-desk.jpg') center / cover no-repeat;
+}
+.desk .inner{ position:relative; z-index:3; text-align:center; }
+.desk .kicker{
+  color:#D8DCB4;
+  transform:rotate(-1.2deg);
+  display:inline-block;
+  text-shadow:0 1px 4px rgba(0,0,0,.55);
+}
+.desk h2{ color:#F4EFE2; margin-bottom:.6rem; text-shadow:0 1px 6px rgba(0,0,0,.6); }
+.desk-sub{
+  font-family:var(--font-hand);
+  font-size:1.35rem;
+  color:rgba(244,239,226,.85);
+  margin-bottom:3.4rem;
+  display:inline-block;
+  transform:rotate(-.6deg);
+  text-shadow:0 1px 4px rgba(0,0,0,.55);
+}
+/* ---- weathered card stock ---- */
+.oldcard{
+  background-color:#EFE3C6;
+  border-radius:4px 7px 5px 8px;
+  box-shadow:
+    inset 0 0 26px rgba(110,79,53,.22),
+    inset 0 0 4px rgba(110,79,53,.18),
+    0 5px 12px rgba(0,0,0,.35),
+    0 18px 38px rgba(0,0,0,.28);
+}
+
+/* the three tier cards: 6x4 landscape, click to lift and flip */
+.tier-row{
+  position:relative; z-index:4;
+  display:flex; justify-content:center; align-items:center;
+  gap:2.4rem; flex-wrap:wrap;
+  perspective:1700px;
+}
+.tiercard{
+  width:min(330px, 90vw);
+  aspect-ratio:3/2;
+  position:relative;
+  background:none; border:0; padding:0;
+  cursor:pointer;
+  transform-style:preserve-3d;
+  transition:transform .75s cubic-bezier(.2,.75,.3,1);
+  -webkit-tap-highlight-color:transparent;
+}
+.tiercard:nth-child(1){ transform:rotate(-3.5deg); }
+.tiercard:nth-child(2){ transform:rotate(1.2deg) translateY(10px); }
+.tiercard:nth-child(3){ transform:rotate(4deg); }
+.tiercard:hover{ transform:rotate(0deg) translateY(-8px); }
+.tiercard.flipped{
+  transform:rotate(0deg) translateY(-20px) rotateX(180deg) scale(1.05);
+  z-index:6;
+}
+.tface{
+  position:absolute; inset:0;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  padding:1.1rem 1.3rem;
+  display:flex; flex-direction:column;
+  color:#443A2E;
+  text-align:center;
+  background-image:
+    linear-gradient(to bottom, transparent 46px, rgba(178,106,110,.42) 46px, rgba(178,106,110,.42) 47.5px, transparent 47.5px),
+    repeating-linear-gradient(to bottom, transparent 0 30px, rgba(110,102,70,.14) 30px 31px),
+    radial-gradient(circle at 78% 16%, rgba(122,80,34,0) 21px, rgba(122,80,34,.16) 22px, rgba(122,80,34,.20) 25px, rgba(122,80,34,0) 27px),
+    radial-gradient(ellipse 90px 55px at 16% 82%, rgba(160,118,60,.13), rgba(160,118,60,0) 70%),
+    linear-gradient(118deg, #F3EAD1 0%, #ECDFBE 55%, #E3D2A8 100%);
+}
+.tface-back{ transform:rotateX(180deg); text-align:left; }
+.tface .fromkitchen{
+  font-family:var(--font-display);
+  font-style:italic;
+  font-size:.95rem;
+  letter-spacing:.06em;
+  color:rgba(110,79,53,.75);
+}
+.tface h3{
+  font-family:var(--font-hand);
+  font-weight:600;
+  font-size:1.95rem;
+  line-height:1.05;
+  margin:.15rem 0 .3rem;
+  color:#3E332A;
+}
+.tface-front .tline{
+  font-family:var(--font-display);
+  font-style:italic;
+  font-size:1.06rem;
+  color:rgba(74,62,48,.8);
+  max-width:26ch;
+  margin:.4rem auto 0;
+}
+.tface-front .lift{
+  margin-top:auto;
+  font-family:var(--font-hand);
+  font-size:1.15rem;
+  color:rgba(110,79,53,.8);
+  transform:rotate(-1.5deg);
+}
+.tface-back h3{ font-size:1.35rem; margin:0 0 .35rem; }
+.tface-back ul{ list-style:none; margin:0; padding:0; }
+.tface-back li{
+  font-size:.94rem;
+  line-height:1.35;
+  padding:.3rem 0 .3rem 1.05rem;
+  position:relative;
+  border-bottom:1px solid rgba(110,102,70,.20);
+}
+.tface-back li:last-child{ border-bottom:0; }
+.tface-back li::before{
+  content:"·";
+  position:absolute; left:.1rem;
+  color:rgba(178,106,110,.9);
+  font-weight:bold; font-size:1.15rem;
+}
+.tface-back .fallstamp{
+  margin-top:auto;
+  align-self:flex-end;
+  font-family:var(--font-hand);
+  font-size:1rem;
+  color:var(--plum);
+  border:1.4px solid var(--plum);
+  border-radius:4px;
+  padding:.2rem .7rem .25rem;
+  transform:rotate(-2.5deg);
+  opacity:.8;
+}
+@media (prefers-reduced-motion: reduce){
+  .tiercard, .tiercard:hover{ transition:none; }
+}
+
+/* ---------- footer ---------- */
+footer{
+  border-top:1px solid rgba(63,57,52,.14);
+  padding:3rem 1.4rem 3.4rem;
+  text-align:center;
+}
+footer .fname{
+  font-family:var(--font-display);
+  font-size:1.2rem;
+  font-weight:500;
+}
+footer .ftag{
+  font-family:var(--font-hand);
+  font-size:1.25rem;
+  color:var(--ink-soft);
+  margin:.3rem 0 .9rem;
+}
+footer .flinks{ font-size:.98rem; color:var(--ink-soft); }
+footer .flinks a{ color:var(--ink-soft); text-decoration:none; border-bottom:1px dotted var(--ink-soft); }
+footer .fsa{
+  margin-top:1.1rem;
+  font-size:.9rem;
+  color:rgba(63,57,52,.5);
+  letter-spacing:.04em;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="wordmark" href="#top">Whispers <span>of</span> Kindness</a>
+    <nav aria-label="Site">
+      <a href="#story">The story</a>
+      <a href="#how">How it works</a>
+      <a href="#membership">Membership</a>
+      <a href="#invite">Send a recipe</a>
+      <!-- Inactive sign-in slot. Phase four activates this. -->
+      <span class="signin" title="Coming soon" aria-disabled="true">Sign in</span>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ 1 · HERO ============ -->
+  <section class="hero" aria-label="Welcome">
+    <div class="inner">
+      <span class="hero-eyebrow reveal">an archive of human kindness</span>
+      <h1 class="reveal">Whispers of Kindness</h1>
+      <p class="hero-tagline reveal">Kindness <em>whispers</em>.</p>
+      <p class="hero-line reveal">Family recipes, preserved by hand and mailed each month, with the story of the person who wrote them down.</p>
+      <span class="stamp reveal">coming this fall</span>
+      <p class="hero-scroll reveal"><a href="#story">begin with the story ↓</a></p>
+    </div>
+  </section>
+
+  <!-- ============ 2 · THE STORY ============ -->
+  <section class="story" id="story" aria-label="The story">
+    <div class="inner letter-wrap">
+      <article class="letter reveal">
+        <span class="tape" aria-hidden="true"></span>
+        <div class="postage" aria-hidden="true">
+          <div class="postage-inner"><span class="heart">♥</span>first<br>class</div>
+        </div>
+        <span class="kicker">where this came from</span>
+
+        <!-- PLACEHOLDER PASSAGE. Pela will provide the final story text.
+             This stand-in follows the mandate so the layout reads true
+             in the meantime. Swap the paragraphs below. -->
+        <p class="opening">This began with a question.</p>
+        <p>Someone asked an AI what human beings would be remembered for, and kindness did not make the list. Not because we lack it, though. Because we never write it down.</p>
+        <p>We do not announce our kindness. We feel something, we act, and we move on. The written record catches our cruelty, because cruelty performs for an audience. Our goodness went somewhere quieter. It went into the meal.</p>
+        <p>A recipe card says cream the butter and sugar. It does not say I made this every Sunday for forty years for people I loved. The kindness is in the writing down and the passing on, so that someone else could feed the people they love.</p>
+        <p>Those cards are still out there, in drawers and boxes and the backs of cupboards, disappearing one household at a time. This project gathers them, and finally reads the record for what it is.</p>
+      </article>
+      <figure class="print print-bundle reveal">
+        <img src="images/letters-bundle.jpg" alt="Bundles of old handwritten letters tied with lace ribbon" loading="lazy">
+        <figcaption>kept, and passed on</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ 3 · HOW IT WORKS ============ -->
+  <section class="how" id="how" aria-label="How it works">
+    <div class="inner">
+      <span class="kicker reveal">the Heirloom Archive</span>
+      <h2 class="reveal">One recipe a month, made beautiful and mailed to you</h2>
+      <hr class="rule">
+
+      <div class="cards">
+        <article class="card reveal">
+          <h3><span class="no">i.</span>The card arrives</h3>
+          <p>A hand-collaged recipe page in your mailbox each month, punched for a binder and sized for a recipe box.</p>
+          <p>The original recipe is preserved exactly as it was written. Beside it sits a gentle adaptation for the modern kitchen, asking what she might have made with what we have now.</p>
+        </article>
+
+        <article class="card reveal">
+          <h3><span class="no">ii.</span>Turn it over</h3>
+          <p>On the back, the archive record. Who made it, who they made it for, where and when, and how it travelled to reach you.</p>
+          <p>Where possible, a reproduction of the original handwriting itself.</p>
+          <span class="aside">the story is the substance</span>
+        </article>
+
+        <article class="card reveal">
+          <h3><span class="no">iii.</span>Watch it cook</h3>
+          <p>Each month, one recipe is cooked and adapted on film, and the story of the person behind it is told in full.</p>
+          <p>The card preserves the original. The video brings it into your kitchen.</p>
+        </article>
+      </div>
+
+      <div class="how-close-row">
+        <p class="how-close reveal">Recipes are chosen for the strength of the story attached to them, not for culinary merit. An ordinary recipe with a rich history is exactly what this archive exists for.</p>
+        <figure class="print print-hands reveal">
+          <img src="images/hands-archive.jpg" alt="Hands sorting a stack of old papers on a wooden desk" loading="lazy">
+          <figcaption>the gathering</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MEMBERSHIP · THE WRITING DESK (phase two, visual only) ============ -->
+  <section class="desk" id="membership" aria-label="Membership">
+    <div class="inner">
+      <span class="kicker reveal">the membership</span>
+      <h2 class="reveal">Three cards on the desk</h2>
+      <p class="desk-sub reveal">turn one over to read it</p>
+
+      <div class="tier-row reveal">
+
+        <button class="tiercard" type="button" aria-pressed="false" aria-label="Starter Kit, select to read details">
+          <div class="tface tface-front oldcard">
+            <span class="fromkitchen">from the kitchen of</span>
+            <h3>The Starter Kit</h3>
+            <p class="tline">Everything to begin, arriving as a parcel</p>
+            <span class="lift">turn me over ↻</span>
+          </div>
+          <div class="tface tface-back oldcard">
+            <h3>The Starter Kit</h3>
+            <ul>
+              <li>A binder or recipe box to hold the collection</li>
+              <li>An opening reference section</li>
+              <li>Your first monthly card</li>
+              <li>One-time cost, ships as a parcel</li>
+            </ul>
+            <span class="fallstamp">coming this fall</span>
+          </div>
+        </button>
+
+        <button class="tiercard" type="button" aria-pressed="false" aria-label="Monthly Membership, select to read details">
+          <div class="tface tface-front oldcard">
+            <span class="fromkitchen">from the kitchen of</span>
+            <h3>Monthly Membership</h3>
+            <p class="tline">One card a month, in the mail</p>
+            <span class="lift">turn me over ↻</span>
+          </div>
+          <div class="tface tface-back oldcard">
+            <h3>Monthly Membership</h3>
+            <ul>
+              <li>The hand-collaged card, mailed monthly</li>
+              <li>Punched for a binder, sized for a box</li>
+              <li>The monthly video and the full story</li>
+              <li>For members using their own binder or box</li>
+            </ul>
+            <span class="fallstamp">coming this fall</span>
+          </div>
+        </button>
+
+        <button class="tiercard" type="button" aria-pressed="false" aria-label="Gift Subscription, select to read details">
+          <div class="tface tface-front oldcard">
+            <span class="fromkitchen">from the kitchen of</span>
+            <h3>Gift Subscription</h3>
+            <p class="tline">A physical heirloom, given</p>
+            <span class="lift">turn me over ↻</span>
+          </div>
+          <div class="tface tface-back oldcard">
+            <h3>Gift Subscription</h3>
+            <ul>
+              <li>Prepaid for a fixed number of months</li>
+              <li>Mailed to the person of your choosing</li>
+              <li>A note from you with the first card</li>
+              <li>Begins the month after you give it</li>
+            </ul>
+            <span class="fallstamp">coming this fall</span>
+          </div>
+        </button>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 · THE INVITATION ============ -->
+  <section class="invite" id="invite" aria-label="Send a recipe">
+    <div class="inner">
+      <div class="invite-copy">
+        <span class="kicker reveal">the invitation</span>
+        <h2 class="reveal">Send us a recipe, and the person behind it</h2>
+        <hr class="rule">
+        <p class="reveal">If your family holds a recipe with a story behind it, we would love to receive it. It does not need to be impressive. It needs to have belonged to someone.</p>
+
+        <div class="questions reveal">
+          <span class="kicker">to help you begin</span>
+          <ul>
+            <li>Whose recipe was this, and what was your relationship to them?</li>
+            <li>Where and when did they live?</li>
+            <li>Who did they make it for? Was there an occasion, a person, a hard season?</li>
+            <li>What do you remember about them making it?</li>
+            <li>Did it come from further back, another country, another generation?</li>
+            <li>Is there anything about them you would want remembered?</li>
+          </ul>
+        </div>
+
+        <p class="contact-lines reveal">
+          Send recipes, photographs of handwriting, and stories to<br>
+          <strong><a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a></strong>
+          <span class="addr">or by post to
+Whispers of Kindness
+[mailing address to come]
+West Kelowna, BC</span>
+        </p>
+
+        <span class="gift-line reveal">The recipe and the story are the gift.</span>
+
+
+
+      </div>
+
+      <div class="invite-side">
+        <figure class="print print-blank reveal" aria-hidden="true">
+          <img src="images/blank-card.jpg" alt="" loading="lazy">
+        </figure>
+        <aside class="waitlist reveal" aria-label="Waiting list">
+        <h3>The first cards mail this fall</h3>
+        <p>Leave your email and we will write to you when the archive opens its doors.</p>
+        <!-- Netlify form: works as-is once hosted on Netlify -->
+        <form name="waitlist" method="POST" data-netlify="true" id="waitlistForm">
+          <input type="hidden" name="form-name" value="waitlist">
+          <label for="wl-email" class="sr-only" style="position:absolute;left:-9999px;">Email address</label>
+          <input id="wl-email" type="email" name="email" placeholder="your email" required autocomplete="email">
+          <button type="submit">Join the waiting list</button>
+        </form>
+        <p class="form-thanks" id="formThanks">Thank you. We will write soon.</p>
+        <p class="fine">No noise, no newsletters. Just a note when the doors open.</p>
+      </aside>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ 5 · FOOTER ============ -->
+<footer>
+  <p class="fname">Whispers of Kindness</p>
+  <p class="ftag">Kindness whispers.</p>
+  <p class="flinks"><a href="https://whispersofkindness.ca">whispersofkindness.ca</a></p>
+  <p class="fsa">a Sovereign Alchemist project</p>
+</footer>
+
+<script>
+/* Gentle fade-ins on scroll */
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var items = document.querySelectorAll('.reveal');
+  if (reduced || !('IntersectionObserver' in window)) {
+    items.forEach(function(el){ el.classList.add('in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  items.forEach(function(el){ io.observe(el); });
+})();
+
+/* Waiting list: submit to Netlify without leaving the page */
+(function(){
+  var form = document.getElementById('waitlistForm');
+  var thanks = document.getElementById('formThanks');
+  if (!form) return;
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var data = new FormData(form);
+    fetch('/', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+      body:new URLSearchParams(data).toString()
+    }).then(function(){
+      form.style.display = 'none';
+      thanks.style.display = 'block';
+    }).catch(function(){
+      /* Previewing locally, before Netlify hosting: show the note anyway */
+      form.style.display = 'none';
+      thanks.style.display = 'block';
+    });
+  });
+})();
+
+/* Membership desk: lift and flip one card at a time */
+(function(){
+  var cards = document.querySelectorAll('.tiercard');
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){
+      var wasOpen = card.classList.contains('flipped');
+      cards.forEach(function(other){
+        other.classList.remove('flipped');
+        other.setAttribute('aria-pressed','false');
+      });
+      if (!wasOpen){
+        card.classList.add('flipped');
+        card.setAttribute('aria-pressed','true');
+      }
+    });
+  });
+})();
+
+</script>
+
+</body>
+</html>
