@@ -147,11 +147,22 @@ exports.handler = async function (event) {
     return reply(405, { error: 'Use POST.' });
   }
 
-  if (!SUPABASE_URL || !SERVICE_KEY) {
-    // Configuration problem, not the visitor's fault. Say so in the log, stay
-    // vague to the outside.
-    console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.');
-    return reply(500, { error: 'The form is not configured yet.' });
+  // Configuration problem, not the visitor's fault.
+  //
+  // This names the variables that are missing. It never reports their values,
+  // their lengths, or anything derived from them. A name is not a secret, and
+  // "which one is missing" is the entire difference between a two minute fix
+  // and an afternoon of guessing.
+  const missingConfig = [];
+  if (!SUPABASE_URL) missingConfig.push('SUPABASE_URL');
+  if (!SERVICE_KEY)  missingConfig.push('SUPABASE_SERVICE_ROLE_KEY');
+  if (missingConfig.length) {
+    console.error('Missing environment variable(s): ' + missingConfig.join(', '));
+    return reply(500, {
+      error: 'The form is not configured yet. Missing: ' + missingConfig.join(', ')
+        + '. If this is a deploy preview, check the variables are set for all'
+        + ' deploy contexts, not production only.'
+    });
   }
 
   let body;

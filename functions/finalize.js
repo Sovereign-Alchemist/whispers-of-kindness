@@ -53,9 +53,15 @@ exports.handler = async function (event) {
     return reply(405, { error: 'Use POST.' });
   }
 
-  if (!SUPABASE_URL || !SERVICE_KEY) {
-    console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.');
-    return reply(500, { error: 'The form is not configured yet.' });
+  // Names only, never values. See the same guard in submit.js.
+  const missingConfig = [];
+  if (!SUPABASE_URL) missingConfig.push('SUPABASE_URL');
+  if (!SERVICE_KEY)  missingConfig.push('SUPABASE_SERVICE_ROLE_KEY');
+  if (missingConfig.length) {
+    console.error('Missing environment variable(s): ' + missingConfig.join(', '));
+    return reply(500, {
+      error: 'The form is not configured yet. Missing: ' + missingConfig.join(', ') + '.'
+    });
   }
 
   let archiveId;
