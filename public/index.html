@@ -469,6 +469,144 @@ h1{
 }
 
 /* ============================================================
+   SEND A RECIPE (phase two, chunk three)
+   The submission form. Inherits every variable defined at the
+   top of this file. Nothing here is redefined.
+   ============================================================ */
+.send{ padding:4.5rem 1.4rem 6rem; }
+.send .inner{ max-width:760px; margin:0 auto; }
+.send .lede{ max-width:var(--measure); color:var(--ink-soft); margin-bottom:2.2rem; }
+
+.recipe-form{
+  background:var(--paper-card);
+  border:1px solid rgba(63,57,52,.16);
+  border-radius:3px;
+  box-shadow:var(--shadow-soft);
+  padding:2.4rem 2.2rem;
+}
+@media (max-width:620px){ .recipe-form{ padding:1.7rem 1.2rem; } }
+
+.recipe-form fieldset{
+  border:0;
+  border-top:1px solid rgba(63,57,52,.16);
+  margin:2.4rem 0 0;
+  padding:2.2rem 0 0;
+}
+.recipe-form fieldset:first-of-type{ border-top:0; margin-top:0; padding-top:0; }
+.recipe-form legend{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:1.5rem;
+  padding:0;
+}
+.recipe-form .legend-note{
+  color:var(--ink-soft);
+  font-size:1rem;
+  margin:.3rem 0 1.6rem;
+  max-width:var(--measure);
+}
+
+.field{ margin-bottom:1.5rem; }
+.field > label{ display:block; font-size:1.05rem; margin-bottom:.3rem; }
+.field .hint{
+  display:block;
+  color:var(--ink-soft);
+  font-size:.96rem;
+  line-height:1.5;
+  margin-bottom:.5rem;
+  max-width:var(--measure);
+}
+.field .opt{ color:var(--ink-soft); font-size:.92rem; font-style:italic; }
+.field .req{ color:var(--rose); font-size:.92rem; font-style:italic; }
+
+.recipe-form input[type="text"],
+.recipe-form input[type="email"],
+.recipe-form textarea{
+  width:100%;
+  font-family:var(--font-body);
+  font-size:1.05rem;
+  color:var(--ink);
+  background:var(--paper-light);
+  border:1px solid rgba(63,57,52,.28);
+  border-radius:3px;
+  padding:.7rem .85rem;
+}
+.recipe-form textarea{ min-height:7rem; line-height:1.6; resize:vertical; }
+.recipe-form textarea.tall{ min-height:14rem; }
+.recipe-form ::placeholder{ color:rgba(63,57,52,.38); }
+
+/* Checkboxes: the permission questions, and the anonymity choice. Each one
+   is a real decision, so each gets room to breathe rather than a tidy row. */
+.check{ display:flex; gap:.75rem; align-items:flex-start; margin-bottom:1.3rem; }
+.check input[type="checkbox"]{
+  flex:0 0 auto;
+  width:1.1rem; height:1.1rem;
+  margin-top:.4rem;
+  accent-color:var(--olive);
+}
+.check .check-text{ font-size:1.03rem; line-height:1.55; max-width:var(--measure); }
+.check .check-text .hint{ margin:.25rem 0 0; }
+
+.filefield{ margin-bottom:1.5rem; }
+.filefield input[type="file"]{
+  font-family:var(--font-body);
+  font-size:.98rem;
+  color:var(--ink-soft);
+  padding:.55rem 0;
+}
+.filefield input[type="file"]::file-selector-button{
+  font-family:var(--font-body);
+  font-size:.98rem;
+  color:var(--ink);
+  background:var(--paper-light);
+  border:1px solid rgba(63,57,52,.28);
+  border-radius:3px;
+  padding:.5rem .85rem;
+  margin-right:.8rem;
+  cursor:pointer;
+}
+
+.send-btn{
+  font-family:var(--font-body);
+  font-size:1.12rem;
+  color:var(--paper-light);
+  background:var(--olive);
+  border:0;
+  border-radius:3px;
+  padding:.9rem 1.8rem;
+  margin-top:2.4rem;
+  cursor:pointer;
+  transition:background .25s ease;
+}
+.send-btn:hover{ background:color-mix(in srgb, var(--olive) 85%, var(--ink) 15%); }
+.send-btn[disabled]{ opacity:.55; cursor:progress; }
+
+.form-status{
+  font-family:var(--font-hand);
+  font-size:1.25rem;
+  color:var(--ink-soft);
+  margin-top:1rem;
+  min-height:1.6rem;
+}
+.form-status.bad{ color:var(--rose); }
+
+/* The honeypot. Off screen, hidden from assistive technology, no tab stop.
+   A person never meets it. Automated form-fillers fill everything. */
+.hp{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+
+.form-done{
+  display:none;
+  background:var(--paper-card);
+  border:1px solid rgba(63,57,52,.16);
+  border-radius:3px;
+  box-shadow:var(--shadow-soft);
+  padding:2.4rem 2.2rem;
+}
+.form-done h3{ font-family:var(--font-display); font-weight:500; font-size:1.8rem; margin-bottom:.8rem; }
+.form-done p{ max-width:var(--measure); margin-bottom:1rem; }
+.form-done .ref{ font-family:var(--font-hand); font-size:1.35rem; color:var(--olive); }
+
+/* ============================================================
    PHOTOGRAPHIC SKIN (version two)
    Photos live in images/ beside this file. All base variables
    and components above are unchanged; these rules layer on top.
@@ -933,6 +1071,187 @@ West Kelowna, BC</span>
     </div>
   </section>
 
+  <!-- ============ 4b · THE FORM ============ -->
+  <section class="send" id="send" aria-label="Send a recipe">
+    <div class="inner">
+      <span class="kicker reveal">the form</span>
+      <h2 class="reveal">Send a recipe</h2>
+      <hr class="rule">
+      <p class="lede reveal">Four things are needed: your name, an email, what the recipe is called, and the recipe itself. Everything else is optional, and a blank is always better than a guess. You can also write to us instead, if a form is not how you want to do this.</p>
+
+      <form id="recipeForm" class="recipe-form reveal" novalidate>
+
+        <div class="hp" aria-hidden="true">
+          <label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+
+        <fieldset>
+          <legend>The recipe</legend>
+
+          <div class="field">
+            <label for="f-title">What is it called? <span class="req">needed</span></label>
+            <span class="hint">Whatever your family calls it. Grandma's Bread is a name.</span>
+            <input id="f-title" type="text" maxlength="300" required>
+          </div>
+
+          <div class="field">
+            <label for="f-text">The recipe as it was written <span class="req">needed</span></label>
+            <span class="hint">Copy it out as it stands, oddities and all. Please do not tidy the measurements or correct the spelling. A handful of this, cook till it looks right, is exactly the thing worth keeping.</span>
+            <textarea id="f-text" class="tall" maxlength="20000" required></textarea>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>The person who made it</legend>
+          <p class="legend-note">None of this is required. Answer what you know and leave the rest. This is the part that turns a recipe into a record of someone.</p>
+
+          <div class="field">
+            <label for="f-cook">Whose recipe was this? <span class="opt">optional</span></label>
+            <input id="f-cook" type="text" maxlength="200">
+          </div>
+
+          <div class="field">
+            <label for="f-rel">What were they to you? <span class="opt">optional</span></label>
+            <span class="hint">Grandmother, neighbour, the woman who ran the boarding house.</span>
+            <input id="f-rel" type="text" maxlength="400">
+          </div>
+
+          <div class="field">
+            <label for="f-for">Who did they make it for? <span class="opt">optional</span></label>
+            <span class="hint">Was there an occasion, a person, a hard season?</span>
+            <input id="f-for" type="text" maxlength="400">
+          </div>
+
+          <div class="field">
+            <label for="f-place">Where did they live? <span class="opt">optional</span></label>
+            <input id="f-place" type="text" maxlength="200">
+          </div>
+
+          <div class="field">
+            <label for="f-when">Roughly when? <span class="opt">optional</span></label>
+            <span class="hint">A decade is plenty. The forties is plenty.</span>
+            <input id="f-when" type="text" maxlength="200">
+          </div>
+
+          <div class="field">
+            <label for="f-migration">Did it come from further back? <span class="opt">optional</span></label>
+            <span class="hint">Another country, another generation, a journey it made before it reached you.</span>
+            <textarea id="f-migration" maxlength="40000"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="f-story">What do you remember? <span class="opt">optional</span></label>
+            <span class="hint">What do you remember about them making it? Is there anything about them you would want remembered? There is no wrong length here, and this is usually the part we treasure most.</span>
+            <textarea id="f-story" class="tall" maxlength="40000"></textarea>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>About you</legend>
+
+          <div class="field">
+            <label for="f-name">Your name <span class="req">needed</span></label>
+            <span class="hint">The full spelling, accents and all. This is the record, so it is worth getting exactly right.</span>
+            <input id="f-name" type="text" maxlength="200" required>
+          </div>
+
+          <div class="field">
+            <label for="f-email">Your email <span class="req">needed</span></label>
+            <span class="hint">So we can write back with questions, and tell you if your recipe is chosen. Nothing else is ever sent here.</span>
+            <input id="f-email" type="email" maxlength="200" autocomplete="email" required>
+          </div>
+
+          <div class="check">
+            <input id="f-anon" type="checkbox">
+            <span class="check-text">
+              <label for="f-anon">I would rather not be named publicly</label>
+              <span class="hint">Your name stays in our records so we can reach you. It does not appear on the card or anywhere on the site.</span>
+            </span>
+          </div>
+
+          <div class="field">
+            <label for="f-display">How you would like to be credited <span class="opt">optional</span></label>
+            <span class="hint">Only if it differs from your name above. Leave blank to use it as written.</span>
+            <input id="f-display" type="text" maxlength="200">
+          </div>
+
+          <div class="field">
+            <label for="f-location">Where you are <span class="opt">optional</span></label>
+            <input id="f-location" type="text" maxlength="200">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>What you have</legend>
+          <p class="legend-note">All optional. A photograph of the handwriting is the single most valuable thing you can send, but a typed recipe with a story behind it is worth every bit as much.</p>
+
+          <div class="filefield">
+            <label for="f-scans">Photographs or scans of the handwriting <span class="opt">optional</span></label>
+            <input id="f-scans" type="file" multiple accept="image/*,.pdf,.heic,.heif">
+          </div>
+
+          <div class="filefield">
+            <label for="f-photos">Photographs of the person, the kitchen, the dish <span class="opt">optional</span></label>
+            <input id="f-photos" type="file" multiple accept="image/*,.heic,.heif">
+          </div>
+
+          <div class="filefield">
+            <label for="f-audio">A recording, if someone told you this out loud <span class="opt">optional</span></label>
+            <span class="hint">A voice memo from your phone is perfect. Length does not matter.</span>
+            <input id="f-audio" type="file" multiple accept="audio/*,.m4a,.mp3,.wav,.aac,.amr,.opus">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Permission</legend>
+          <p class="legend-note">Four separate questions, because they are four separate things. Say yes only to what you mean. You can change any of these later by writing to us.</p>
+
+          <div class="check">
+            <input id="p-publish" type="checkbox" required>
+            <span class="check-text">
+              <label for="p-publish">You may keep this in the archive and print it on a card <span class="req">needed</span></label>
+              <span class="hint">Without this one we cannot accept the recipe at all.</span>
+            </span>
+          </div>
+
+          <div class="check">
+            <input id="p-adapt" type="checkbox">
+            <span class="check-text">
+              <label for="p-adapt">You may write a modern adaptation alongside the original</label>
+              <span class="hint">The original always appears exactly as written. An adaptation sits beside it. It never replaces it.</span>
+            </span>
+          </div>
+
+          <div class="check">
+            <input id="p-video" type="checkbox">
+            <span class="check-text">
+              <label for="p-video">You may consider this recipe for a video</label>
+              <span class="hint">This is a bigger ask than a printed card, because a video tells the story of the person as much as it cooks the food. Saying yes only makes it eligible. It does not mean it will be chosen, and we would always write to you first.</span>
+            </span>
+          </div>
+
+          <div class="check">
+            <input id="p-cookname" type="checkbox">
+            <span class="check-text">
+              <label for="p-cookname">You may show the original cook's name</label>
+              <span class="hint">If this stays unticked we still record the name, so the archive is accurate. It simply is not displayed anywhere.</span>
+            </span>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="send-btn" id="sendBtn">Send the recipe</button>
+        <p class="form-status" id="sendStatus" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="form-done" id="sendDone">
+        <h3>Thank you. It arrived.</h3>
+        <p>Your recipe is in the archive now, with everything you told us about the person behind it. We read every one by hand, so it may be a little while before you hear from us, but you will hear from us.</p>
+        <p>If you want to add anything, a photograph you find later, a detail you remember at two in the morning, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and quote the reference below.</p>
+        <p class="ref" id="sendRef"></p>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- ============ 5 · FOOTER ============ -->
@@ -997,6 +1316,143 @@ West Kelowna, BC</span>
         card.classList.add('flipped');
         card.setAttribute('aria-pressed','true');
       }
+    });
+  });
+})();
+
+/* Send a recipe.
+   Three steps, because the files deliberately do not pass through our own
+   server. Netlify caps a function request at roughly 6MB and ten seconds,
+   and a recording of someone telling a story can be far larger than that.
+     1. Send the words. Get back an archive id and one upload link per file.
+     2. Send each file straight to storage, using those links.
+     3. Ask the server to write down what actually arrived. */
+(function(){
+  var form = document.getElementById('recipeForm');
+  if (!form) return;
+
+  var btn    = document.getElementById('sendBtn');
+  var status = document.getElementById('sendStatus');
+  var done   = document.getElementById('sendDone');
+  var ref    = document.getElementById('sendRef');
+
+  function val(id){ var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+  function ticked(id){ var el = document.getElementById(id); return !!(el && el.checked); }
+
+  function say(message, bad){
+    status.textContent = message;
+    status.className = 'form-status' + (bad ? ' bad' : '');
+  }
+
+  function gather(inputId, kind){
+    var el = document.getElementById(inputId), out = [];
+    if (!el || !el.files) return out;
+    for (var i = 0; i < el.files.length; i++){ out.push({ kind:kind, file:el.files[i] }); }
+    return out;
+  }
+
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+
+    /* Mirrors of the checks the function makes. Repeated here only so nobody
+       waits for a round trip to be told they missed a box. The server never
+       trusts this. */
+    if (!val('f-name') || !val('f-email') || !val('f-title') || !val('f-text')){
+      say('Still needed: your name, your email, a name for the recipe, and the recipe itself.', true);
+      return;
+    }
+    if (!ticked('p-publish')){
+      say('We can only accept a recipe once you have said we may keep it.', true);
+      return;
+    }
+
+    var chosen = gather('f-scans','scan')
+      .concat(gather('f-photos','photo'), gather('f-audio','audio'));
+
+    btn.disabled = true;
+    say('Sending.');
+
+    var archiveId = null;
+    var failed = 0;
+
+    fetch('/.netlify/functions/submit', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        website:               form.querySelector('[name=website]').value,
+        name:                  val('f-name'),
+        name_display:          val('f-display'),
+        anonymous:             ticked('f-anon'),
+        location:              val('f-location'),
+        contact:               val('f-email'),
+        relationship:          val('f-rel'),
+        title:                 val('f-title'),
+        original_text:         val('f-text'),
+        original_cook:         val('f-cook'),
+        original_cook_public:  ticked('p-cookname'),
+        who_they_cooked_for:   val('f-for'),
+        place_of_origin:       val('f-place'),
+        approximate_date:      val('f-when'),
+        migration_notes:       val('f-migration'),
+        remembered_story:      val('f-story'),
+        permission_publish:    ticked('p-publish'),
+        permission_adaptation: ticked('p-adapt'),
+        permission_video:      ticked('p-video'),
+        files: chosen.map(function(item){ return { kind:item.kind, name:item.file.name }; })
+      })
+    })
+    .then(function(res){
+      return res.json().then(function(data){ return { ok:res.ok, data:data }; });
+    })
+    .then(function(r){
+      if (!r.ok) throw new Error(r.data.error || 'The recipe could not be sent.');
+      archiveId = r.data.archive_id;
+
+      var uploads = r.data.uploads || [];
+      var index = 0;
+
+      /* One file at a time. A phone on a rural connection should not be asked
+         to push six things at once. */
+      function next(){
+        if (index >= uploads.length) return Promise.resolve();
+        say('Sending file ' + (index + 1) + ' of ' + uploads.length + '. Please keep this page open.');
+        return fetch(uploads[index].url, {
+          method:'PUT',
+          headers:{ 'Content-Type': chosen[index].file.type || 'application/octet-stream' },
+          body: chosen[index].file
+        })
+        .then(function(res){ if (!res.ok) failed++; })
+        .catch(function(){ failed++; })
+        .then(function(){ index++; return next(); });
+      }
+      return next();
+    })
+    .then(function(){
+      if (!archiveId) return;
+      /* Records what actually landed, not what we meant to send. Worth doing
+         even when uploads failed, because then the list is honestly short. */
+      return fetch('/.netlify/functions/finalize', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ archive_id: archiveId })
+      }).catch(function(){ /* the recipe itself is already saved */ });
+    })
+    .then(function(){
+      form.style.display = 'none';
+      if (archiveId) ref.textContent = 'Your reference: ' + archiveId;
+      if (failed){
+        var note = document.createElement('p');
+        note.textContent = failed + (failed === 1 ? ' file did not' : ' files did not')
+          + ' finish uploading. Everything you wrote is safe. Please email the'
+          + ' missing ones, quoting the reference above.';
+        done.appendChild(note);
+      }
+      done.style.display = 'block';
+      done.scrollIntoView({ behavior:'smooth', block:'start' });
+    })
+    .catch(function(err){
+      btn.disabled = false;
+      say(err.message || 'Something went wrong. Please try again, or write to lela@whispersofkindness.ca.', true);
     });
   });
 })();
