@@ -101,12 +101,32 @@ function reply(statusCode, payload) {
 // Supabase calls
 // --------------------------------------------------------------------------
 
+// Supabase has two generations of key and they authenticate differently.
+//
+//   sb_secret_...    Current format. NOT a JWT. It goes in the apikey header
+//                    only. Supabase rejects it in Authorization even when the
+//                    value is identical, because it tries to parse it as a JWT.
+//
+//   eyJ... (legacy)  A JWT. PostgREST reads the role FROM Authorization. Leave
+//                    that header out and there is no error, the request quietly
+//                    drops to the anon role, and row level security hides every
+//                    table. Writes would fail for a reason nothing reports.
+//
+// Sending both unconditionally works today only because the key in Netlify is
+// still legacy. It would break the moment legacy keys are turned off.
+function authHeaders() {
+  const headers = { apikey: SERVICE_KEY };
+  if (!/^sb_(secret|publishable)_/.test(SERVICE_KEY)) {
+    headers.Authorization = 'Bearer ' + SERVICE_KEY;
+  }
+  return headers;
+}
+
 async function db(path, options = {}) {
   const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
     ...options,
     headers: {
-      apikey: SERVICE_KEY,
-      Authorization: 'Bearer ' + SERVICE_KEY,
+      ...authHeaders(),
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
       ...(options.headers || {})
@@ -122,11 +142,7 @@ async function signedUpload(objectPath) {
     SUPABASE_URL + '/storage/v1/object/upload/sign/' + BUCKET + '/' + objectPath,
     {
       method: 'POST',
-      headers: {
-        apikey: SERVICE_KEY,
-        Authorization: 'Bearer ' + SERVICE_KEY,
-        'Content-Type': 'application/json'
-      },
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ expiresIn: 3600 })
     }
   );
