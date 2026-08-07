@@ -758,17 +758,6 @@ h1{
 .tiercard:nth-child(2){ transform:rotate(1.2deg) translateY(10px); }
 .tiercard:nth-child(3){ transform:rotate(4deg); }
 .tiercard:hover{ transform:rotate(0deg) translateY(-8px); }
-.tiercard.flipped{
-  transform:rotate(0deg) translateY(-20px) rotateX(180deg) scale(1.05);
-  z-index:6;
-  aspect-ratio:auto;
-  min-height:min(220px, 60vw);
-}
-.tiercard.flipped .tface-back{
-  position:relative;
-  height:auto;
-  min-height:min(220px, 60vw);
-}
 .tface{
   position:absolute; inset:0;
   backface-visibility:hidden;
@@ -784,7 +773,10 @@ h1{
     radial-gradient(ellipse 90px 55px at 16% 82%, rgba(160,118,60,.13), rgba(160,118,60,0) 70%),
     linear-gradient(118deg, #F3EAD1 0%, #ECDFBE 55%, #E3D2A8 100%);
 }
-.tface-back{ transform:rotateX(180deg); text-align:left; }
+/* Slightly tighter than the front. The back carries a heading, three
+   bullets, the terms line and the stamp inside the same fixed 3/2 card,
+   so the room has to come from the margins rather than the type size. */
+.tface-back{ transform:rotateX(180deg); text-align:left; padding:.95rem 1.15rem; }
 .tface .fromkitchen{
   font-family:var(--font-display);
   font-style:italic;
@@ -820,7 +812,7 @@ h1{
 .tface-back li{
   font-size:.94rem;
   line-height:1.35;
-  padding:.3rem 0 .3rem 1.05rem;
+  padding:.22rem 0 .22rem 1.05rem;
   position:relative;
   border-bottom:1px solid rgba(110,102,70,.20);
 }
@@ -843,25 +835,33 @@ h1{
   transform:rotate(-2.5deg);
   opacity:.8;
 }
-.tface-back .founding{
-  font-family:var(--font-display);
-  font-style:italic;
-  font-size:.9rem;
-  line-height:1.3;
-  color:var(--olive);
-  margin:.5rem 0 .15rem;
-}
-.tface-back .prices{
+/* The price on the front of the card, where it can be read without
+   flipping. Full ink colour rather than a faded tone, because a price
+   set faint reads as an apology for itself. */
+.tface-front .tprice{
   font-family:var(--font-body);
-  font-size:.82rem;
-  color:rgba(74,62,48,.85);
-  margin:0;
+  font-size:1.05rem;
+  line-height:1.3;
+  color:#3E332A;
+  max-width:28ch;
+  margin:.45rem auto 0;
+}
+/* The terms on the back, one line, sized to be read rather than squinted
+   at. Line height is tightened so it earns its extra size back and the
+   face still fits the fixed 3/2 card. */
+.tface-back .tterms{
+  font-family:var(--font-body);
+  font-size:1rem;
+  line-height:1.3;
+  color:#3E332A;
+  margin:.45rem 0 0;
 }
 .tface-back .joinstamp{
   margin-top:auto;
   align-self:flex-end;
   font-family:var(--font-hand);
   font-size:1rem;
+  line-height:1.15;
   color:var(--olive);
   border:1.4px solid var(--olive);
   border-radius:4px;
@@ -872,6 +872,19 @@ h1{
 .tiercard:nth-child(4){ transform:rotate(-2.2deg) translateY(6px); }
 .tiercard:nth-child(5){ transform:rotate(2.8deg); }
 .tiercard:hover{ transform:rotate(0deg) translateY(-8px); }
+
+/* MUST STAY LAST of the .tiercard transform rules.
+   .tiercard.flipped, .tiercard:nth-child(n) and .tiercard:hover all have
+   the same specificity, so whichever is written last wins. When .flipped
+   sat above them, nth-child(4) and (5) beat it and those two cards never
+   turned over at all, and :hover beat it on every card, so a card
+   unflipped itself under the pointer you had to use to click it. That
+   was the real cause of the flip trouble, not the card height. */
+.tiercard.flipped,
+.tiercard.flipped:hover{
+  transform:rotate(0deg) translateY(-20px) rotateX(180deg) scale(1.05);
+  z-index:6;
+}
 @media (prefers-reduced-motion: reduce){
   .tiercard, .tiercard:hover{ transition:none; }
 }
@@ -1013,6 +1026,7 @@ footer .fsa{
             <span class="fromkitchen">from the kitchen of</span>
             <h3>The Mailing</h3>
             <p class="tline">One recipe a month, in the mail</p>
+            <p class="tprice">$11 a card · first 100 members, kept for life</p>
             <span class="lift">turn me over ↻</span>
           </div>
           <div class="tface tface-back oldcard">
@@ -1022,8 +1036,7 @@ footer .fsa{
               <li>Punched for a binder, sized for a box</li>
               <li>The original recipe, and the story of the person who made it</li>
             </ul>
-            <p class="founding">First 100 members: $11 a card, kept for life. $13 after.</p>
-            <p class="prices">3mo $33 · 6mo $66 · 1yr $125.40</p>
+            <p class="tterms">3mo $33 · 6mo $66 · 1yr $125.40</p>
             <span class="joinstamp">now open</span>
           </div>
         </button>
