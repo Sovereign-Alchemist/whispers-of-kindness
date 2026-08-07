@@ -706,10 +706,25 @@ h1{
   font-family:var(--font-hand);
   font-size:1.35rem;
   color:rgba(244,239,226,.85);
-  margin-bottom:3.4rem;
+  margin-bottom:.9rem;
   display:inline-block;
   transform:rotate(-.6deg);
   text-shadow:0 1px 4px rgba(0,0,0,.55);
+}
+.founding-note{
+  font-family:var(--font-display);
+  font-style:italic;
+  font-size:1.5rem;
+  color:#F4EFE2;
+  background:rgba(122,131,82,.72);
+  border:1px solid rgba(244,239,226,.35);
+  border-radius:4px;
+  padding:.55rem 1.4rem .65rem;
+  margin:0 auto 3.2rem;
+  display:inline-block;
+  transform:rotate(-.5deg);
+  box-shadow:0 6px 18px rgba(0,0,0,.32);
+  text-shadow:0 1px 3px rgba(0,0,0,.45);
 }
 /* ---- weathered card stock ---- */
 .oldcard{
@@ -746,6 +761,13 @@ h1{
 .tiercard.flipped{
   transform:rotate(0deg) translateY(-20px) rotateX(180deg) scale(1.05);
   z-index:6;
+  aspect-ratio:auto;
+  min-height:min(220px, 60vw);
+}
+.tiercard.flipped .tface-back{
+  position:relative;
+  height:auto;
+  min-height:min(220px, 60vw);
 }
 .tface{
   position:absolute; inset:0;
@@ -821,6 +843,35 @@ h1{
   transform:rotate(-2.5deg);
   opacity:.8;
 }
+.tface-back .founding{
+  font-family:var(--font-display);
+  font-style:italic;
+  font-size:.9rem;
+  line-height:1.3;
+  color:var(--olive);
+  margin:.5rem 0 .15rem;
+}
+.tface-back .prices{
+  font-family:var(--font-body);
+  font-size:.82rem;
+  color:rgba(74,62,48,.85);
+  margin:0;
+}
+.tface-back .joinstamp{
+  margin-top:auto;
+  align-self:flex-end;
+  font-family:var(--font-hand);
+  font-size:1rem;
+  color:var(--olive);
+  border:1.4px solid var(--olive);
+  border-radius:4px;
+  padding:.2rem .7rem .25rem;
+  transform:rotate(-2.5deg);
+  opacity:.9;
+}
+.tiercard:nth-child(4){ transform:rotate(-2.2deg) translateY(6px); }
+.tiercard:nth-child(5){ transform:rotate(2.8deg); }
+.tiercard:hover{ transform:rotate(0deg) translateY(-8px); }
 @media (prefers-reduced-motion: reduce){
   .tiercard, .tiercard:hover{ transition:none; }
 }
@@ -951,65 +1002,101 @@ footer .fsa{
   <section class="desk" id="membership" aria-label="Membership">
     <div class="inner">
       <span class="kicker reveal">the membership</span>
-      <h2 class="reveal">Three cards on the desk</h2>
+      <h2 class="reveal">Cards on the desk</h2>
       <p class="desk-sub reveal">turn one over to read it</p>
+      <p class="founding-note reveal">The first 100 members pay $11 a card, kept for life.</p>
 
       <div class="tier-row reveal">
 
-        <button class="tiercard" type="button" aria-pressed="false" aria-label="Starter Kit, select to read details">
+        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Mailing, select to read details">
           <div class="tface tface-front oldcard">
             <span class="fromkitchen">from the kitchen of</span>
-            <h3>The Starter Kit</h3>
-            <p class="tline">Everything to begin, arriving as a parcel</p>
+            <h3>The Mailing</h3>
+            <p class="tline">One recipe a month, in the mail</p>
             <span class="lift">turn me over ↻</span>
           </div>
           <div class="tface tface-back oldcard">
-            <h3>The Starter Kit</h3>
+            <h3>The Mailing</h3>
             <ul>
-              <li>A binder or recipe box to hold the collection</li>
-              <li>An opening reference section</li>
-              <li>Your first monthly card</li>
-              <li>One-time cost, ships as a parcel</li>
-            </ul>
-            <span class="fallstamp">coming this fall</span>
-          </div>
-        </button>
-
-        <button class="tiercard" type="button" aria-pressed="false" aria-label="Monthly Membership, select to read details">
-          <div class="tface tface-front oldcard">
-            <span class="fromkitchen">from the kitchen of</span>
-            <h3>Monthly Membership</h3>
-            <p class="tline">One card a month, in the mail</p>
-            <span class="lift">turn me over ↻</span>
-          </div>
-          <div class="tface tface-back oldcard">
-            <h3>Monthly Membership</h3>
-            <ul>
-              <li>The hand-collaged card, mailed monthly</li>
+              <li>A hand-collaged recipe card, mailed monthly</li>
               <li>Punched for a binder, sized for a box</li>
-              <li>The monthly video and the full story</li>
-              <li>For members using their own binder or box</li>
+              <li>The original recipe, and the story of the person who made it</li>
             </ul>
-            <span class="fallstamp">coming this fall</span>
+            <p class="founding">First 100 members: $11 a card, kept for life. $13 after.</p>
+            <p class="prices">3mo $33 · 6mo $66 · 1yr $125.40</p>
+            <span class="joinstamp">now open</span>
           </div>
         </button>
 
-        <button class="tiercard" type="button" aria-pressed="false" aria-label="Gift Subscription, select to read details">
+        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Mailing plus Video, select to read details">
           <div class="tface tface-front oldcard">
             <span class="fromkitchen">from the kitchen of</span>
-            <h3>Gift Subscription</h3>
-            <p class="tline">A physical heirloom, given</p>
+            <h3>Mailing + Video</h3>
+            <p class="tline">The card, and the story on film</p>
             <span class="lift">turn me over ↻</span>
           </div>
           <div class="tface tface-back oldcard">
-            <h3>Gift Subscription</h3>
+            <h3>Mailing + Video</h3>
             <ul>
-              <li>Prepaid for a fixed number of months</li>
-              <li>Mailed to the person of your choosing</li>
-              <li>A note from you with the first card</li>
-              <li>Begins the month after you give it</li>
+              <li>Everything in The Mailing</li>
+              <li>Early access to each month's recipe video</li>
+              <li>The story of the person, told in full</li>
             </ul>
-            <span class="fallstamp">coming this fall</span>
+            <span class="fallstamp">coming soon</span>
+          </div>
+        </button>
+
+        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Finished Binder Bundle, select to read details">
+          <div class="tface tface-front oldcard">
+            <span class="fromkitchen">from the kitchen of</span>
+            <h3>The Finished Binder</h3>
+            <p class="tline">A year, arriving ready to keep</p>
+            <span class="lift">turn me over ↻</span>
+          </div>
+          <div class="tface tface-back oldcard">
+            <h3>The Finished Binder</h3>
+            <ul>
+              <li>A finished kraft binder, tabbed and sleeved</li>
+              <li>A full year of the mailing and video</li>
+              <li>A welcome letter, arriving as a parcel</li>
+            </ul>
+            <span class="fallstamp">coming soon</span>
+          </div>
+        </button>
+
+        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Collage Your Own Bundle, select to read details">
+          <div class="tface tface-front oldcard">
+            <span class="fromkitchen">from the kitchen of</span>
+            <h3>Collage Your Own</h3>
+            <p class="tline">Build the binder yourself</p>
+            <span class="lift">turn me over ↻</span>
+          </div>
+          <div class="tface tface-back oldcard">
+            <h3>Collage Your Own</h3>
+            <ul>
+              <li>A blank binder and a collage kit</li>
+              <li>Fabrics, papers, and embellishments</li>
+              <li>A full year of the mailing and video</li>
+            </ul>
+            <span class="fallstamp">coming soon</span>
+          </div>
+        </button>
+
+        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Heirloom Founder's Kit, select to read details">
+          <div class="tface tface-front oldcard">
+            <span class="fromkitchen">from the kitchen of</span>
+            <h3>Founder's Kit</h3>
+            <p class="tline">One of twenty five, made by hand</p>
+            <span class="lift">turn me over ↻</span>
+          </div>
+          <div class="tface tface-back oldcard">
+            <h3>Founder's Kit</h3>
+            <ul>
+              <li>A numbered, one of a kind handcrafted binder</li>
+              <li>A true keepsake, a piece of art</li>
+              <li>Only twenty five made</li>
+            </ul>
+            <span class="fallstamp">coming 2027</span>
           </div>
         </button>
 
