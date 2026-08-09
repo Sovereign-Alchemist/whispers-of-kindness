@@ -19,7 +19,15 @@
 //   secret key. Anything in the page can be read by anyone. The key lives in
 //   Netlify's environment and never reaches the browser.
 
-const STRIPE_KEY = process.env.STRIPE_SECRET_KEY;
+// The key is read inside the handler, NOT here at module scope.
+//
+// Module scope runs once, when the container cold starts. A container that
+// started before the environment variable existed would keep the empty value
+// it captured then, for as long as it stayed warm, and would go on reporting
+// the variable missing after it had been added and the site redeployed. That
+// is a real failure mode and it looks exactly like a Netlify problem.
+//
+// Reading it per request costs nothing measurable and removes that entirely.
 
 // ---------------------------------------------------------------------------
 // THE PRICES
@@ -84,20 +92,56 @@ function originOf(event) {
   return process.env.URL || '';
 }
 
+// ---------------------------------------------------------------------------
+// TEMPORARY DIAGNOSTIC. Added 9 August 2026, REMOVE before going live.
+//
+// Reports what the running function can actually see, so a missing key stops
+// being a matter of opinion. It reports NAMES and LENGTHS only, never a value
+// or any part of one. An environment variable name is not a secret; its
+// contents are, and none of them travel through here.
+//
+// The deploy fields matter as much as the key fields. They answer "is the
+// deploy I am looking at the deploy I redeployed", which no amount of staring
+// at the dashboard can settle.
+// ---------------------------------------------------------------------------
+function envDiagnostic() {
+  const raw = process.env.STRIPE_SECRET_KEY;
+  const isString = (typeof raw === 'string');
+  return {
+    stripe_names_visible: Object.keys(process.env).filter(function (n) {
+      return /STRIPE/i.test(n);
+    }).sort(),
+    key_defined: Object.prototype.hasOwnProperty.call(process.env, 'STRIPE_SECRET_KEY'),
+    key_length: isString ? raw.length : null,
+    key_length_trimmed: isString ? raw.trim().length : null,
+    context: process.env.CONTEXT || null,
+    branch: process.env.BRANCH || null,
+    deploy_id: process.env.DEPLOY_ID || null,
+    commit: (process.env.COMMIT_REF || '').slice(0, 7) || null
+  };
+}
+
 exports.handler = async function (event) {
 
   if (event.httpMethod !== 'POST') {
     return reply(405, { error: 'Use POST.' });
   }
 
+  // Trimmed, because a key pasted with a trailing newline stays truthy and
+  // still passes the sk_test_ check, then fails much later and far less
+  // clearly: a newline inside an Authorization header is rejected outright.
+  const STRIPE_KEY = (process.env.STRIPE_SECRET_KEY || '').trim();
+
   // Configuration problem, not the visitor's fault. Names the variable, never
-  // reports its value or its length. Same rule as submit.js.
+  // reports its value. Same rule as submit.js.
   if (!STRIPE_KEY) {
-    console.error('Missing environment variable: STRIPE_SECRET_KEY');
+    const diag = envDiagnostic();
+    console.error('Missing environment variable: STRIPE_SECRET_KEY. ' + JSON.stringify(diag));
     return reply(500, {
       error: 'Membership is not configured yet. Missing: STRIPE_SECRET_KEY.'
         + ' If this is a deploy preview, check the variable is set for all'
-        + ' deploy contexts, not production only.'
+        + ' deploy contexts, not production only.',
+      diagnostic: diag
     });
   }
 
