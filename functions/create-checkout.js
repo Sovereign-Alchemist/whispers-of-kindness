@@ -51,26 +51,48 @@
 // here. They are listed so the mapping is visible in one place.
 // ---------------------------------------------------------------------------
 
-const FOUNDING = {
-  '3mo': 'price_1U2Ht52eC5FgbTwr7pISrsOY',   // $39.00 CAD, renews every 3 months
-  '6mo': 'price_1U2Ht52eC5FgbTwrrbx9PFtK',   // $78.00 CAD, renews every 6 months
-  '1yr': 'price_1U2Ht62eC5FgbTwrxuON9gB0'    // $148.20 CAD, renews every year
+// TWO TIERS.
+//
+//   domestic       a physical card in the post. Canada and the United States.
+//   international  the same recipe and story delivered online. Everywhere
+//                  else, including the UK and Australia. Decided 9 August
+//                  2026: there is no separate physical tier for those two.
+//
+// The domestic tier sells the FOUNDING rate to everyone, on purpose. The
+// first 100 members keep their rate, and nothing here counts members, so
+// nothing here can decide when to stop offering it. That switch needs a
+// decision about where the count lives before it can be written. Wrong at
+// member 101, harmless at member 4.
+//
+// The international tier has no founding split. The cap exists because early
+// members subsidise a physical mailing, and there is no mailing here.
+
+const PRICES = {
+  domestic: {
+    '3mo': 'price_1U2Ht52eC5FgbTwr7pISrsOY',   // $39.00 CAD, renews every 3 months
+    '6mo': 'price_1U2Ht52eC5FgbTwrrbx9PFtK',   // $78.00 CAD, renews every 6 months
+    '1yr': 'price_1U2Ht62eC5FgbTwrxuON9gB0'    // $148.20 CAD, renews every year
+  },
+  international: {
+    '3mo': 'price_1U2g1g2eC5FgbTwrPaurWfE2',   // $33.00 CAD, renews every 3 months
+    '6mo': 'price_1U2g1g2eC5FgbTwrRgdoJ1Do',   // $66.00 CAD, renews every 6 months
+    '1yr': 'price_1U2g1h2eC5FgbTwrmK9JQpvP'    // $125.40 CAD, renews every year
+  }
 };
 
-// Not reachable yet. Here so the six ids live together.
+// Not reachable yet. Here so every id lives in one place.
 const STANDING = {
   '3mo': 'price_1U2Ht62eC5FgbTwrJJGQWlfe',   // $45.00 CAD
   '6mo': 'price_1U2Ht62eC5FgbTwrpTKZ3hOS',   // $90.00 CAD
   '1yr': 'price_1U2Ht62eC5FgbTwrS4BrgZJH'    // $171.00 CAD
 };
 
-// A card gets mailed to a physical address, so Checkout has to ask for one.
-// Skipping this would produce paid members nobody can post anything to.
+// A card gets mailed to a physical address, so the domestic tier has to ask
+// for one. Skipping it would produce paid members nobody can post anything to.
 //
-// DECISION STILL OPEN: which countries. Canada and the United States are
-// here because they are the realistic near-term audience and their postage
-// is knowable. Anywhere else is currently refused at checkout. Widening this
-// is one line, but it is a postage cost question, not a code question.
+// The international tier asks for no shipping address at all, because there
+// is nothing to ship. Asking would be collecting a home address for no reason,
+// and every address held is an address that has to be looked after.
 const SHIP_TO = ['CA', 'US'];
 
 function reply(statusCode, payload) {
@@ -136,8 +158,14 @@ exports.handler = async function (event) {
     return reply(400, { error: 'Could not read that request.' });
   }
 
-  const term = String(body.term || '').trim();
-  const price = FOUNDING[term];
+  // Anything that is not explicitly international is treated as domestic, so
+  // a malformed or missing tier can only ever fall back to the physical one,
+  // which collects an address and cannot silently sell a digital membership
+  // to somebody expecting post.
+  const tier = (body.tier === 'international') ? 'international' : 'domestic';
+
+  const term  = String(body.term || '').trim();
+  const price = PRICES[tier][term];
   if (!price) {
     return reply(400, { error: 'Choose a term: 3mo, 6mo or 1yr.' });
   }
@@ -158,22 +186,33 @@ exports.handler = async function (event) {
   // {CHECKOUT_SESSION_ID} is a literal Stripe placeholder, not a template
   // string. Stripe substitutes it on the redirect. It must reach Stripe with
   // the braces intact.
-  params.set('success_url', origin + '/thank-you.html?session_id={CHECKOUT_SESSION_ID}');
+  //
+  // The tier travels too, because the thank-you page has to promise the right
+  // thing. Telling a digital member their card is in the post would be the
+  // first lie the archive ever told them.
+  params.set('success_url', origin + '/thank-you.html?session_id={CHECKOUT_SESSION_ID}&tier=' + tier);
   params.set('cancel_url',  origin + '/#membership');
 
   params.set('billing_address_collection', 'required');
-  SHIP_TO.forEach(function (country, i) {
-    params.set('shipping_address_collection[allowed_countries][' + i + ']', country);
-  });
+
+  // Only the physical tier asks where to post to.
+  if (tier === 'domestic') {
+    SHIP_TO.forEach(function (country, i) {
+      params.set('shipping_address_collection[allowed_countries][' + i + ']', country);
+    });
+  }
 
   // Carried on the subscription rather than only on the session, because the
   // session is a moment and the subscription is the thing that lasts. When
   // Stage 3 reads a webhook, this is what says which rate the member joined
   // on, which is the whole meaning of "kept for life".
-  params.set('subscription_data[metadata][rate]', 'founding');
+  const rate = (tier === 'domestic') ? 'founding' : 'standard';
+  params.set('subscription_data[metadata][rate]', rate);
+  params.set('subscription_data[metadata][tier]', tier);
   params.set('subscription_data[metadata][term]', term);
   params.set('subscription_data[metadata][project]', 'Whispers of Kindness');
-  params.set('metadata[rate]', 'founding');
+  params.set('metadata[rate]', rate);
+  params.set('metadata[tier]', tier);
   params.set('metadata[term]', term);
 
   try {

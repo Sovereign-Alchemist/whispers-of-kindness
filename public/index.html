@@ -997,6 +997,69 @@ h1{
   .term, .term-body{ width:100%; min-width:0; }
 }
 
+.join-elsewhere{
+  margin-top:1.5rem;
+  padding-top:1.2rem;
+  border-top:1px solid rgba(63,57,52,.14);
+  font-family:var(--font-hand);
+  font-size:1.25rem;
+  color:var(--ink-soft);
+}
+/* Tilted the other way from the domestic panel, so two paper cards on the
+   same desk do not look like one thing repeated. */
+.join-intl{ margin-top:2.2rem; transform:rotate(.45deg); }
+
+/* ---------- questions ---------- */
+.faq{ background:var(--paper); }
+.qa-list{ max-width:760px; }
+.qa{
+  background:var(--paper-light);
+  box-shadow:var(--shadow-soft);
+  border-left:3px solid rgba(122,131,82,.45);
+  margin-bottom:1rem;
+}
+.qa summary{
+  cursor:pointer;
+  list-style:none;
+  position:relative;
+  padding:1.15rem 3.2rem 1.15rem 1.4rem;
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:1.3rem;
+  line-height:1.3;
+  color:var(--ink);
+}
+/* The default disclosure triangle, removed in both dialects. */
+.qa summary::-webkit-details-marker{ display:none; }
+.qa summary::marker{ content:""; }
+/* A plus that turns into a cross, rather than any kind of dash. */
+.qa summary::after{
+  content:"+";
+  position:absolute;
+  right:1.3rem; top:50%;
+  transform:translateY(-50%) rotate(0deg);
+  transform-origin:center;
+  font-family:var(--font-hand);
+  font-size:1.9rem;
+  line-height:1;
+  color:var(--olive);
+  transition:transform .2s ease;
+}
+.qa[open] summary::after{ transform:translateY(-50%) rotate(45deg); }
+.qa summary:hover{ background:rgba(122,131,82,.06); }
+.qa summary:focus-visible{ outline:2px solid var(--olive); outline-offset:-2px; }
+.qa-body{ padding:0 1.4rem 1.35rem; }
+.qa-body p{ max-width:62ch; }
+.qa-body p + p{ margin-top:.9rem; }
+/* An answer someone was sent straight to. */
+.qa:target{
+  border-left-color:var(--rose);
+  box-shadow:var(--shadow-lift);
+}
+@media (prefers-reduced-motion: reduce){
+  .qa summary::after{ transition:none; }
+}
+
 /* ---------- footer ---------- */
 footer{
   border-top:1px solid rgba(63,57,52,.14);
@@ -1265,6 +1328,92 @@ footer .fsa{
         <button class="joinbtn" type="button" id="joinBtn">Join the archive</button>
         <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. Mailing to Canada and the United States. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
         <p class="join-error" id="joinError" role="alert"></p>
+
+        <p class="join-elsewhere">Somewhere else in the world? <a href="#faq-shipping">Read how international membership works</a>, or join digitally just below.</p>
+      </div>
+
+      <div class="join join-intl reveal" id="join-international">
+        <h3>Outside Canada and the United States</h3>
+        <p class="join-sub">The same recipe and the same story, delivered online instead of in the post, so nobody is left out of the archive. <a href="#faq-digital">What is the digital membership?</a></p>
+
+        <fieldset class="terms">
+          <legend class="sr-only">Choose a term for the digital membership</legend>
+
+          <label class="term">
+            <input type="radio" name="term-intl" value="3mo" checked>
+            <span class="term-body">
+              <span class="term-len">3 months</span>
+              <span class="term-price">$33.00</span>
+              <span class="term-each">$11 a recipe</span>
+            </span>
+          </label>
+
+          <label class="term">
+            <input type="radio" name="term-intl" value="6mo">
+            <span class="term-body">
+              <span class="term-len">6 months</span>
+              <span class="term-price">$66.00</span>
+              <span class="term-each">$11 a recipe</span>
+            </span>
+          </label>
+
+          <label class="term">
+            <input type="radio" name="term-intl" value="1yr">
+            <span class="term-body">
+              <span class="term-len">1 year</span>
+              <span class="term-price">$125.40</span>
+              <span class="term-each">$10.45 a recipe</span>
+            </span>
+          </label>
+        </fieldset>
+
+        <button class="joinbtn" type="button" id="joinIntlBtn">Join digitally</button>
+        <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. Nothing is posted, so no mailing address is asked for. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
+        <p class="join-error" id="joinIntlError" role="alert"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUESTIONS ============
+       Native details/summary, so expanding works with no JavaScript, keyboard
+       navigation comes free, and browser find-in-page can reach the answers.
+       The only script is the one that opens an answer someone was linked to. -->
+  <section class="faq" id="faq" aria-label="Questions">
+    <div class="inner">
+      <span class="kicker reveal">questions</span>
+      <h2 class="reveal">Things people ask</h2>
+      <hr class="rule">
+
+      <div class="qa-list reveal">
+
+        <details class="qa" id="faq-shipping">
+          <summary>Do you ship internationally?</summary>
+          <div class="qa-body">
+            <p>Physical mailing is available in Canada and the United States for now. Everywhere else, members join with a digital membership instead: the same recipe, the same story, delivered online. If physical mail to your country would ever make sense, I would love to hear from you.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-digital">
+          <summary>What is the digital membership?</summary>
+          <div class="qa-body">
+            <p>The same monthly recipe and the same story behind it, delivered to you online instead of in the mail. It exists for members outside Canada and the United States, so nobody is left out of the archive.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-founding">
+          <summary>Why does the first 100 members' price stay the same forever?</summary>
+          <div class="qa-body">
+            <p>Because being early and trusting something unproven deserves to mean something. The first 100 members lock in their rate for as long as they stay, no matter how the price changes for people who join later.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-cancel">
+          <summary>Can I cancel anytime?</summary>
+          <div class="qa-body">
+            <p>Yes. Write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer. There is no fine print and no runaround.</p>
+          </div>
+        </details>
+
       </div>
     </div>
   </section>
@@ -1561,44 +1710,66 @@ West Kelowna, BC</span>
    No Stripe library and no key in this page. The function holds the key and
    hands back a URL, which is the only thing the browser ever sees. */
 (function(){
-  var btn = document.getElementById('joinBtn');
-  var errBox = document.getElementById('joinError');
-  if (!btn || !errBox) return;
+  function wireJoin(btnId, errId, radioName, tier){
+    var btn = document.getElementById(btnId);
+    var errBox = document.getElementById(errId);
+    if (!btn || !errBox) return;
 
-  var LABEL = btn.textContent;
+    var LABEL = btn.textContent;
 
-  function fail(message){
-    errBox.textContent = message;
-    errBox.classList.add('show');
-    btn.disabled = false;
-    btn.textContent = LABEL;
+    function fail(message){
+      errBox.textContent = message;
+      errBox.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = LABEL;
+    }
+
+    btn.addEventListener('click', function(){
+      var picked = document.querySelector('input[name="' + radioName + '"]:checked');
+      if (!picked){ fail('Choose a term first.'); return; }
+
+      errBox.classList.remove('show');
+      errBox.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Taking you to Stripe...';
+
+      fetch('/.netlify/functions/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ term: picked.value, tier: tier })
+      }).then(function(res){
+        return res.json().then(function(data){ return { ok: res.ok, data: data }; });
+      }).then(function(r){
+        if (!r.ok || !r.data || !r.data.url){
+          fail((r.data && r.data.error) || 'Could not start checkout. Nothing was charged.');
+          return;
+        }
+        window.location.assign(r.data.url);
+      }).catch(function(){
+        fail('Could not reach the checkout. Nothing was charged. Please try again.');
+      });
+    });
   }
 
-  btn.addEventListener('click', function(){
-    var picked = document.querySelector('input[name="term"]:checked');
-    if (!picked){ fail('Choose a term first.'); return; }
+  wireJoin('joinBtn',     'joinError',     'term',      'domestic');
+  wireJoin('joinIntlBtn', 'joinIntlError', 'term-intl', 'international');
+})();
 
-    errBox.classList.remove('show');
-    errBox.textContent = '';
-    btn.disabled = true;
-    btn.textContent = 'Taking you to Stripe...';
-
-    fetch('/.netlify/functions/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ term: picked.value })
-    }).then(function(res){
-      return res.json().then(function(data){ return { ok: res.ok, data: data }; });
-    }).then(function(r){
-      if (!r.ok || !r.data || !r.data.url){
-        fail((r.data && r.data.error) || 'Could not start checkout. Nothing was charged.');
-        return;
-      }
-      window.location.assign(r.data.url);
-    }).catch(function(){
-      fail('Could not reach the checkout. Nothing was charged. Please try again.');
-    });
-  });
+/* Open an answer somebody was linked to. Without this, following the pointer
+   next to the join panel lands on a closed question, which reads as a dead
+   link. Everything else about the FAQ works with no JavaScript at all. */
+(function(){
+  function openTarget(){
+    var hash = window.location.hash;
+    if (!/^#[A-Za-z][\w-]*$/.test(hash)) return;
+    var el = document.getElementById(hash.slice(1));
+    if (el && el.tagName === 'DETAILS' && !el.open){
+      el.open = true;
+      el.scrollIntoView({ block: 'start' });
+    }
+  }
+  openTarget();
+  window.addEventListener('hashchange', openTarget);
 })();
 
 /* Membership desk: lift and flip one card at a time */

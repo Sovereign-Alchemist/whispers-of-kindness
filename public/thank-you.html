@@ -125,7 +125,7 @@ p:last-of-type{ margin-bottom:0; }
 
   <p class="lede">Your membership has begun.</p>
 
-  <p>Stripe has your payment and will email you a receipt. Your first keepsake recipe card goes out with the next mailing, to the address you gave at checkout.</p>
+  <p id="delivery">Stripe has your payment and will email you a receipt. Your first keepsake recipe card goes out with the next mailing, to the address you gave at checkout.</p>
 
   <p>Nothing else is needed from you. If you would like to change your address, or you simply want to say hello, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
 
@@ -147,9 +147,21 @@ p:last-of-type{ margin-bottom:0; }
    the member is Stage 3, and belongs in a webhook where it cannot be
    faked from the address bar. */
 (function(){
-  var id = new URLSearchParams(window.location.search).get('session_id');
+  var params = new URLSearchParams(window.location.search);
+
+  var id = params.get('session_id');
   if (id && /^cs_[A-Za-z0-9_]+$/.test(id)) {
     document.getElementById('ref').textContent = 'reference ' + id;
+  }
+
+  /* A digital member has no card in the post, and must not be told there is
+     one. The physical wording is the default in the markup, so if this script
+     never runs the promise that survives is the more careful of the two. */
+  if (params.get('tier') === 'international') {
+    document.getElementById('delivery').textContent =
+      'Stripe has your payment and will email you a receipt. Your first recipe'
+      + ' and the story behind it arrive online with the next issue, at the'
+      + ' email address you gave at checkout.';
   }
 })();
 </script>
