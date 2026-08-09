@@ -220,29 +220,71 @@ exports.handler = async function (event) {
     const text = await res.text();
 
     if (!res.ok) {
-      // Stripe's message is logged for us and deliberately not returned to
-      // the browser, because it can name price ids and account details.
-      let detail = text;
-      try { detail = JSON.parse(text).error.message; } catch { /* keep raw */ }
-      console.error('Stripe refused the session (' + res.status + '): ' + detail);
+      // TEMPORARY DIAGNOSTIC, added 9 August 2026, REMOVE before going live,
+      // together with the one on the missing-key path.
+      //
+      // Stripe's own error is returned to the browser here as well as logged.
+      // That is a deliberate reversal of the original comment on this block.
+      // What it can name is a price id, a parameter name and a request id.
+      // None of those are credentials: a price id appears in the page in most
+      // Stripe integrations, and a request id is only useful to somebody
+      // already signed in to the account. The secret key is never touched.
+      let err = {};
+      try { err = (JSON.parse(text).error) || {}; } catch { /* not JSON */ }
+
+      const diag = {
+        stripe_status:  res.status,
+        stripe_type:    err.type    || null,
+        stripe_code:    err.code    || null,
+        stripe_param:   err.param   || null,
+        stripe_message: err.message || String(text).slice(0, 300),
+        request_id:     res.headers.get('request-id') || null,
+        price_attempted: price,
+        term_attempted:  term,
+        mode: 'subscription',
+        ship_to: SHIP_TO.join(',')
+      };
+
+      console.error('Stripe refused the session: ' + JSON.stringify(diag));
       return reply(502, {
-        error: 'Stripe could not start that checkout. Nothing was charged.'
+        error: 'Stripe could not start that checkout. Nothing was charged.',
+        diagnostic: diag
       });
     }
 
     const session = JSON.parse(text);
     if (!session.url) {
-      console.error('Stripe returned a session with no url: ' + session.id);
-      return reply(502, { error: 'Stripe could not start that checkout. Nothing was charged.' });
+      const diag = {
+        stripe_status: res.status,
+        note: 'session created but carried no url',
+        session_id: session.id || null,
+        price_attempted: price
+      };
+      console.error('Stripe returned a session with no url: ' + JSON.stringify(diag));
+      return reply(502, {
+        error: 'Stripe could not start that checkout. Nothing was charged.',
+        diagnostic: diag
+      });
     }
 
     return reply(200, { url: session.url, id: session.id });
 
   } catch (err) {
-    console.error('Checkout session failed:', err.message);
+    // TEMPORARY diagnostic, same removal as the other two. This path is a
+    // thrown error rather than a refusal: Stripe was never reached, or the
+    // reply could not be parsed. Naming it separately keeps it from being
+    // confused with a Stripe rejection, which is a different problem.
+    const diag = {
+      threw: err.name || 'Error',
+      detail: String(err.message || '').slice(0, 300),
+      price_attempted: price,
+      term_attempted: term
+    };
+    console.error('Checkout session failed: ' + JSON.stringify(diag));
     return reply(500, {
       error: 'Something went wrong on our side. Nothing was charged. Please try'
-        + ' again, or write to lela@whispersofkindness.ca.'
+        + ' again, or write to lela@whispersofkindness.ca.',
+      diagnostic: diag
     });
   }
 };
