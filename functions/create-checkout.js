@@ -19,6 +19,14 @@
 //   secret key. Anything in the page can be read by anyone. The key lives in
 //   Netlify's environment and never reaches the browser.
 
+const crypto = require('crypto');
+
+// The account that minted the six price ids, confirmed two ways: every price
+// id contains this account's identifier fragment, and a fresh key read from
+// Stripe's Test mode reported this account when asked. TEMPORARY, paired with
+// the diagnostics below, and removed with them.
+const EXPECTED_ACCOUNT = 'acct_1TuaMf2eC5FgbTwr';
+
 // The key is read inside the handler, NOT here at module scope.
 //
 // Module scope runs once, when the container cold starts. A container that
@@ -104,6 +112,44 @@ function originOf(event) {
 // deploy I am looking at the deploy I redeployed", which no amount of staring
 // at the dashboard can settle.
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// TEMPORARY. Added 9 August 2026, REMOVE with the other diagnostics.
+//
+// The question these answer is not "is a key present" but "is it THE key".
+// Netlify's dashboard shows the last few characters of a stored value, which
+// cannot reveal a corruption anywhere else in the string. A one way hash can.
+//
+// SHA256, first 12 hex characters. The key cannot be recovered from it, and
+// two keys differing by a single invisible character produce entirely
+// different fingerprints. Computed on the TRIMMED key so it is comparable
+// with the local verifier, which also trims. The untrimmed length is
+// reported alongside, so stray whitespace shows up as a length gap rather
+// than silently changing the answer.
+// ---------------------------------------------------------------------------
+function fingerprint(value) {
+  return crypto.createHash('sha256').update(value, 'utf8').digest('hex').slice(0, 12);
+}
+
+// Asks the key which account it belongs to. This is the fact the dashboard
+// cannot be trusted for, because it reports what was configured rather than
+// what the function actually received.
+async function whoAmI(key) {
+  try {
+    const res = await fetch('https://api.stripe.com/v1/account', {
+      headers: { Authorization: 'Bearer ' + key }
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let message = String(text).slice(0, 160);
+      try { message = JSON.parse(text).error.message; } catch { /* keep raw */ }
+      return { account_id: null, account_lookup_status: res.status, account_lookup_error: message };
+    }
+    return { account_id: (JSON.parse(text).id || null), account_lookup_status: 200 };
+  } catch (err) {
+    return { account_id: null, account_lookup_error: String(err.message || '').slice(0, 160) };
+  }
+}
+
 function envDiagnostic() {
   const raw = process.env.STRIPE_SECRET_KEY;
   const isString = (typeof raw === 'string');
@@ -232,6 +278,12 @@ exports.handler = async function (event) {
       let err = {};
       try { err = (JSON.parse(text).error) || {}; } catch { /* not JSON */ }
 
+      // TEMPORARY. Identifies the key the RUNTIME received, as opposed to the
+      // one the dashboard says was configured. Hash and account id only: the
+      // value itself is never read into this, logged, or returned.
+      const rawKey = process.env.STRIPE_SECRET_KEY || '';
+      const identity = await whoAmI(STRIPE_KEY);
+
       const diag = {
         stripe_status:  res.status,
         stripe_type:    err.type    || null,
@@ -242,7 +294,18 @@ exports.handler = async function (event) {
         price_attempted: price,
         term_attempted:  term,
         mode: 'subscription',
-        ship_to: SHIP_TO.join(',')
+        ship_to: SHIP_TO.join(','),
+
+        // who is this key, really
+        key_prefix:        STRIPE_KEY.slice(0, 11),
+        key_length:        STRIPE_KEY.length,
+        key_length_raw:    rawKey.length,
+        key_fingerprint:   fingerprint(STRIPE_KEY),
+        account_id:        identity.account_id,
+        account_expected:  EXPECTED_ACCOUNT,
+        account_matches:   (identity.account_id === EXPECTED_ACCOUNT),
+        account_lookup_status: identity.account_lookup_status || null,
+        account_lookup_error:  identity.account_lookup_error  || null
       };
 
       console.error('Stripe refused the session: ' + JSON.stringify(diag));
