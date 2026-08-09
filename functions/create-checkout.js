@@ -19,14 +19,6 @@
 //   secret key. Anything in the page can be read by anyone. The key lives in
 //   Netlify's environment and never reaches the browser.
 
-const crypto = require('crypto');
-
-// The account that minted the six price ids, confirmed two ways: every price
-// id contains this account's identifier fragment, and a fresh key read from
-// Stripe's Test mode reported this account when asked. TEMPORARY, paired with
-// the diagnostics below, and removed with them.
-const EXPECTED_ACCOUNT = 'acct_1TuaMf2eC5FgbTwr';
-
 // The key is read inside the handler, NOT here at module scope.
 //
 // Module scope runs once, when the container cold starts. A container that
@@ -100,73 +92,6 @@ function originOf(event) {
   return process.env.URL || '';
 }
 
-// ---------------------------------------------------------------------------
-// TEMPORARY DIAGNOSTIC. Added 9 August 2026, REMOVE before going live.
-//
-// Reports what the running function can actually see, so a missing key stops
-// being a matter of opinion. It reports NAMES and LENGTHS only, never a value
-// or any part of one. An environment variable name is not a secret; its
-// contents are, and none of them travel through here.
-//
-// The deploy fields matter as much as the key fields. They answer "is the
-// deploy I am looking at the deploy I redeployed", which no amount of staring
-// at the dashboard can settle.
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-// TEMPORARY. Added 9 August 2026, REMOVE with the other diagnostics.
-//
-// The question these answer is not "is a key present" but "is it THE key".
-// Netlify's dashboard shows the last few characters of a stored value, which
-// cannot reveal a corruption anywhere else in the string. A one way hash can.
-//
-// SHA256, first 12 hex characters. The key cannot be recovered from it, and
-// two keys differing by a single invisible character produce entirely
-// different fingerprints. Computed on the TRIMMED key so it is comparable
-// with the local verifier, which also trims. The untrimmed length is
-// reported alongside, so stray whitespace shows up as a length gap rather
-// than silently changing the answer.
-// ---------------------------------------------------------------------------
-function fingerprint(value) {
-  return crypto.createHash('sha256').update(value, 'utf8').digest('hex').slice(0, 12);
-}
-
-// Asks the key which account it belongs to. This is the fact the dashboard
-// cannot be trusted for, because it reports what was configured rather than
-// what the function actually received.
-async function whoAmI(key) {
-  try {
-    const res = await fetch('https://api.stripe.com/v1/account', {
-      headers: { Authorization: 'Bearer ' + key }
-    });
-    const text = await res.text();
-    if (!res.ok) {
-      let message = String(text).slice(0, 160);
-      try { message = JSON.parse(text).error.message; } catch { /* keep raw */ }
-      return { account_id: null, account_lookup_status: res.status, account_lookup_error: message };
-    }
-    return { account_id: (JSON.parse(text).id || null), account_lookup_status: 200 };
-  } catch (err) {
-    return { account_id: null, account_lookup_error: String(err.message || '').slice(0, 160) };
-  }
-}
-
-function envDiagnostic() {
-  const raw = process.env.STRIPE_SECRET_KEY;
-  const isString = (typeof raw === 'string');
-  return {
-    stripe_names_visible: Object.keys(process.env).filter(function (n) {
-      return /STRIPE/i.test(n);
-    }).sort(),
-    key_defined: Object.prototype.hasOwnProperty.call(process.env, 'STRIPE_SECRET_KEY'),
-    key_length: isString ? raw.length : null,
-    key_length_trimmed: isString ? raw.trim().length : null,
-    context: process.env.CONTEXT || null,
-    branch: process.env.BRANCH || null,
-    deploy_id: process.env.DEPLOY_ID || null,
-    commit: (process.env.COMMIT_REF || '').slice(0, 7) || null
-  };
-}
-
 exports.handler = async function (event) {
 
   if (event.httpMethod !== 'POST') {
@@ -181,13 +106,11 @@ exports.handler = async function (event) {
   // Configuration problem, not the visitor's fault. Names the variable, never
   // reports its value. Same rule as submit.js.
   if (!STRIPE_KEY) {
-    const diag = envDiagnostic();
-    console.error('Missing environment variable: STRIPE_SECRET_KEY. ' + JSON.stringify(diag));
+    console.error('Missing environment variable: STRIPE_SECRET_KEY');
     return reply(500, {
       error: 'Membership is not configured yet. Missing: STRIPE_SECRET_KEY.'
         + ' If this is a deploy preview, check the variable is set for all'
-        + ' deploy contexts, not production only.',
-      diagnostic: diag
+        + ' deploy contexts, not production only.'
     });
   }
 
@@ -266,88 +189,57 @@ exports.handler = async function (event) {
     const text = await res.text();
 
     if (!res.ok) {
-      // TEMPORARY DIAGNOSTIC, added 9 August 2026, REMOVE before going live,
-      // together with the one on the missing-key path.
+      // Logged in full, returned in outline.
       //
-      // Stripe's own error is returned to the browser here as well as logged.
-      // That is a deliberate reversal of the original comment on this block.
-      // What it can name is a price id, a parameter name and a request id.
-      // None of those are credentials: a price id appears in the page in most
-      // Stripe integrations, and a request id is only useful to somebody
-      // already signed in to the account. The secret key is never touched.
+      // The log is private and is where a future failure gets diagnosed, so
+      // it keeps Stripe's own error, the parameter at fault and the request
+      // id. The browser gets none of it. Stripe's messages can name price
+      // ids and account details, and a visitor cannot act on any of it.
       let err = {};
       try { err = (JSON.parse(text).error) || {}; } catch { /* not JSON */ }
 
-      // TEMPORARY. Identifies the key the RUNTIME received, as opposed to the
-      // one the dashboard says was configured. Hash and account id only: the
-      // value itself is never read into this, logged, or returned.
-      const rawKey = process.env.STRIPE_SECRET_KEY || '';
-      const identity = await whoAmI(STRIPE_KEY);
+      console.error('Stripe refused the session: ' + JSON.stringify({
+        status:     res.status,
+        type:       err.type    || null,
+        code:       err.code    || null,
+        param:      err.param   || null,
+        message:    err.message || String(text).slice(0, 300),
+        request_id: res.headers.get('request-id') || null,
+        price:      price,
+        term:       term
+      }));
 
-      const diag = {
-        stripe_status:  res.status,
-        stripe_type:    err.type    || null,
-        stripe_code:    err.code    || null,
-        stripe_param:   err.param   || null,
-        stripe_message: err.message || String(text).slice(0, 300),
-        request_id:     res.headers.get('request-id') || null,
-        price_attempted: price,
-        term_attempted:  term,
-        mode: 'subscription',
-        ship_to: SHIP_TO.join(','),
-
-        // who is this key, really
-        key_prefix:        STRIPE_KEY.slice(0, 11),
-        key_length:        STRIPE_KEY.length,
-        key_length_raw:    rawKey.length,
-        key_fingerprint:   fingerprint(STRIPE_KEY),
-        account_id:        identity.account_id,
-        account_expected:  EXPECTED_ACCOUNT,
-        account_matches:   (identity.account_id === EXPECTED_ACCOUNT),
-        account_lookup_status: identity.account_lookup_status || null,
-        account_lookup_error:  identity.account_lookup_error  || null
-      };
-
-      console.error('Stripe refused the session: ' + JSON.stringify(diag));
       return reply(502, {
-        error: 'Stripe could not start that checkout. Nothing was charged.',
-        diagnostic: diag
+        error: 'Stripe could not start that checkout. Nothing was charged.'
       });
     }
 
     const session = JSON.parse(text);
     if (!session.url) {
-      const diag = {
-        stripe_status: res.status,
-        note: 'session created but carried no url',
+      console.error('Stripe returned a session with no url: ' + JSON.stringify({
         session_id: session.id || null,
-        price_attempted: price
-      };
-      console.error('Stripe returned a session with no url: ' + JSON.stringify(diag));
+        price:      price
+      }));
       return reply(502, {
-        error: 'Stripe could not start that checkout. Nothing was charged.',
-        diagnostic: diag
+        error: 'Stripe could not start that checkout. Nothing was charged.'
       });
     }
 
     return reply(200, { url: session.url, id: session.id });
 
   } catch (err) {
-    // TEMPORARY diagnostic, same removal as the other two. This path is a
-    // thrown error rather than a refusal: Stripe was never reached, or the
-    // reply could not be parsed. Naming it separately keeps it from being
-    // confused with a Stripe rejection, which is a different problem.
-    const diag = {
-      threw: err.name || 'Error',
+    // A thrown error rather than a refusal: Stripe was never reached, or the
+    // reply could not be parsed. Logged separately from a Stripe rejection,
+    // because they are different problems and look alike from outside.
+    console.error('Checkout session failed: ' + JSON.stringify({
+      threw:  err.name || 'Error',
       detail: String(err.message || '').slice(0, 300),
-      price_attempted: price,
-      term_attempted: term
-    };
-    console.error('Checkout session failed: ' + JSON.stringify(diag));
+      price:  price,
+      term:   term
+    }));
     return reply(500, {
       error: 'Something went wrong on our side. Nothing was charged. Please try'
-        + ' again, or write to lela@whispersofkindness.ca.',
-      diagnostic: diag
+        + ' again, or write to lela@whispersofkindness.ca.'
     });
   }
 };

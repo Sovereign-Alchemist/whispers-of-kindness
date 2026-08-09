@@ -992,17 +992,6 @@ h1{
   font-size:1rem;
 }
 .join-error.show{ display:block; }
-/* TEMPORARY, paired with the diagnostic in create-checkout.js. Remove both. */
-.join-diag{
-  display:inline-block;
-  margin-top:.5rem;
-  font-family:ui-monospace, Consolas, monospace;
-  font-size:.78rem;
-  line-height:1.45;
-  color:var(--ink-soft);
-  word-break:break-all;
-  text-align:left;
-}
 @media (max-width:560px){
   .join{ padding:2rem 1.3rem 1.7rem; }
   .term, .term-body{ width:100%; min-width:0; }
@@ -1578,18 +1567,8 @@ West Kelowna, BC</span>
 
   var LABEL = btn.textContent;
 
-  /* The `diag` half is a TEMPORARY diagnostic added 9 August 2026 and should
-     come out with the one in create-checkout.js. It prints environment
-     variable NAMES and LENGTHS only, never a value. */
-  function fail(message, diag){
+  function fail(message){
     errBox.textContent = message;
-    if (diag){
-      var line = document.createElement('span');
-      line.className = 'join-diag';
-      line.textContent = JSON.stringify(diag);
-      errBox.appendChild(document.createElement('br'));
-      errBox.appendChild(line);
-    }
     errBox.classList.add('show');
     btn.disabled = false;
     btn.textContent = LABEL;
@@ -1612,8 +1591,7 @@ West Kelowna, BC</span>
       return res.json().then(function(data){ return { ok: res.ok, data: data }; });
     }).then(function(r){
       if (!r.ok || !r.data || !r.data.url){
-        fail((r.data && r.data.error) || 'Could not start checkout. Nothing was charged.',
-             r.data && r.data.diagnostic);
+        fail((r.data && r.data.error) || 'Could not start checkout. Nothing was charged.');
         return;
       }
       window.location.assign(r.data.url);
