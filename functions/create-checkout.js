@@ -41,7 +41,7 @@
 //
 // FOUNDING ONLY, ON PURPOSE.
 //
-// The first 100 members pay the founding rate and keep it. Nothing here
+// The first 100 members pay the founding rate. Nothing here
 // counts members, so nothing here can decide when to stop offering it. That
 // switch is Stage 2b or Stage 3 work and needs a decision about where the
 // count lives before it can be written. Until then this sells the founding
@@ -59,7 +59,9 @@
 //                  2026: there is no separate physical tier for those two.
 //
 // The domestic tier sells the FOUNDING rate to everyone, on purpose. The
-// first 100 members keep their rate, and nothing here counts members, so
+// promise to the first 100 is RELATIVE, not absolute: they always pay less
+// than the rate of the day, rather than being locked to a number that could
+// stop covering postage. Nothing here counts members, so
 // nothing here can decide when to stop offering it. That switch needs a
 // decision about where the count lives before it can be written. Wrong at
 // member 101, harmless at member 4.
@@ -205,7 +207,7 @@ exports.handler = async function (event) {
   // Carried on the subscription rather than only on the session, because the
   // session is a moment and the subscription is the thing that lasts. When
   // Stage 3 reads a webhook, this is what says which rate the member joined
-  // on, which is the whole meaning of "kept for life".
+  // on, and so which members are owed the founding advantage if prices move.
   const rate = (tier === 'domestic') ? 'founding' : 'standard';
   params.set('subscription_data[metadata][rate]', rate);
   params.set('subscription_data[metadata][tier]', tier);
