@@ -394,11 +394,13 @@ h1{
 }
 .contact-lines{ font-size:1.08rem; }
 .contact-lines strong{ font-weight:500; }
+/* white-space:pre-line has been removed. It existed only to hold a postal
+   address across several source lines, and with that gone it was a trap:
+   any stray newline in the source would have shown up as a line break. */
 .contact-lines .addr{
   display:block;
   margin-top:.5rem;
   color:var(--ink-soft);
-  white-space:pre-line;
 }
 .gift-line{
   font-family:var(--font-hand);
@@ -1041,7 +1043,10 @@ h1{
   border:0;
 }
 /* ---------- questions ---------- */
-.faq{ background:var(--paper); }
+/* The hairline exists because of the move. The form section above it has no
+   background of its own, so both are paper on paper and the two ran together
+   as one block. Same rule the footer already uses. */
+.faq{ background:var(--paper); border-top:1px solid rgba(63,57,52,.14); }
 .qa-list{ max-width:760px; }
 .qa{
   background:var(--paper-light);
@@ -1127,8 +1132,11 @@ footer .fsa{
       <a href="#story">The story</a>
       <a href="#how">How it works</a>
       <a href="#membership">Membership</a>
-      <a href="#faq">Questions</a>
+      <!-- Questions follows Send a recipe here because it now follows it on
+           the page. A menu in a different order from the page it describes
+           makes people think they have missed something. -->
       <a href="#invite">Send a recipe</a>
+      <a href="#faq">Questions</a>
       <!-- Inactive sign-in slot. Phase four activates this. -->
       <span class="signin" title="Coming soon" aria-disabled="true">Sign in</span>
     </nav>
@@ -1396,50 +1404,6 @@ footer .fsa{
     </div>
   </section>
 
-  <!-- ============ QUESTIONS ============
-       Native details/summary, so expanding works with no JavaScript, keyboard
-       navigation comes free, and browser find-in-page can reach the answers.
-       The only script is the one that opens an answer someone was linked to. -->
-  <section class="faq" id="faq" aria-label="Questions">
-    <div class="inner">
-      <span class="kicker reveal">questions</span>
-      <h2 class="reveal">Things people ask</h2>
-      <hr class="rule">
-
-      <div class="qa-list reveal">
-
-        <details class="qa" id="faq-shipping">
-          <summary>Do you ship internationally?</summary>
-          <div class="qa-body">
-            <p>We would love to ship to you internationally. When we looked into it, the postage cost just didn't make sense outside of Canada and the US. That said, we're happy to work with anyone internationally who's interested in receiving the physical mailing, on a case by case basis. <a href="mailto:lela@whispersofkindness.ca">Reach out</a> and let's talk.</p>
-          </div>
-        </details>
-
-        <details class="qa" id="faq-digital">
-          <summary>What is the digital membership?</summary>
-          <div class="qa-body">
-            <p>The same monthly recipe and the same story behind it, delivered to you online instead of in the mail, with early access to that month's video before it goes public. It exists for members outside Canada and the United States, so nobody is left out of the archive.</p>
-          </div>
-        </details>
-
-        <details class="qa" id="faq-founding">
-          <summary>Why do the first 100 members pay less?</summary>
-          <div class="qa-body">
-            <p>Founding members will always pay less than the current rate. Think of it like backing a project before it was getting off the ground and finding its momentum, and it's our way of saying thank you.</p>
-          </div>
-        </details>
-
-        <details class="qa" id="faq-cancel">
-          <summary>Can I cancel anytime?</summary>
-          <div class="qa-body">
-            <p>Yes. Write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer. There is no fine print and no runaround.</p>
-          </div>
-        </details>
-
-      </div>
-    </div>
-  </section>
-
   <!-- ============ 4 · THE INVITATION ============ -->
   <section class="invite" id="invite" aria-label="Send a recipe">
     <div class="inner">
@@ -1464,10 +1428,7 @@ footer .fsa{
         <p class="contact-lines reveal">
           Send recipes, photographs of handwriting, and stories to<br>
           <strong><a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a></strong>
-          <span class="addr">or by post to
-Whispers of Kindness
-[mailing address to come]
-West Kelowna, BC</span>
+          <span class="addr">Prefer to send something by post, a handwritten card, a photograph, an original? Write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and I'll send you the mailing address.</span>
         </p>
 
         <span class="gift-line reveal">The recipe and the story are the gift.</span>
@@ -1674,6 +1635,56 @@ West Kelowna, BC</span>
         <p>Your recipe is in the archive now, with everything you told us about the person behind it. We read every one by hand, so it may be a little while before you hear from us, but you will hear from us.</p>
         <p>If you want to add anything, a photograph you find later, a detail you remember at two in the morning, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and quote the reference below.</p>
         <p class="ref" id="sendRef"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUESTIONS ============
+       Native details/summary, so expanding works with no JavaScript, keyboard
+       navigation comes free, and browser find-in-page can reach the answers.
+       The only script is the one that opens an answer someone was linked to.
+
+       MOVED 9 August 2026, from directly after the membership desk to here.
+       It reads better after the invitation and the form than it did wedged
+       between the desk and the invitation. The links into it from the two
+       membership panels, #faq-shipping and #faq-digital, still resolve. They
+       simply scroll further down the page. -->
+  <section class="faq" id="faq" aria-label="Questions">
+    <div class="inner">
+      <span class="kicker reveal">questions</span>
+      <h2 class="reveal">Things people ask</h2>
+      <hr class="rule">
+
+      <div class="qa-list reveal">
+
+        <details class="qa" id="faq-shipping">
+          <summary>Do you ship internationally?</summary>
+          <div class="qa-body">
+            <p>We would love to ship to you internationally. When we looked into it, the postage cost just didn't make sense outside of Canada and the US. That said, we're happy to work with anyone internationally who's interested in receiving the physical mailing, on a case by case basis. <a href="mailto:lela@whispersofkindness.ca">Reach out</a> and let's talk.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-digital">
+          <summary>What is the digital membership?</summary>
+          <div class="qa-body">
+            <p>The same monthly recipe and the same story behind it, delivered to you online instead of in the mail, with early access to that month's video before it goes public. It exists for members outside Canada and the United States, so nobody is left out of the archive.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-founding">
+          <summary>Why do the first 100 members pay less?</summary>
+          <div class="qa-body">
+            <p>Founding members will always pay less than the current rate. Think of it like backing a project before it was getting off the ground and finding its momentum, and it's our way of saying thank you.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-cancel">
+          <summary>Can I cancel anytime?</summary>
+          <div class="qa-body">
+            <p>Yes. Write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer. There is no fine print and no runaround.</p>
+          </div>
+        </details>
+
       </div>
     </div>
   </section>
