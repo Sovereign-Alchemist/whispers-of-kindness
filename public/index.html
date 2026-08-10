@@ -702,12 +702,17 @@ h1{
   text-shadow:0 1px 4px rgba(0,0,0,.55);
 }
 .desk h2{ color:#F4EFE2; margin-bottom:.6rem; text-shadow:0 1px 6px rgba(0,0,0,.6); }
+/* display:table, not inline-block. Both this and .founding-note shrink to
+   fit their own text, and as inline-blocks in a centred container they sat
+   on the SAME line and overlapped once this line grew. A table box still
+   shrink wraps, so the rotation keeps working, but it is block level and
+   takes a line of its own. */
 .desk-sub{
   font-family:var(--font-hand);
   font-size:1.35rem;
   color:rgba(244,239,226,.85);
-  margin-bottom:.9rem;
-  display:inline-block;
+  margin:0 auto .9rem;
+  display:table;
   transform:rotate(-.6deg);
   text-shadow:0 1px 4px rgba(0,0,0,.55);
 }
@@ -721,15 +726,27 @@ h1{
   border-radius:4px;
   padding:.55rem 1.4rem .65rem;
   margin:0 auto 3.2rem;
-  display:inline-block;
+  display:table;
   transform:rotate(-.5deg);
   box-shadow:0 6px 18px rgba(0,0,0,.32);
   text-shadow:0 1px 3px rgba(0,0,0,.45);
 }
-/* ---- weathered card stock ---- */
+/* ---- weathered card stock, the surface every panel is cut from ----
+   This texture used to be painted onto .tface, the flip card's two faces.
+   It has moved here so that one class carries the whole material, and a
+   panel is visibly the same stock as the cards in the photograph beneath
+   it, only bigger: aged paper wash, faint ruling, a coffee ring top right
+   and a stain in the lower corner. */
 .oldcard{
+  position:relative;
+  color:#443A2E;
   background-color:#EFE3C6;
   border-radius:4px 7px 5px 8px;
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0 30px, rgba(110,102,70,.13) 30px 31px),
+    radial-gradient(circle at 87% 11%, rgba(122,80,34,0) 25px, rgba(122,80,34,.13) 26px, rgba(122,80,34,.17) 30px, rgba(122,80,34,0) 32px),
+    radial-gradient(ellipse 130px 76px at 10% 90%, rgba(160,118,60,.12), rgba(160,118,60,0) 70%),
+    linear-gradient(118deg, #F3EAD1 0%, #ECDFBE 55%, #E3D2A8 100%);
   box-shadow:
     inset 0 0 26px rgba(110,79,53,.22),
     inset 0 0 4px rgba(110,79,53,.18),
@@ -737,159 +754,283 @@ h1{
     0 18px 38px rgba(0,0,0,.28);
 }
 
-/* the three tier cards: 6x4 landscape, click to lift and flip */
+/* ===========================================================================
+   THE TIER PANELS
+   ===========================================================================
+
+   REPLACED the five flip cards, 9 August 2026. Those were a fixed 3/2 shape
+   with the detail hidden on a back face, and a separate plain join box sat
+   underneath them doing the actual selling. Two disconnected pieces, and a
+   whole tier with no representation at all.
+
+   One panel per tier now, everything on one face. Nothing turns over, which
+   is the point: radio buttons and a submit button cannot live on a surface
+   that rotates away, and that constraint is what forced the join box out of
+   the cards in the first place.
+
+   WHY IT SHOULD NOT LOOK LIKE A PRICING TABLE
+   A pricing table is six identical boxes at identical heights, centred, with
+   a large number in a coloured band, tick marks, and a full width button.
+   Every one of those has a counterpart in this site's own vocabulary, so
+   each is substituted rather than avoided:
+
+     identical heights  ->  align-items:flex-start, so panels end where their
+                            content ends, the way cards lie on a desk
+     centred text       ->  left aligned against a punched binder edge
+     number in a band   ->  the price lives inside the term you are choosing
+     tick marks         ->  the rose interpunct and hairline rules already
+                            used on the old card backs
+     full width button  ->  a button the width of its own words, with a
+                            rubber stamp beside it
+=========================================================================== */
+
 .tier-row{
   position:relative; z-index:4;
-  display:flex; justify-content:center; align-items:center;
-  gap:2.4rem; flex-wrap:wrap;
-  perspective:1700px;
+  display:flex; justify-content:center; align-items:flex-start;
+  gap:2.6rem; flex-wrap:wrap;
+  margin-bottom:3.4rem;
 }
-.tiercard{
-  width:min(330px, 90vw);
-  aspect-ratio:3/2;
-  position:relative;
-  background:none; border:0; padding:0;
-  cursor:pointer;
-  transform-style:preserve-3d;
-  transition:transform .75s cubic-bezier(.2,.75,.3,1);
-  -webkit-tap-highlight-color:transparent;
+/* The four tiers that cannot be bought yet sit in their own row, smaller.
+   Six panels wide enough to hold term controls will not fit across 1100px,
+   and the two that take money should not be diluted by four that cannot. */
+.tier-row-soon{ gap:1.6rem; margin-bottom:0; }
+
+.tier{
+  text-align:left;
+  padding:1.6rem 1.7rem 1.7rem 3.4rem;
+  transition:transform .5s cubic-bezier(.2,.75,.3,1);
 }
-.tiercard:nth-child(1){ transform:rotate(-3.5deg); }
-.tiercard:nth-child(2){ transform:rotate(1.2deg) translateY(10px); }
-.tiercard:nth-child(3){ transform:rotate(4deg); }
-.tiercard:hover{ transform:rotate(0deg) translateY(-8px); }
-.tface{
-  position:absolute; inset:0;
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-  padding:1.1rem 1.3rem;
-  display:flex; flex-direction:column;
-  color:#443A2E;
-  text-align:center;
-  background-image:
-    linear-gradient(to bottom, transparent 46px, rgba(178,106,110,.42) 46px, rgba(178,106,110,.42) 47.5px, transparent 47.5px),
-    repeating-linear-gradient(to bottom, transparent 0 30px, rgba(110,102,70,.14) 30px 31px),
-    radial-gradient(circle at 78% 16%, rgba(122,80,34,0) 21px, rgba(122,80,34,.16) 22px, rgba(122,80,34,.20) 25px, rgba(122,80,34,0) 27px),
-    radial-gradient(ellipse 90px 55px at 16% 82%, rgba(160,118,60,.13), rgba(160,118,60,0) 70%),
-    linear-gradient(118deg, #F3EAD1 0%, #ECDFBE 55%, #E3D2A8 100%);
+.tier-live{ width:min(466px, 92vw); }
+.tier-soon{
+  width:min(245px, 92vw);
+  padding:1.35rem 1.2rem 1.4rem 2.9rem;
+  filter:saturate(.75);
 }
-/* Slightly tighter than the front. The back carries a heading, three
-   bullets, the terms line and the stamp inside the same fixed 3/2 card,
-   so the room has to come from the margins rather than the type size. */
-.tface-back{ transform:rotateX(180deg); text-align:left; padding:.95rem 1.15rem; }
-.tface .fromkitchen{
+
+/* Two punched holes down the left edge. The card being sold is described on
+   the card itself as punched for a binder, so the panel is a page out of
+   that binder. The left padding above exists to clear them. */
+.tier::before,
+.tier::after{
+  content:"";
+  position:absolute;
+  left:1.25rem;
+  width:14px; height:14px;
+  border-radius:50%;
+  background:rgba(48,36,24,.55);
+  box-shadow:
+    inset 0 2px 3px rgba(0,0,0,.6),
+    0 1px 0 rgba(255,252,240,.35);
+}
+.tier::before{ top:2.4rem; }
+.tier::after{  top:5.1rem; }
+
+.tier .fromkitchen{
+  display:block;
   font-family:var(--font-display);
   font-style:italic;
   font-size:.95rem;
   letter-spacing:.06em;
   color:rgba(110,79,53,.75);
 }
-.tface h3{
+/* The rose rule is a border on the heading rather than a line painted into
+   the background, so it lands under the title at any panel size instead of
+   striking through it. That was a real bug on the old cards. */
+.tier h3{
   font-family:var(--font-hand);
   font-weight:600;
-  font-size:1.95rem;
-  line-height:1.05;
-  margin:.15rem 0 .3rem;
+  font-size:2.1rem;
+  line-height:1.12;
+  margin:.1rem 0 .35rem;
+  padding-bottom:.3rem;
   color:#3E332A;
+  border-bottom:1.5px solid rgba(178,106,110,.5);
 }
-.tface-front .tline{
+.tier-soon h3{ font-size:1.7rem; }
+.tier-line{
   font-family:var(--font-display);
   font-style:italic;
-  font-size:1.06rem;
-  color:rgba(74,62,48,.8);
-  max-width:26ch;
-  margin:.4rem auto 0;
+  font-size:1.1rem;
+  color:rgba(74,62,48,.85);
+  margin:.55rem 0 .9rem;
 }
-.tface-front .lift{
-  margin-top:auto;
+.tier-soon .tier-line{ font-size:1.02rem; margin-bottom:.7rem; }
+
+.tier-what{ list-style:none; margin:0 0 1.1rem; padding:0; }
+.tier-what li{
+  position:relative;
+  font-size:.98rem;
+  line-height:1.4;
+  padding:.3rem 0 .3rem 1.05rem;
+  border-bottom:1px solid rgba(110,102,70,.22);
+}
+.tier-what li:last-child{ border-bottom:0; }
+.tier-what li::before{
+  content:"·";
+  position:absolute; left:.1rem; top:.16rem;
+  color:rgba(178,106,110,.95);
+  font-weight:bold; font-size:1.2rem;
+}
+.tier-soon .tier-what{ margin-bottom:.9rem; }
+.tier-soon .tier-what li{ font-size:.92rem; }
+
+/* ---- choosing a term ----
+   The price is not announced above the choice. It is inside the choice,
+   because the term IS the price, and a number floating over three options
+   only has to be repeated by all three of them. */
+.terms{
+  border:0; padding:0;
+  margin:0 0 1rem;
+  display:flex; gap:.6rem; flex-wrap:wrap;
+}
+.term{ cursor:pointer; flex:1 1 120px; }
+/* The radio itself is hidden but still a radio, so arrow keys, tab order
+   and screen readers all keep working. Nothing here reimplements them. */
+.term input{
+  position:absolute;
+  opacity:0;
+  width:1px; height:1px;
+}
+.term-body{
+  display:flex; flex-direction:column; align-items:center; gap:.1rem;
+  padding:.7rem .5rem .75rem;
+  border:1.4px solid rgba(110,79,53,.38);
+  border-radius:3px;
+  background:rgba(255,252,240,.55);
+  transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.term-len{
+  font-family:var(--font-hand);
+  font-size:1.2rem;
+  line-height:1.1;
+  color:#3E332A;
+}
+.term-price{
+  font-family:var(--font-display);
+  font-size:1.45rem;
+  line-height:1.15;
+  color:#3E332A;
+}
+.term-each{ font-size:.86rem; color:rgba(74,62,48,.75); }
+.term input:checked + .term-body{
+  border-color:var(--olive);
+  background:rgba(255,253,246,.92);
+  box-shadow:inset 0 0 0 1.4px var(--olive), 0 2px 6px rgba(0,0,0,.14);
+}
+.term input:focus-visible + .term-body{
+  outline:2px solid var(--olive);
+  outline-offset:3px;
+}
+.term:hover .term-body{ border-color:rgba(122,131,82,.75); }
+
+/* Pencilled into the margin, the way a price gets noted on a real card. */
+.tier-note{
+  font-family:var(--font-hand);
+  font-size:1.2rem;
+  line-height:1.25;
+  color:rgba(110,79,53,.95);
+  transform:rotate(-1.4deg);
+  transform-origin:left;
+  margin:0 0 1.1rem;
+}
+
+.tier-act{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem; flex-wrap:wrap;
+}
+.joinbtn{
+  font-family:var(--font-body);
+  font-size:1.1rem;
+  color:var(--paper-light);
+  background:var(--olive);
+  border:0; border-radius:3px;
+  padding:.8rem 1.9rem;
+  cursor:pointer;
+  box-shadow:0 2px 0 rgba(58,44,30,.35), 0 6px 14px rgba(0,0,0,.25);
+  transition:background .25s ease, transform .15s ease, box-shadow .15s ease;
+}
+.joinbtn:hover{ background:color-mix(in srgb, var(--olive) 85%, var(--ink) 15%); }
+.joinbtn:active{ transform:translateY(1px); box-shadow:0 1px 0 rgba(58,44,30,.35); }
+.joinbtn[disabled]{ opacity:.6; cursor:default; }
+
+/* The rubber stamp, kept from the old card backs. It is the single strongest
+   thing on the panel that a pricing table would never have. */
+.tier-stamp{
+  display:inline-block;
+  font-family:var(--font-hand);
+  font-size:1.05rem;
+  line-height:1.15;
+  border:1.5px solid currentColor;
+  border-radius:4px;
+  padding:.2rem .75rem .25rem;
+  transform:rotate(-2.5deg);
+  white-space:nowrap;
+}
+.tier-stamp.is-open{ color:var(--olive); opacity:.9; }
+.tier-stamp.is-soon{ color:var(--plum); opacity:.8; }
+
+.join-fine{
+  font-size:.92rem;
+  line-height:1.45;
+  color:rgba(74,62,48,.8);
+  margin:1rem 0 0;
+}
+.join-fine a,
+.join-elsewhere a{ color:#5D6A38; }
+.join-error{
+  display:none;
+  margin-top:.9rem;
+  color:#8B3A3A;
+  font-size:1rem;
+}
+.join-error.show{ display:block; }
+.join-elsewhere{
+  margin:1rem 0 0;
+  padding-top:.9rem;
+  border-top:1px solid rgba(110,102,70,.28);
   font-family:var(--font-hand);
   font-size:1.15rem;
-  color:rgba(110,79,53,.8);
-  transform:rotate(-1.5deg);
+  color:rgba(110,79,53,.95);
 }
-.tface-back h3{ font-size:1.35rem; margin:0 0 .35rem; }
-.tface-back ul{ list-style:none; margin:0; padding:0; }
-.tface-back li{
-  font-size:.94rem;
-  line-height:1.35;
-  padding:.22rem 0 .22rem 1.05rem;
-  position:relative;
-  border-bottom:1px solid rgba(110,102,70,.20);
-}
-.tface-back li:last-child{ border-bottom:0; }
-.tface-back li::before{
-  content:"·";
-  position:absolute; left:.1rem;
-  color:rgba(178,106,110,.9);
-  font-weight:bold; font-size:1.15rem;
-}
-.tface-back .fallstamp{
-  margin-top:auto;
-  align-self:flex-end;
-  font-family:var(--font-hand);
-  font-size:1rem;
-  color:var(--plum);
-  border:1.4px solid var(--plum);
-  border-radius:4px;
-  padding:.2rem .7rem .25rem;
-  transform:rotate(-2.5deg);
-  opacity:.8;
-}
-/* The price on the front of the card, where it can be read without
-   flipping. Full ink colour rather than a faded tone, because a price
-   set faint reads as an apology for itself. */
-.tface-front .tprice{
-  font-family:var(--font-body);
-  font-size:1.05rem;
-  line-height:1.3;
-  color:#3E332A;
-  max-width:28ch;
-  margin:.45rem auto 0;
-}
-/* The terms on the back, one line, sized to be read rather than squinted
-   at. Line height is tightened so it earns its extra size back and the
-   face still fits the fixed 3/2 card. */
-.tface-back .tterms{
-  font-family:var(--font-body);
-  font-size:1rem;
-  line-height:1.3;
-  color:#3E332A;
-  margin:.45rem 0 0;
-}
-.tface-back .joinstamp{
-  margin-top:auto;
-  align-self:flex-end;
-  font-family:var(--font-hand);
-  font-size:1rem;
-  line-height:1.15;
-  color:var(--olive);
-  border:1.4px solid var(--olive);
-  border-radius:4px;
-  padding:.2rem .7rem .25rem;
-  transform:rotate(-2.5deg);
-  opacity:.9;
-}
-.tiercard:nth-child(4){ transform:rotate(-2.2deg) translateY(6px); }
-.tiercard:nth-child(5){ transform:rotate(2.8deg); }
-.tiercard:hover{ transform:rotate(0deg) translateY(-8px); }
 
-/* MUST STAY LAST of the .tiercard transform rules.
-   .tiercard.flipped, .tiercard:nth-child(n) and .tiercard:hover all have
-   the same specificity, so whichever is written last wins. When .flipped
-   sat above them, nth-child(4) and (5) beat it and those two cards never
-   turned over at all, and :hover beat it on every card, so a card
-   unflipped itself under the pointer you had to use to click it. That
-   was the real cause of the flip trouble, not the card height. */
-.tiercard.flipped,
-.tiercard.flipped:hover{
-  transform:rotate(0deg) translateY(-20px) rotateX(180deg) scale(1.05);
-  z-index:6;
+/* Laid down by hand, not aligned by a grid. */
+.tier-row      > .tier:nth-child(1){ transform:rotate(-1.4deg); }
+.tier-row      > .tier:nth-child(2){ transform:rotate(1.1deg) translateY(8px); }
+.tier-row-soon > .tier:nth-child(1){ transform:rotate(1.6deg); }
+.tier-row-soon > .tier:nth-child(2){ transform:rotate(-2.1deg) translateY(7px); }
+.tier-row-soon > .tier:nth-child(3){ transform:rotate(2.4deg) translateY(-5px); }
+.tier-row-soon > .tier:nth-child(4){ transform:rotate(-1.1deg) translateY(10px); }
+
+/* MUST STAY LAST of the .tier transform rules, and must be written at the
+   same weight as them. The nth-child rules above score (0,3,0). A bare
+   .tier:hover scores (0,2,0) and would lose to every one of them, which is
+   the exact fault that stopped the old cards flipping. */
+.tier-row      > .tier:hover,
+.tier-row-soon > .tier:hover{
+  transform:rotate(0deg) translateY(-7px);
+  z-index:5;
+}
+
+@media (max-width:1040px){
+  .tier-soon{ width:min(262px, 92vw); }
+}
+@media (max-width:560px){
+  .tier{ padding:1.4rem 1.2rem 1.5rem 2.9rem; }
+  .tier-live, .tier-soon{ width:100%; }
+  .term{ flex:1 1 100%; }
+  .tier-act{ flex-direction:column; align-items:flex-start; gap:.8rem; }
+  /* Straightened on a narrow screen. A panel this tall throws its corners a
+     long way out when rotated, roughly its height times the sine of the
+     angle, and .desk clips its overflow, so the corners would take live text
+     with them. The aged stock carries the feel without the tilt. Written at
+     the same weight as the nth-child rules above so it actually wins. */
+  .tier-row      > .tier:nth-child(n),
+  .tier-row-soon > .tier:nth-child(n){ transform:none; }
 }
 @media (prefers-reduced-motion: reduce){
-  .tiercard, .tiercard:hover{ transition:none; }
+  .tier{ transition:none; }
 }
 
-/* ---- the join panel, below the cards ---- */
 .sr-only{
   position:absolute;
   width:1px; height:1px;
@@ -899,116 +1040,6 @@ h1{
   white-space:nowrap;
   border:0;
 }
-.join{
-  position:relative; z-index:4;
-  max-width:640px;
-  margin:3.6rem auto 0;
-  background:var(--paper-light);
-  color:var(--ink);
-  box-shadow:var(--shadow-lift);
-  padding:2.4rem 2.2rem 2rem;
-  transform:rotate(-.5deg);
-  text-align:center;
-}
-.join h3{
-  font-family:var(--font-display);
-  font-weight:500;
-  font-size:1.85rem;
-  margin-bottom:.4rem;
-}
-.join-sub{
-  color:var(--ink-soft);
-  font-size:1.05rem;
-  max-width:46ch;
-  margin:0 auto 1.6rem;
-}
-.terms{
-  border:0; padding:0;
-  margin:0 0 1.6rem;
-  display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;
-}
-.term{ cursor:pointer; }
-/* The radio itself is hidden but still a radio, so arrow keys, tab order
-   and screen readers all keep working. Nothing here reimplements them. */
-.term input{
-  position:absolute;
-  opacity:0;
-  width:1px; height:1px;
-}
-.term-body{
-  display:flex; flex-direction:column; align-items:center; gap:.15rem;
-  min-width:150px;
-  padding:.9rem 1rem 1rem;
-  border:1.5px solid rgba(63,57,52,.25);
-  border-radius:4px;
-  background:var(--paper-card);
-  transition:border-color .2s ease, box-shadow .2s ease;
-}
-.term-len{
-  font-family:var(--font-hand);
-  font-size:1.35rem;
-  line-height:1.1;
-  color:var(--ink);
-}
-.term-price{
-  font-family:var(--font-display);
-  font-size:1.5rem;
-  line-height:1.15;
-  color:var(--ink);
-}
-.term-each{ font-size:.95rem; color:var(--ink-soft); }
-.term input:checked + .term-body{
-  border-color:var(--olive);
-  box-shadow:inset 0 0 0 1.5px var(--olive);
-  background:#FFFDF6;
-}
-.term input:focus-visible + .term-body{
-  outline:2px solid var(--olive);
-  outline-offset:3px;
-}
-.term:hover .term-body{ border-color:rgba(122,131,82,.6); }
-.joinbtn{
-  font-family:var(--font-body);
-  font-size:1.12rem;
-  color:var(--paper-light);
-  background:var(--olive);
-  border:0; border-radius:3px;
-  padding:.85rem 2.2rem;
-  cursor:pointer;
-  transition:background .25s ease;
-}
-.joinbtn:hover{ background:color-mix(in srgb, var(--olive) 85%, var(--ink) 15%); }
-.joinbtn[disabled]{ opacity:.6; cursor:default; }
-.join-fine{
-  font-size:.95rem;
-  color:var(--ink-soft);
-  max-width:50ch;
-  margin:1.2rem auto 0;
-}
-.join-error{
-  display:none;
-  margin-top:1rem;
-  color:#8B3A3A;
-  font-size:1rem;
-}
-.join-error.show{ display:block; }
-@media (max-width:560px){
-  .join{ padding:2rem 1.3rem 1.7rem; }
-  .term, .term-body{ width:100%; min-width:0; }
-}
-
-.join-elsewhere{
-  margin-top:1.5rem;
-  padding-top:1.2rem;
-  border-top:1px solid rgba(63,57,52,.14);
-  font-family:var(--font-hand);
-  font-size:1.25rem;
-  color:var(--ink-soft);
-}
-/* Tilted the other way from the domestic panel, so two paper cards on the
-   same desk do not look like one thing repeated. */
-.join-intl{ margin-top:2.2rem; transform:rotate(.45deg); }
-
 /* ---------- questions ---------- */
 .faq{ background:var(--paper); }
 .qa-list{ max-width:760px; }
@@ -1188,190 +1219,180 @@ footer .fsa{
     <div class="inner">
       <span class="kicker reveal">the membership</span>
       <h2 class="reveal">Cards on the desk</h2>
-      <p class="desk-sub reveal">turn one over to read it</p>
+      <p class="desk-sub reveal">two are open now, the rest are on their way</p>
       <p class="founding-note reveal">The first 100 members pay $13 a card, and will always pay less than the current rate.</p>
 
+      <!-- The two tiers that are open. Everything is on one face: what
+           arrives, what it costs, and the way in. Nothing turns over. -->
       <div class="tier-row reveal">
 
-        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Mailing, select to read details">
-          <div class="tface tface-front oldcard">
-            <span class="fromkitchen">from the kitchen of</span>
-            <h3>The Mailing</h3>
-            <p class="tline">One recipe a month, in the mail</p>
-            <p class="tprice">$13 a card · the founding rate, for the first 100 members</p>
-            <span class="lift">turn me over ↻</span>
-          </div>
-          <div class="tface tface-back oldcard">
-            <h3>The Mailing</h3>
-            <ul>
-              <li>A keepsake recipe card, mailed monthly</li>
-              <li>Punched for a binder, sized for a box</li>
-              <li>The original recipe, and the story of the person who made it</li>
-            </ul>
-            <p class="tterms">3mo $39 · 6mo $78 · 1yr $148.20</p>
-            <span class="joinstamp">now open</span>
-          </div>
-        </button>
+        <article class="tier tier-live oldcard" id="join">
+          <span class="fromkitchen">from the kitchen of</span>
+          <h3>The Mailing</h3>
+          <p class="tier-line">One recipe a month, in the mail.</p>
 
-        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Mailing plus Video, select to read details">
-          <div class="tface tface-front oldcard">
-            <span class="fromkitchen">from the kitchen of</span>
-            <h3>Mailing + Video</h3>
-            <p class="tline">The card, and the story on film</p>
-            <span class="lift">turn me over ↻</span>
-          </div>
-          <div class="tface tface-back oldcard">
-            <h3>Mailing + Video</h3>
-            <ul>
-              <li>Everything in The Mailing</li>
-              <li>Early access to each month's recipe video</li>
-              <li>The story of the person, told in full</li>
-            </ul>
-            <span class="fallstamp">coming soon</span>
-          </div>
-        </button>
+          <ul class="tier-what">
+            <li>A keepsake recipe card, mailed monthly</li>
+            <li>Punched for a binder, sized for a box</li>
+            <li>The original recipe, and the story of the person who made it</li>
+          </ul>
 
-        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Finished Binder Bundle, select to read details">
-          <div class="tface tface-front oldcard">
-            <span class="fromkitchen">from the kitchen of</span>
-            <h3>The Finished Binder</h3>
-            <p class="tline">A year, arriving ready to keep</p>
-            <span class="lift">turn me over ↻</span>
-          </div>
-          <div class="tface tface-back oldcard">
-            <h3>The Finished Binder</h3>
-            <ul>
-              <li>A finished kraft binder, tabbed and sleeved</li>
-              <li>A full year of the mailing and video</li>
-              <li>A welcome letter, arriving as a parcel</li>
-            </ul>
-            <span class="fallstamp">coming soon</span>
-          </div>
-        </button>
+          <fieldset class="terms">
+            <legend class="sr-only">Choose a term for The Mailing</legend>
 
-        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Collage Your Own Bundle, select to read details">
-          <div class="tface tface-front oldcard">
-            <span class="fromkitchen">from the kitchen of</span>
-            <h3>Collage Your Own</h3>
-            <p class="tline">Build the binder yourself</p>
-            <span class="lift">turn me over ↻</span>
-          </div>
-          <div class="tface tface-back oldcard">
-            <h3>Collage Your Own</h3>
-            <ul>
-              <li>A blank binder and a collage kit</li>
-              <li>Fabrics, papers, and embellishments</li>
-              <li>A full year of the mailing and video</li>
-            </ul>
-            <span class="fallstamp">coming soon</span>
-          </div>
-        </button>
+            <label class="term">
+              <input type="radio" name="term" value="3mo" checked>
+              <span class="term-body">
+                <span class="term-len">3 months</span>
+                <span class="term-price">$39.00</span>
+                <span class="term-each">$13 a card</span>
+              </span>
+            </label>
 
-        <button class="tiercard" type="button" aria-pressed="false" aria-label="The Heirloom Founder's Kit, select to read details">
-          <div class="tface tface-front oldcard">
-            <span class="fromkitchen">from the kitchen of</span>
-            <h3>Founder's Kit</h3>
-            <p class="tline">One of twenty five, made by hand</p>
-            <span class="lift">turn me over ↻</span>
+            <label class="term">
+              <input type="radio" name="term" value="6mo">
+              <span class="term-body">
+                <span class="term-len">6 months</span>
+                <span class="term-price">$78.00</span>
+                <span class="term-each">$13 a card</span>
+              </span>
+            </label>
+
+            <label class="term">
+              <input type="radio" name="term" value="1yr">
+              <span class="term-body">
+                <span class="term-len">1 year</span>
+                <span class="term-price">$148.20</span>
+                <span class="term-each">$12.35 a card</span>
+              </span>
+            </label>
+          </fieldset>
+
+          <p class="tier-note">$13 a card for the first 100 members, then $15 a card.<br>It renews at the same length until you cancel.</p>
+
+          <div class="tier-act">
+            <button class="joinbtn" type="button" id="joinBtn">Join the archive</button>
+            <span class="tier-stamp is-open">now open</span>
           </div>
-          <div class="tface tface-back oldcard">
-            <h3>Founder's Kit</h3>
-            <ul>
-              <li>A numbered, one of a kind handcrafted binder</li>
-              <li>A true keepsake, a piece of art</li>
-              <li>Only twenty five made</li>
-            </ul>
-            <span class="fallstamp">coming 2027</span>
+
+          <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. Mailing to Canada and the United States. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
+          <p class="join-error" id="joinError" role="alert"></p>
+
+          <p class="join-elsewhere">Somewhere else in the world? <a href="#faq-shipping">Read how international membership works</a>, or take the digital membership instead.</p>
+        </article>
+
+        <article class="tier tier-live oldcard" id="join-international">
+          <span class="fromkitchen">from the kitchen of</span>
+          <h3>International Digital</h3>
+          <p class="tier-line">The same recipe, delivered online.</p>
+
+          <ul class="tier-what">
+            <li>The month's recipe and the story behind it, sent to you online</li>
+            <li>Early access to that month's video, before it goes public</li>
+            <li>For members outside Canada and the United States</li>
+          </ul>
+
+          <fieldset class="terms">
+            <legend class="sr-only">Choose a term for the digital membership</legend>
+
+            <label class="term">
+              <input type="radio" name="term-intl" value="3mo" checked>
+              <span class="term-body">
+                <span class="term-len">3 months</span>
+                <span class="term-price">$33.00</span>
+                <span class="term-each">$11 a recipe</span>
+              </span>
+            </label>
+
+            <label class="term">
+              <input type="radio" name="term-intl" value="6mo">
+              <span class="term-body">
+                <span class="term-len">6 months</span>
+                <span class="term-price">$66.00</span>
+                <span class="term-each">$11 a recipe</span>
+              </span>
+            </label>
+
+            <label class="term">
+              <input type="radio" name="term-intl" value="1yr">
+              <span class="term-body">
+                <span class="term-len">1 year</span>
+                <span class="term-price">$125.40</span>
+                <span class="term-each">$10.45 a recipe</span>
+              </span>
+            </label>
+          </fieldset>
+
+          <p class="tier-note">$11 a recipe, wherever you are.<br>It renews at the same length until you cancel.</p>
+
+          <div class="tier-act">
+            <button class="joinbtn" type="button" id="joinIntlBtn">Join digitally</button>
+            <span class="tier-stamp is-open">now open</span>
           </div>
-        </button>
+
+          <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. Nothing is posted, so no mailing address is asked for. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
+          <p class="join-error" id="joinIntlError" role="alert"></p>
+
+          <p class="join-elsewhere">In Canada or the United States? <a href="#join">The posted card is for you</a>, or <a href="#faq-digital">read what digital members get</a>.</p>
+        </article>
 
       </div>
 
-      <!-- The join panel sits below the cards rather than on one of them.
-           A .tiercard is a button element locked to a fixed 3/2 shape: controls
-           cannot legally nest inside it, the flip handler would swallow
-           their clicks, and the back face is already full at that size. -->
-      <div class="join reveal" id="join">
-        <h3>Join The Mailing</h3>
-        <p class="join-sub">Choose a term. It renews at the same length until you cancel, and Stripe writes to you before every renewal.</p>
+      <!-- Not open yet, so no price and no way in. Same stock, quieter, and
+           deliberately shorter, because a panel stretched to match its
+           neighbour is the thing that makes a row look like a rate card. -->
+      <div class="tier-row tier-row-soon reveal">
 
-        <fieldset class="terms">
-          <legend class="sr-only">Choose a term</legend>
+        <article class="tier tier-soon oldcard">
+          <span class="fromkitchen">from the kitchen of</span>
+          <h3>Mailing + Video</h3>
+          <p class="tier-line">The card, and the story on film.</p>
+          <ul class="tier-what">
+            <li>Everything in The Mailing</li>
+            <li>Early access to each month's recipe video</li>
+            <li>The story of the person, told in full</li>
+          </ul>
+          <span class="tier-stamp is-soon">coming soon</span>
+        </article>
 
-          <label class="term">
-            <input type="radio" name="term" value="3mo" checked>
-            <span class="term-body">
-              <span class="term-len">3 months</span>
-              <span class="term-price">$39.00</span>
-              <span class="term-each">$13 a card</span>
-            </span>
-          </label>
+        <article class="tier tier-soon oldcard">
+          <span class="fromkitchen">from the kitchen of</span>
+          <h3>The Finished Binder</h3>
+          <p class="tier-line">A year, arriving ready to keep.</p>
+          <ul class="tier-what">
+            <li>A finished kraft binder, tabbed and sleeved</li>
+            <li>A full year of the mailing and video</li>
+            <li>A welcome letter, arriving as a parcel</li>
+          </ul>
+          <span class="tier-stamp is-soon">coming soon</span>
+        </article>
 
-          <label class="term">
-            <input type="radio" name="term" value="6mo">
-            <span class="term-body">
-              <span class="term-len">6 months</span>
-              <span class="term-price">$78.00</span>
-              <span class="term-each">$13 a card</span>
-            </span>
-          </label>
+        <article class="tier tier-soon oldcard">
+          <span class="fromkitchen">from the kitchen of</span>
+          <h3>Collage Your Own</h3>
+          <p class="tier-line">Build the binder yourself.</p>
+          <ul class="tier-what">
+            <li>A blank binder and a collage kit</li>
+            <li>Fabrics, papers, and embellishments</li>
+            <li>A full year of the mailing and video</li>
+          </ul>
+          <span class="tier-stamp is-soon">coming soon</span>
+        </article>
 
-          <label class="term">
-            <input type="radio" name="term" value="1yr">
-            <span class="term-body">
-              <span class="term-len">1 year</span>
-              <span class="term-price">$148.20</span>
-              <span class="term-each">$12.35 a card</span>
-            </span>
-          </label>
-        </fieldset>
+        <article class="tier tier-soon oldcard">
+          <span class="fromkitchen">from the kitchen of</span>
+          <h3>Founder's Kit</h3>
+          <p class="tier-line">One of twenty five, made by hand.</p>
+          <ul class="tier-what">
+            <li>A numbered, one of a kind handcrafted binder</li>
+            <li>A true keepsake, a piece of art</li>
+            <li>Only twenty five made</li>
+          </ul>
+          <span class="tier-stamp is-soon">coming 2027</span>
+        </article>
 
-        <button class="joinbtn" type="button" id="joinBtn">Join the archive</button>
-        <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. Mailing to Canada and the United States. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
-        <p class="join-error" id="joinError" role="alert"></p>
-
-        <p class="join-elsewhere">Somewhere else in the world? <a href="#faq-shipping">Read how international membership works</a>, or join digitally just below.</p>
       </div>
 
-      <div class="join join-intl reveal" id="join-international">
-        <h3>Outside Canada and the United States</h3>
-        <p class="join-sub">The same recipe and the same story, delivered online instead of in the post, with early access to that month's video before it goes public. Nobody is left out of the archive. <a href="#faq-digital">What is the digital membership?</a></p>
-
-        <fieldset class="terms">
-          <legend class="sr-only">Choose a term for the digital membership</legend>
-
-          <label class="term">
-            <input type="radio" name="term-intl" value="3mo" checked>
-            <span class="term-body">
-              <span class="term-len">3 months</span>
-              <span class="term-price">$33.00</span>
-              <span class="term-each">$11 a recipe</span>
-            </span>
-          </label>
-
-          <label class="term">
-            <input type="radio" name="term-intl" value="6mo">
-            <span class="term-body">
-              <span class="term-len">6 months</span>
-              <span class="term-price">$66.00</span>
-              <span class="term-each">$11 a recipe</span>
-            </span>
-          </label>
-
-          <label class="term">
-            <input type="radio" name="term-intl" value="1yr">
-            <span class="term-body">
-              <span class="term-len">1 year</span>
-              <span class="term-price">$125.40</span>
-              <span class="term-each">$10.45 a recipe</span>
-            </span>
-          </label>
-        </fieldset>
-
-        <button class="joinbtn" type="button" id="joinIntlBtn">Join digitally</button>
-        <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. Nothing is posted, so no mailing address is asked for. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
-        <p class="join-error" id="joinIntlError" role="alert"></p>
-      </div>
     </div>
   </section>
 
@@ -1773,23 +1794,9 @@ West Kelowna, BC</span>
   window.addEventListener('hashchange', openTarget);
 })();
 
-/* Membership desk: lift and flip one card at a time */
-(function(){
-  var cards = document.querySelectorAll('.tiercard');
-  cards.forEach(function(card){
-    card.addEventListener('click', function(){
-      var wasOpen = card.classList.contains('flipped');
-      cards.forEach(function(other){
-        other.classList.remove('flipped');
-        other.setAttribute('aria-pressed','false');
-      });
-      if (!wasOpen){
-        card.classList.add('flipped');
-        card.setAttribute('aria-pressed','true');
-      }
-    });
-  });
-})();
+/* The membership desk had a flip handler here. It is gone with the cards it
+   turned over: every tier now shows everything at once, so there is nothing
+   left to reveal and no click to intercept. */
 
 /* Send a recipe.
    Three steps, because the files deliberately do not pass through our own
