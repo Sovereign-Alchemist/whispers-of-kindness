@@ -271,10 +271,6 @@ function formatAddress(name, address) {
 
 exports.handler = async function (event) {
 
-  if (event.httpMethod !== 'POST') {
-    return reply(405, { error: 'Use POST.' });
-  }
-
   // Read per request rather than at module scope. A container that cold
   // started before a variable existed keeps the empty value it captured, for
   // as long as it stays warm, and goes on reporting the variable missing after
@@ -291,6 +287,35 @@ exports.handler = async function (event) {
   if (!STRIPE_KEY)     missing.push('STRIPE_SECRET_KEY');
   if (!SUPABASE_URL)   missing.push('SUPABASE_URL');
   if (!SERVICE_KEY)    missing.push('SUPABASE_SERVICE_ROLE_KEY');
+
+  // ---- the readiness check ------------------------------------------------
+  //
+  // Open this address in a browser and it answers whether the running function
+  // can see its configuration. Without it, the only way to find out was to
+  // make a real payment and then go reading logs, which is a slow way to learn
+  // that a variable needs a redeploy before a function can see it.
+  //
+  // WHAT THIS DISCLOSES, weighed rather than assumed. It reports the NAMES of
+  // variables that are unset. Never a value, never a length, never anything
+  // derived from one, and it never confirms what IS set. A missing secret
+  // makes this function refuse everything, so it does not fall open, and
+  // learning that it is refusing gains an attacker nothing they could use.
+  // The address itself is already public.
+  if (event.httpMethod === 'GET') {
+    return reply(200, {
+      function: 'stripe-webhook',
+      ready: missing.length === 0,
+      missing,
+      note: missing.length
+        ? 'Netlify sets a function environment when the deploy is built. A variable added afterwards needs a fresh deploy before the function can see it.'
+        : 'Configuration is visible to the running function. This says nothing about whether the values are correct.'
+    });
+  }
+
+  if (event.httpMethod !== 'POST') {
+    return reply(405, { error: 'Use POST or GET.' });
+  }
+
   if (missing.length) {
     // Names only, never values. 500 rather than 200, because Stripe should
     // retry this: the event is genuine and the fault is ours and fixable.
@@ -357,6 +382,10 @@ exports.handler = async function (event) {
     log('no-session-id', { id: eventId });
     return reply(200, { ignored: 'event carried no session id' });
   }
+
+  // Which step is in progress, so a failure can say where it happened rather
+  // than only that it happened. Reset as each step begins.
+  let stage = 'retrieve-session';
 
   try {
     // ---- 1. is this a paid subscription -----------------------------------
@@ -455,6 +484,8 @@ exports.handler = async function (event) {
     let memberId = null;
     let memberOutcome = null;
 
+    stage = 'member-write';
+
     const bySession = await db(SUPABASE_URL, SERVICE_KEY,
       'member?stripe_checkout_session_id=eq.' + encodeURIComponent(session.id) + '&select=id');
 
@@ -513,6 +544,8 @@ exports.handler = async function (event) {
     // match adaXb@x.com. It can only ever match too much, never too little,
     // so narrowing with it and filtering afterwards is correct.
 
+    stage = 'contributor-link';
+
     const candidates = await db(SUPABASE_URL, SERVICE_KEY,
       'contributor?contact=ilike.' + encodeURIComponent(email) + '&select=id,contact,member_id');
 
@@ -562,12 +595,30 @@ exports.handler = async function (event) {
     // 500, so Stripe retries. Supabase being briefly unreachable is exactly
     // the case retries exist for, and the unique index above makes a retry
     // safe to accept.
-    log('failed', {
-      id: eventId,
-      session: sessionId,
-      error: String(err.message || err).slice(0, 400)
+    const detail = String(err.message || err).slice(0, 400);
+
+    log('failed', { id: eventId, session: sessionId, stage, error: detail });
+
+    // THE REASON GOES IN THE BODY, on purpose.
+    //
+    // This used to answer "Could not record that membership." and nothing
+    // else, which meant the only way to find out what actually broke was to
+    // go and read the Netlify log. That is a bad trade for a webhook.
+    //
+    // The rule for the website is different from the rule here. A visitor
+    // gets a calm sentence because a visitor cannot act on a stack trace and
+    // the page is public. This endpoint has exactly one caller, Stripe, and
+    // Stripe records the response body against the event and shows it in a
+    // dashboard only Pela can open. Hiding the reason there protects nobody
+    // and costs an afternoon.
+    //
+    // Supabase and Stripe error text names tables, columns and constraints.
+    // None of them echo key material.
+    return reply(500, {
+      error: 'Could not record that membership.',
+      stage,
+      detail
     });
-    return reply(500, { error: 'Could not record that membership.' });
   }
 };
 
