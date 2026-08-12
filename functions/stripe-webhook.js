@@ -266,6 +266,203 @@ function formatAddress(name, address) {
 
 
 // ---------------------------------------------------------------------------
+// RENEWALS
+//
+// checkout.session.completed fires once, on the first payment, and never
+// again. Without this, a member who has happily auto renewed twice still
+// reads as sitting two terms past where they started, because nothing ever
+// told the database anything happened.
+//
+// WHICH INVOICES ARE RENEWALS
+//
+//   subscription_create  the FIRST invoice, raised alongside the checkout.
+//                        Ignored here, because checkout.session.completed has
+//                        already recorded it. Counting it would make every
+//                        member appear to renew the moment they joined.
+//   subscription_cycle   a genuine renewal. The only one acted on.
+//   subscription_update  a plan or quantity change mid term. Not a renewal.
+//   manual, upcoming     not renewals either.
+//
+// Anything that is not subscription_cycle is acknowledged and dropped.
+// ---------------------------------------------------------------------------
+
+// Stripe moved the subscription reference on an invoice in the 2025-03-31 API
+// version, from invoice.subscription to invoice.parent.subscription_details.
+// Which one arrives depends on the API version the endpoint is pinned to, and
+// that is a setting nobody should have to remember. Both are read, plus the
+// line item, which carries it in newer versions again.
+function subscriptionIdFrom(invoice) {
+  if (typeof invoice.subscription === 'string') return invoice.subscription;
+
+  const details = (invoice.parent || {}).subscription_details || {};
+  if (typeof details.subscription === 'string') return details.subscription;
+
+  const lines = (invoice.lines && invoice.lines.data) || [];
+  for (const line of lines) {
+    if (typeof line.subscription === 'string') return line.subscription;
+    const itemDetails = (line.parent || {}).subscription_item_details || {};
+    if (typeof itemDetails.subscription === 'string') return itemDetails.subscription;
+  }
+  return null;
+}
+
+// The start of the period this invoice pays for, as a unix timestamp.
+//
+// The line item is preferred over the invoice. An invoice can carry more than
+// one period when something was prorated, and the subscription line is the one
+// that describes the term actually being renewed.
+function periodStartFrom(invoice) {
+  const lines = (invoice.lines && invoice.lines.data) || [];
+  for (const line of lines) {
+    if (line.period && Number.isFinite(line.period.start)) return line.period.start;
+  }
+  if (Number.isFinite(invoice.period_start)) return invoice.period_start;
+  return null;
+}
+
+function dateFromUnix(seconds) {
+  return new Date(seconds * 1000).toISOString().slice(0, 10);
+}
+
+async function handleRenewal(stripeEvent, cfg) {
+  const { SUPABASE_URL, SERVICE_KEY } = cfg;
+  const eventId = stripeEvent.id;
+  const invoice = (stripeEvent.data && stripeEvent.data.object) || {};
+  const reason = invoice.billing_reason || null;
+
+  if (reason !== 'subscription_cycle') {
+    log('ignored-billing-reason', {
+      id: eventId, invoice: invoice.id || null, billing_reason: reason
+    });
+    return reply(200, { ignored: 'billing_reason ' + reason });
+  }
+
+  const invoiceId = invoice.id;
+  if (!invoiceId) {
+    log('no-invoice-id', { id: eventId });
+    return reply(200, { ignored: 'invoice carried no id' });
+  }
+
+  const subscriptionId = subscriptionIdFrom(invoice);
+  if (!subscriptionId) {
+    log('no-subscription-id', { id: eventId, invoice: invoiceId });
+    return reply(200, { ignored: 'invoice carried no subscription' });
+  }
+
+  const periodStartUnix = periodStartFrom(invoice);
+  const periodStart = periodStartUnix ? dateFromUnix(periodStartUnix) : null;
+
+  let stage = 'find-member';
+
+  try {
+    const members = await db(SUPABASE_URL, SERVICE_KEY,
+      'member?stripe_subscription_id=eq.' + encodeURIComponent(subscriptionId) +
+      '&select=id,current_period_start,renewal_count');
+
+    if (!members || !members.length) {
+      // A renewal for a subscription this database has never heard of. Not an
+      // error to retry: the member was probably created before the webhook
+      // existed, or in a different Stripe account. 200 and a loud log.
+      log('renewal-unknown-subscription', {
+        id: eventId, invoice: invoiceId, subscription: subscriptionId
+      });
+      return reply(200, { ignored: 'no member holds that subscription' });
+    }
+
+    const member = members[0];
+
+    // ---- the ledger, which is the real duplicate guard --------------------
+    //
+    // A unique index on a column of `member` would NOT stop a double count.
+    // Rewriting the same value into the same row does not violate uniqueness,
+    // so a retry would still increment. The guard has to be a row that can
+    // only exist once, and that is what this is.
+    //
+    // It also survives the case a "last invoice seen" column cannot: an
+    // invoice arriving again AFTER a later one has been processed. That is
+    // unlikely in production, where cycles are months apart, and entirely
+    // likely while testing, where the same test event gets fired repeatedly
+    // and out of order.
+
+    stage = 'renewal-ledger';
+    let alreadyRecorded = false;
+
+    try {
+      await db(SUPABASE_URL, SERVICE_KEY, 'member_renewal', {
+        method: 'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          member_id: member.id,
+          stripe_invoice_id: invoiceId,
+          stripe_subscription_id: subscriptionId,
+          period_start: periodStart,
+          billing_reason: reason
+        })
+      });
+    } catch (ledgerError) {
+      if (ledgerError.status !== 409) throw ledgerError;
+      alreadyRecorded = true;
+    }
+
+    // ---- the count is DERIVED, not incremented ----------------------------
+    //
+    // Counting the ledger rather than adding one to a stored number means a
+    // delivery that wrote the ledger row and then failed before updating the
+    // member repairs itself on the retry, instead of leaving the count one
+    // short forever. It also cannot drift.
+
+    stage = 'renewal-count';
+    const ledger = await db(SUPABASE_URL, SERVICE_KEY,
+      'member_renewal?member_id=eq.' + member.id + '&select=id');
+    const renewalCount = (ledger || []).length;
+
+    // ---- move the period forward, never backward --------------------------
+    //
+    // Re-firing an older invoice must not drag current_period_start back to a
+    // date the member has already lived through, which would make the
+    // lifecycle view report a month they are no longer in.
+
+    stage = 'renewal-update';
+    const patch = { renewal_count: renewalCount };
+
+    const advances = periodStart && (
+      !member.current_period_start || periodStart > member.current_period_start
+    );
+    if (advances) patch.current_period_start = periodStart;
+
+    await db(SUPABASE_URL, SERVICE_KEY, 'member?id=eq.' + member.id, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify(patch)
+    });
+
+    log('renewal-ok', {
+      id: eventId,
+      invoice: invoiceId,
+      subscription: subscriptionId,
+      member: member.id,
+      outcome: alreadyRecorded ? 'already-recorded' : 'recorded',
+      period_start: periodStart,
+      period_advanced: Boolean(advances),
+      renewal_count: renewalCount
+    });
+
+    return reply(200, {
+      received: true,
+      member: member.id,
+      renewal_count: renewalCount,
+      outcome: alreadyRecorded ? 'already-recorded' : 'recorded'
+    });
+
+  } catch (err) {
+    const detail = String(err.message || err).slice(0, 400);
+    log('renewal-failed', { id: eventId, invoice: invoiceId, stage, error: detail });
+    return reply(500, { error: 'Could not record that renewal.', stage, detail });
+  }
+}
+
+
+// ---------------------------------------------------------------------------
 // The handler
 // ---------------------------------------------------------------------------
 
@@ -364,6 +561,13 @@ exports.handler = async function (event) {
   if (stripeEvent.livemode === true) {
     log('refused-livemode', { id: stripeEvent.id, type: stripeEvent.type });
     return reply(202, { ignored: 'live mode events are not accepted yet' });
+  }
+
+  // Renewals go down their own path entirely. Nothing below this line changed
+  // when they were added: the first payment is still handled exactly as it
+  // was, by checkout.session.completed, and the two never touch.
+  if (stripeEvent.type === 'invoice.paid') {
+    return await handleRenewal(stripeEvent, { SUPABASE_URL, SERVICE_KEY });
   }
 
   // Anything else is acknowledged and dropped. 200, not an error: the event is
