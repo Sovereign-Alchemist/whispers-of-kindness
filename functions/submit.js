@@ -7,6 +7,8 @@
 //   1. Checks what the browser sent, and refuses anything malformed.
 //   2. Writes three rows as a set: contributor, recipe, provenance.
 //   3. Hands back short-lived upload URLs, one per declared file.
+//   4. Links the contributor to a member, if that email is already one. This
+//      step is optional, time bounded, and can never fail a submission.
 //
 // The browser then sends the files STRAIGHT to Supabase Storage. They do not
 // pass through here, because Netlify caps a function request body around 6MB
@@ -329,6 +331,87 @@ exports.handler = async function (event) {
         name: stored,
         url: await signedUpload(path)
       });
+    }
+
+    // ---- 5. link to a member, if this person already is one ---------------
+    //
+    // THE FORWARD LINK. The Stage 3 webhook does this in reverse, at the
+    // moment somebody pays, finding recipes they had already sent in. That
+    // only ever looked backward, so somebody who was ALREADY a paying member
+    // and contributed afterwards was never connected to their own membership.
+    // This is the other direction, done at submission time, with no webhook
+    // event and no later sweep needed.
+    //
+    // THIS STEP CANNOT FAIL A SUBMISSION, and that is not a hope, it is three
+    // deliberate choices:
+    //
+    //   ITS OWN CATCH   the catch below deletes the contributor row and
+    //                   answers 500. An error escaping from here would mean a
+    //                   paying member's recipe was destroyed by the very
+    //                   feature meant to recognise them. Nothing escapes.
+    //
+    //   LAST            everything that matters is already written and every
+    //                   upload URL is already minted. There is nothing left
+    //                   for this to spoil by being slow or by throwing.
+    //
+    //   TIME BOUNDED    Netlify kills this function at ten seconds, and a
+    //                   submission with two dozen files has already made two
+    //                   dozen calls by now. A slow Supabase must not be able
+    //                   to turn a saved recipe into an error message, so this
+    //                   gets a small budget of its own and is abandoned if it
+    //                   runs over.
+    //
+    // A skipped link costs nobody anything and is repairable in one statement:
+    //
+    //   update contributor c set member_id = m.id
+    //     from member m
+    //    where lower(c.contact) = lower(m.email) and c.member_id is null;
+    //
+    // NOTHING ABOUT THE ANSWER TO THE BROWSER CHANGES. No field added, none
+    // altered. That is the point rather than tidiness: if the reply revealed
+    // whether a match was found, anybody could submit this form repeatedly and
+    // learn which email addresses belong to paying members.
+
+    try {
+      // Two calls, one shared budget between them.
+      const linkSignal = AbortSignal.timeout(2500);
+
+      // Case-insensitive, because Ada@ and ada@ are one person. PostgREST has
+      // no case-insensitive equality, so this narrows with ilike and settles
+      // it exactly in JavaScript. Same approach as the Stage 3 backfill, on
+      // purpose, so the two directions always agree about who matches whom.
+      //
+      // ilike alone is not enough. In SQL LIKE an underscore matches any
+      // single character, and underscores are legal in email addresses, so
+      // ada_b@x.com would also match adaXb@x.com. It can only ever match too
+      // much, never too little, which is what makes narrowing with it and
+      // filtering afterwards correct rather than merely convenient.
+      const candidates = await db(
+        'member?email=ilike.' + encodeURIComponent(contact) + '&select=id,email',
+        { signal: linkSignal }
+      );
+
+      const wanted = contact.toLowerCase();
+      const match = (candidates || []).find(function (m) {
+        return String(m.email || '').trim().toLowerCase() === wanted;
+      });
+
+      if (match) {
+        await db('contributor?id=eq.' + contributorId, {
+          method: 'PATCH',
+          headers: { Prefer: 'return=minimal' },
+          body: JSON.stringify({ member_id: match.id }),
+          signal: linkSignal
+        });
+        console.log('Linked contributor ' + contributorId +
+          ' to member ' + match.id + ' at submission.');
+      }
+
+    } catch (linkError) {
+      // Logged, never surfaced. The submission is already safe and the person
+      // waiting on the form has no use for this and did nothing to cause it.
+      console.error('Member link skipped for contributor ' + contributorId +
+        ', submission unaffected: ' + linkError.message);
     }
 
     return reply(200, { ok: true, archive_id: archiveId, uploads });
