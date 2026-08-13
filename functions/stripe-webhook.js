@@ -535,8 +535,24 @@ exports.handler = async function (event) {
     // 400, not 500. This is a refusal, not a failure, and Stripe should not
     // retry it. If it really was Stripe, retrying an unverifiable body would
     // only produce the same result.
+    //
+    // THE REASON GOES IN THE BODY, for the same argument made at the catch-all
+    // below, and because leaving it out has now cost real time twice.
+    //
+    // "no matching signature" and "timestamp outside tolerance" are completely
+    // different problems, a wrong secret versus a wrong clock, and they were
+    // indistinguishable from outside. An evening went into re-copying a secret
+    // that was correct all along, chasing a signing script whose clock
+    // conversion was seven hours out.
+    //
+    // None of these strings leak anything. They describe the SHAPE of what
+    // arrived, never the secret, and knowing that a timestamp was out of range
+    // does not help anybody forge an HMAC.
     log('signature-rejected', { reason: verified.reason });
-    return reply(400, { error: 'Signature could not be verified.' });
+    return reply(400, {
+      error: 'Signature could not be verified.',
+      reason: verified.reason
+    });
   }
 
   let stripeEvent;
