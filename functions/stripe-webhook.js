@@ -5,9 +5,22 @@
 // are ordinary HTTP, so there is no SDK to install and none to keep current.
 //
 // WHAT IT DOES
-//   Stripe calls this address when a checkout completes. It proves the call
-//   really came from Stripe, works out what was bought, writes a member row,
-//   and links that member to any recipe they had already sent in.
+//   Stripe calls this address when something happens to a membership. Every
+//   call is proved to have come from Stripe before anything else happens.
+//
+//     checkout.session.completed  somebody joined. Writes the member row and
+//                                 links any recipe they had already sent in.
+//     invoice.paid                a term renewed. Records it and moves the
+//                                 member's current period forward.
+//     invoice.payment_failed      a card was declined. Marks the member
+//                                 past_due so the archive stops saying they
+//                                 are fine.
+//
+//   Each has its own handler and its own ledger table. They do not share
+//   state, and the two ledgers are deliberately separate: renewal_count is
+//   derived by counting renewal rows, so a failure recorded alongside them
+//   would read as a renewal and advance somebody through a term they never
+//   paid for.
 //
 // WHY IT EXISTS
 //   Until now a completed payment existed in Stripe and nowhere else. Money
@@ -357,7 +370,7 @@ async function handleRenewal(stripeEvent, cfg) {
   try {
     const members = await db(SUPABASE_URL, SERVICE_KEY,
       'member?stripe_subscription_id=eq.' + encodeURIComponent(subscriptionId) +
-      '&select=id,current_period_start,renewal_count');
+      '&select=id,current_period_start,renewal_count,subscription_status');
 
     if (!members || !members.length) {
       // A renewal for a subscription this database has never heard of. Not an
@@ -430,6 +443,20 @@ async function handleRenewal(stripeEvent, cfg) {
     );
     if (advances) patch.current_period_start = periodStart;
 
+    // ---- coming back from a failed payment --------------------------------
+    //
+    // A declined card that Stripe successfully retries fires invoice.paid for
+    // the SAME invoice that fired invoice.payment_failed a few days earlier.
+    // Money arrived, so the member is active again, and without this they
+    // would stay past_due forever and the view would go on reporting a
+    // problem that resolved itself.
+    //
+    // ONLY past_due is lifted. Not cancelled, not paused, not pending. Those
+    // are decisions somebody made, and a payment landing is not grounds for a
+    // webhook to overrule any of them.
+    const recovered = member.subscription_status === 'past_due';
+    if (recovered) patch.subscription_status = 'active';
+
     await db(SUPABASE_URL, SERVICE_KEY, 'member?id=eq.' + member.id, {
       method: 'PATCH',
       headers: { Prefer: 'return=minimal' },
@@ -444,6 +471,7 @@ async function handleRenewal(stripeEvent, cfg) {
       outcome: alreadyRecorded ? 'already-recorded' : 'recorded',
       period_start: periodStart,
       period_advanced: Boolean(advances),
+      recovered_from_past_due: recovered,
       renewal_count: renewalCount
     });
 
@@ -451,6 +479,8 @@ async function handleRenewal(stripeEvent, cfg) {
       received: true,
       member: member.id,
       renewal_count: renewalCount,
+      subscription_status: recovered ? 'active' : member.subscription_status,
+      recovered_from_past_due: recovered,
       outcome: alreadyRecorded ? 'already-recorded' : 'recorded'
     });
 
@@ -458,6 +488,191 @@ async function handleRenewal(stripeEvent, cfg) {
     const detail = String(err.message || err).slice(0, 400);
     log('renewal-failed', { id: eventId, invoice: invoiceId, stage, error: detail });
     return reply(500, { error: 'Could not record that renewal.', stage, detail });
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// FAILED PAYMENTS
+//
+// Before this, a declined card produced nothing at all. The member went on
+// reading 'active', the lifecycle view went on saying "month 2 of 3", and the
+// only way to learn otherwise was to open Stripe and go looking. This does not
+// tell anybody. It makes the database stop saying something untrue.
+//
+// WHICH INVOICES COUNT, and why this is deliberately different from renewals
+//
+//   handleRenewal acts ONLY on subscription_cycle, because anything else
+//   counted there would inflate renewal_count and march a member through terms
+//   they never paid for.
+//
+//   This one acts on EVERY billing reason, because there is no counter to
+//   inflate. Nothing here is derived from how many failures there are. A
+//   subscription_create invoice failing means money did not arrive just as
+//   surely as a subscription_cycle one failing, and refusing to notice it
+//   because of its label would be recreating the exact silence this closes.
+//
+//   The billing reason is recorded, so the distinction is still available to
+//   anybody reading the ledger later.
+// ---------------------------------------------------------------------------
+
+async function handlePaymentFailure(stripeEvent, cfg) {
+  const { SUPABASE_URL, SERVICE_KEY } = cfg;
+  const eventId = stripeEvent.id;
+  const invoice = (stripeEvent.data && stripeEvent.data.object) || {};
+
+  const invoiceId = invoice.id;
+  if (!invoiceId) {
+    log('failure-no-invoice-id', { id: eventId });
+    return reply(200, { ignored: 'invoice carried no id' });
+  }
+
+  const subscriptionId = subscriptionIdFrom(invoice);
+  if (!subscriptionId) {
+    // A one off invoice failing is not a membership going past due. There is
+    // no subscription behind it and nothing here to mark.
+    log('failure-no-subscription-id', { id: eventId, invoice: invoiceId });
+    return reply(200, { ignored: 'invoice carried no subscription' });
+  }
+
+  const reason = invoice.billing_reason || null;
+  const attemptCount = Number.isFinite(invoice.attempt_count) ? invoice.attempt_count : null;
+  const nextAttempt = Number.isFinite(invoice.next_payment_attempt)
+    ? dateFromUnix(invoice.next_payment_attempt)
+    : null;
+
+  // When it failed. Stripe's own timestamp on the event, not this server's
+  // clock, so a delivery that arrives late is dated when it happened.
+  const failedOn = Number.isFinite(stripeEvent.created)
+    ? dateFromUnix(stripeEvent.created)
+    : new Date().toISOString().slice(0, 10);
+
+  let stage = 'failure-find-member';
+
+  try {
+    const members = await db(SUPABASE_URL, SERVICE_KEY,
+      'member?stripe_subscription_id=eq.' + encodeURIComponent(subscriptionId) +
+      '&select=id,subscription_status');
+
+    if (!members || !members.length) {
+      log('failure-unknown-subscription', {
+        id: eventId, invoice: invoiceId, subscription: subscriptionId
+      });
+      return reply(200, { ignored: 'no member holds that subscription' });
+    }
+
+    const member = members[0];
+
+    // ---- has this invoice since been PAID ---------------------------------
+    //
+    // THE ORDERING GUARD, and the reason a naive version of this handler is
+    // worse than nothing.
+    //
+    // Stripe retries a declined invoice over about a fortnight. The usual
+    // sequence is payment_failed, then payment_failed, then paid. Webhook
+    // deliveries are not ordered though, and Stripe re-delivers anything that
+    // once failed to return 2xx, so an OLD payment_failed can land after the
+    // success it precedes.
+    //
+    // Without this check, that stale delivery would set a member who is paid
+    // up and perfectly fine back to past_due, and nothing would ever set them
+    // right again. A wrongly raised alarm that never clears is how people
+    // learn to stop trusting the alarm.
+    //
+    // member_renewal holding this invoice id means it was collected in the
+    // end. The failure is history. Record it, do not act on it.
+
+    stage = 'failure-check-paid';
+    const paid = await db(SUPABASE_URL, SERVICE_KEY,
+      'member_renewal?stripe_invoice_id=eq.' + encodeURIComponent(invoiceId) + '&select=id');
+    const alreadyPaid = Boolean(paid && paid.length);
+
+    // ---- the ledger, which is the duplicate guard -------------------------
+    //
+    // Stripe fires this again on every dunning retry of the SAME invoice, so
+    // without a unique row per invoice one declined card would write a row a
+    // day for a fortnight. The 409 is the index doing its job.
+
+    stage = 'failure-ledger';
+    let alreadyRecorded = false;
+
+    try {
+      await db(SUPABASE_URL, SERVICE_KEY, 'member_payment_failure', {
+        method: 'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          member_id: member.id,
+          stripe_invoice_id: invoiceId,
+          stripe_subscription_id: subscriptionId,
+          failed_on: failedOn,
+          attempt_count: attemptCount,
+          next_attempt_on: nextAttempt,
+          billing_reason: reason
+        })
+      });
+    } catch (ledgerError) {
+      if (ledgerError.status !== 409) throw ledgerError;
+      alreadyRecorded = true;
+    }
+
+    // ---- mark the member, or deliberately do not --------------------------
+    //
+    // Three reasons to leave the status alone, and all three are correct:
+    //
+    //   alreadyPaid    the invoice was collected on a later attempt
+    //   cancelled      somebody ended this membership. A bounced invoice on
+    //                  the way out does not reopen the question.
+    //   already        past_due writing past_due changes nothing
+    //
+    // paused and pending ARE moved to past_due. A payment failing is news
+    // about either of them.
+
+    let statusChanged = false;
+    let held = null;
+
+    if (alreadyPaid) {
+      held = 'invoice was paid on a later attempt';
+    } else if (member.subscription_status === 'cancelled') {
+      held = 'membership is cancelled';
+    } else if (member.subscription_status === 'past_due') {
+      held = 'already past_due';
+    } else {
+      stage = 'failure-update';
+      await db(SUPABASE_URL, SERVICE_KEY, 'member?id=eq.' + member.id, {
+        method: 'PATCH',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({ subscription_status: 'past_due' })
+      });
+      statusChanged = true;
+    }
+
+    log('payment-failed', {
+      id: eventId,
+      invoice: invoiceId,
+      subscription: subscriptionId,
+      member: member.id,
+      billing_reason: reason,
+      attempt_count: attemptCount,
+      next_attempt_on: nextAttempt,
+      ledger: alreadyRecorded ? 'already-recorded' : 'recorded',
+      status_was: member.subscription_status,
+      status_now: statusChanged ? 'past_due' : member.subscription_status,
+      held_because: held
+    });
+
+    return reply(200, {
+      received: true,
+      member: member.id,
+      subscription_status: statusChanged ? 'past_due' : member.subscription_status,
+      status_changed: statusChanged,
+      held_because: held,
+      outcome: alreadyRecorded ? 'already-recorded' : 'recorded'
+    });
+
+  } catch (err) {
+    const detail = String(err.message || err).slice(0, 400);
+    log('payment-failure-not-recorded', { id: eventId, invoice: invoiceId, stage, error: detail });
+    return reply(500, { error: 'Could not record that failed payment.', stage, detail });
   }
 }
 
@@ -584,6 +799,13 @@ exports.handler = async function (event) {
   // was, by checkout.session.completed, and the two never touch.
   if (stripeEvent.type === 'invoice.paid') {
     return await handleRenewal(stripeEvent, { SUPABASE_URL, SERVICE_KEY });
+  }
+
+  // Failures go down their own path too, and write to their own ledger. The
+  // two never share a table: renewal_count is derived by counting renewal
+  // rows, so a failure recorded there would read as its opposite.
+  if (stripeEvent.type === 'invoice.payment_failed') {
+    return await handlePaymentFailure(stripeEvent, { SUPABASE_URL, SERVICE_KEY });
   }
 
   // Anything else is acknowledged and dropped. 200, not an error: the event is
@@ -861,4 +1083,22 @@ exports.handler = async function (event) {
 // intake, or a periodic sweep that links any contributor whose contact matches
 // a member. Either is easy. Neither belongs in a stage that was told not to
 // touch the intake code.
+//
+//
+// THE SECOND GAP: STRIPE GIVING UP
+//
+// invoice.payment_failed fires on each retry of a declined invoice. When the
+// retry schedule runs out, Stripe does whatever the subscription is set to do,
+// usually cancel it, and fires customer.subscription.deleted. That event is
+// NOT listened for.
+//
+// So a membership Stripe has finished with reads past_due here rather than
+// cancelled, indefinitely. That is a much smaller wrong answer than the one
+// this closes, because past_due already means "something is broken, go and
+// look", and it errs toward flagging rather than toward silence. It is still a
+// wrong answer, and it is its own small piece of work.
+//
+// member_payment_failure.next_attempt_on is the near-term substitute. A row
+// whose next_attempt_on has passed, with the member still past_due, is one
+// Stripe has almost certainly stopped chasing.
 // ---------------------------------------------------------------------------
