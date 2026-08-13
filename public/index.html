@@ -1283,7 +1283,13 @@ footer .fsa{
             <span class="tier-stamp is-open">now open</span>
           </div>
 
-          <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. Mailing to Canada and the United States. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
+          <!-- This sentence is always true, in both states, and it is here so
+               that the page is honest even with JavaScript off. The prices
+               above are updated live by membership-status, and if that never
+               runs they stay at the founding rate. This line is what stops
+               that being a claim rather than a starting point. Stripe shows
+               the real figure before anybody pays either way. -->
+          <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. The founding rate is shown while founding places remain. Mailing to Canada and the United States. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
           <p class="join-error" id="joinError" role="alert"></p>
 
           <p class="join-elsewhere">Somewhere else in the world? <a href="#faq-shipping">Read how international membership works</a>, or take the digital membership instead.</p>
@@ -1808,6 +1814,76 @@ footer .fsa{
 /* The membership desk had a flip handler here. It is gone with the cards it
    turned over: every tier now shows everything at once, so there is nothing
    left to reveal and no click to intercept. */
+
+/* What the domestic membership actually costs today.
+   ---------------------------------------------------------------------------
+   The page used to say $13 a card to everybody, whether or not any founding
+   places were left. Once the checkout started refusing to sell the founding
+   rate past the hundredth member, that turned into a contradiction: read $13
+   here, get shown $45 by Stripe. Nobody was charged wrongly, because Stripe
+   shows the real figure before payment, but it reads as a switch.
+
+   So the three domestic prices are asked for rather than assumed.
+
+   THE MARKUP DEFAULT IS THE FOUNDING RATE, on purpose. It is correct for the
+   next ninety nine members and this only has to correct it after that. The
+   fine print under the button carries the conditional in words, so the page
+   is honest whether or not this ever runs.
+
+   International is untouched. That tier has no founding rate to run out of.
+
+   Nothing here changes what anybody is charged. create-checkout.js counts
+   again, for itself, at the moment somebody joins, and that count is the one
+   that decides the price. This only decides what is printed. */
+(function(){
+  var panel = document.getElementById('join');
+  if (!panel || !window.fetch) return;
+
+  function chip(term){
+    var input = panel.querySelector('input[name="term"][value="' + term + '"]');
+    return input ? input.closest('label') : null;
+  }
+
+  function apply(data){
+    if (!data || !data.terms) return;
+
+    Object.keys(data.terms).forEach(function(term){
+      var label = chip(term);
+      if (!label) return;
+      var money = data.terms[term];
+      var total = label.querySelector('.term-price');
+      var each  = label.querySelector('.term-each');
+      if (total && money.total) total.textContent = money.total;
+      if (each  && money.each)  each.textContent  = money.each;
+    });
+
+    /* The prose only changes when the founding places are gone. While they
+       remain, what is already written is both true and warmer than anything
+       generated would be. */
+    if (data.founding_open) return;
+
+    var banner = document.querySelector('.founding-note');
+    if (banner) {
+      banner.textContent = 'The first 100 founding places have been taken.'
+        + ' Founding members keep paying less than the current rate.';
+    }
+
+    var note = panel.querySelector('.tier-note');
+    if (note) {
+      note.innerHTML = 'The founding places are taken, so this is the current'
+        + ' rate.<br>It renews at the same length until you cancel.';
+    }
+  }
+
+  fetch('/.netlify/functions/membership-status', { headers: { accept: 'application/json' } })
+    .then(function(res){ return res.ok ? res.json() : null; })
+    .then(apply)
+    .catch(function(){
+      /* Deliberately silent. A visitor cannot act on this, the page already
+         shows a real price, and the fine print already says the founding rate
+         is shown while places remain. Shouting about it would be noise. */
+    });
+})();
 
 /* Send a recipe.
    Three steps, because the files deliberately do not pass through our own
