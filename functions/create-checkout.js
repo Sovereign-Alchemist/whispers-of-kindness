@@ -82,12 +82,33 @@ const PRICES = {
   }
 };
 
-// Not reachable yet. Here so every id lives in one place.
+// Reachable from member 101 onward. See THE CAP below.
 const STANDING = {
   '3mo': 'price_1U2Ht62eC5FgbTwrJJGQWlfe',   // $45.00 CAD
   '6mo': 'price_1U2Ht62eC5FgbTwrpTKZ3hOS',   // $90.00 CAD
   '1yr': 'price_1U2Ht62eC5FgbTwrS4BrgZJH'    // $171.00 CAD
 };
+
+// ---------------------------------------------------------------------------
+// THE CAP
+//
+// The founding rate is promised to the first hundred members. Until now
+// nothing counted, so member 101 and member 900 would both have been sold it.
+//
+// Only the domestic tier has a founding rate at all. The international tier
+// has no split, because the founding rate thanks people who subsidised a
+// physical mailing and there is no mailing in that tier, so none of this runs
+// for it and no count is even asked for.
+// ---------------------------------------------------------------------------
+
+const FOUNDING_CAP = 100;
+
+// Every member row carrying rate = 'founding' counts, including cancelled
+// ones. A founding place is one of the first hundred taken, not one of the
+// first hundred still occupied. Somebody who joined early and later left still
+// had their place, and freeing it up would mean the hundredth founding member
+// changes identity every time somebody cancels.
+const FOUNDING_FILTER = 'rate=eq.founding';
 
 // A card gets mailed to a physical address, so the domestic tier has to ask
 // for one. Skipping it would produce paid members nobody can post anything to.
@@ -96,6 +117,53 @@ const STANDING = {
 // is nothing to ship. Asking would be collecting a home address for no reason,
 // and every address held is an address that has to be looked after.
 const SHIP_TO = ['CA', 'US'];
+
+// Supabase has two generations of key and they authenticate differently.
+// Lifted from submit.js, comment and all, because getting this wrong fails in
+// a way nothing reports: the request quietly drops to the anon role, row level
+// security hides every table, and a count comes back as zero rather than as an
+// error. A silent zero here would sell the founding rate forever.
+//
+//   sb_secret_...    Current format. NOT a JWT. apikey header only.
+//   eyJ... (legacy)  A JWT. PostgREST reads the role from Authorization.
+function authHeaders(serviceKey) {
+  const headers = { apikey: serviceKey };
+  if (!/^sb_(secret|publishable)_/.test(serviceKey)) {
+    headers.Authorization = 'Bearer ' + serviceKey;
+  }
+  return headers;
+}
+
+// How many founding places are already taken.
+//
+// Asked with Prefer: count=exact and limit=0, so Postgres counts server side
+// and sends back a header rather than a hundred rows of member data this
+// function has no business handling. The answer arrives in Content-Range as
+// "*/103", and the part after the slash is the count.
+//
+// Throws rather than returning a number it is not sure about. A wrong count
+// silently sells the wrong price, so the caller has to decide what to do about
+// not knowing, and it does, deliberately, below.
+async function countFoundingMembers(supabaseUrl, serviceKey) {
+  const res = await fetch(
+    supabaseUrl + '/rest/v1/member?' + FOUNDING_FILTER + '&select=id&limit=0',
+    { headers: { ...authHeaders(serviceKey), Prefer: 'count=exact' } }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error('supabase ' + res.status + ': ' + text.slice(0, 200));
+  }
+
+  const range = res.headers.get('content-range') || '';
+  const total = range.split('/')[1];
+  const count = parseInt(total, 10);
+
+  if (!Number.isFinite(count)) {
+    throw new Error('could not read a count from content-range: ' + range);
+  }
+  return count;
+}
 
 function reply(statusCode, payload) {
   return {
@@ -166,11 +234,75 @@ exports.handler = async function (event) {
   // to somebody expecting post.
   const tier = (body.tier === 'international') ? 'international' : 'domestic';
 
-  const term  = String(body.term || '').trim();
-  const price = PRICES[tier][term];
-  if (!price) {
+  const term = String(body.term || '').trim();
+
+  // Validated against the founding table before the cap is consulted, because
+  // a nonsense term should be refused whatever the count says, and refusing it
+  // here avoids a pointless round trip to Supabase.
+  if (!PRICES[tier][term]) {
     return reply(400, { error: 'Choose a term: 3mo, 6mo or 1yr.' });
   }
+
+  // ---- the founding cap ---------------------------------------------------
+  //
+  // Domestic only. The international tier has no founding rate to run out of,
+  // so it never asks.
+
+  let rate = (tier === 'domestic') ? 'founding' : 'standard';
+  let foundingTaken = null;
+  let capNote = null;
+
+  if (tier === 'domestic') {
+    const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim();
+    const SERVICE_KEY  = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+
+    if (!SUPABASE_URL || !SERVICE_KEY) {
+      // Not fatal, on purpose. See the fallback reasoning below: the same
+      // argument applies to a missing variable as to an unreachable database.
+      capNote = 'supabase not configured, could not count founding members';
+      console.error('Founding cap not enforced: ' + capNote);
+    } else {
+      try {
+        foundingTaken = await countFoundingMembers(SUPABASE_URL, SERVICE_KEY);
+        if (foundingTaken >= FOUNDING_CAP) rate = 'standing';
+      } catch (err) {
+        // ---- WHAT TO DO WHEN THE COUNT CANNOT BE READ ---------------------
+        //
+        // Fall back to FOUNDING, deliberately, and say so loudly in the log.
+        //
+        // Three options and none of them are free. Refusing the checkout
+        // stops somebody joining over a database hiccup. Falling back to
+        // standing charges $45 to a person the page has just promised $13,
+        // which is the one outcome that breaks a promise rather than costing
+        // money. Falling back to founding undercharges by six dollars a
+        // quarter, for as long as the outage lasts, to a handful of people.
+        //
+        // The cheap error is the right one. It also matches what the page
+        // says, which matters more than the arithmetic.
+        capNote = 'count failed: ' + String(err.message || err).slice(0, 200);
+        console.error('Founding cap not enforced, defaulting to founding. ' + capNote);
+      }
+    }
+  }
+
+  const price = (tier === 'domestic' && rate === 'standing')
+    ? STANDING[term]
+    : PRICES[tier][term];
+
+  if (!price) {
+    // Only reachable if the STANDING table ever falls out of step with the
+    // founding one. Better a clear refusal than a session created against
+    // undefined.
+    console.error('No price for tier ' + tier + ', term ' + term + ', rate ' + rate);
+    return reply(500, { error: 'Something went wrong on our side. Nothing was charged.' });
+  }
+
+  console.log('checkout ' + JSON.stringify({
+    tier, term, rate, price,
+    founding_taken: foundingTaken,
+    founding_cap: FOUNDING_CAP,
+    cap_note: capNote
+  }));
 
   const origin = originOf(event);
   if (!origin) {
@@ -206,9 +338,16 @@ exports.handler = async function (event) {
 
   // Carried on the subscription rather than only on the session, because the
   // session is a moment and the subscription is the thing that lasts. When
-  // Stage 3 reads a webhook, this is what says which rate the member joined
-  // on, and so which members are owed the founding advantage if prices move.
-  const rate = (tier === 'domestic') ? 'founding' : 'standard';
+  // the webhook reads this, it is what says which rate the member joined on,
+  // and so which members are owed the founding advantage if prices move.
+  //
+  // `rate` is the one the cap decided above, not a fixed value. It used to be
+  // hardcoded to founding for every domestic checkout, which is exactly the
+  // thing being fixed, and leaving it would have written the wrong word onto
+  // member 101 even while charging them correctly.
+  //
+  // The webhook takes the PRICE ID as authoritative and reads this only as a
+  // fallback, so the two agreeing is belt and braces rather than load bearing.
   params.set('subscription_data[metadata][rate]', rate);
   params.set('subscription_data[metadata][tier]', tier);
   params.set('subscription_data[metadata][term]', term);
