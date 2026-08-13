@@ -1066,23 +1066,27 @@ exports.handler = async function (event) {
 
 
 // ---------------------------------------------------------------------------
-// THE GAP, stated rather than worked around
+// THE CONTRIBUTOR LINK RUNS BOTH WAYS NOW
 //
-// The contributor link is a BACKFILL and only runs one way, at the moment
-// somebody becomes a paying member. It finds recipes they sent in BEFORE they
-// paid.
+// What follows was written when this was the only half that existed, and is
+// kept because the shape of it still matters.
 //
-// Somebody who is already a paying member and sends a recipe AFTERWARDS will
-// not be linked. Their contributor row is written by submit.js, which knows
-// nothing about members and is deliberately out of scope for this stage.
+// The link here is a BACKFILL. It runs at the moment somebody becomes a paying
+// member and finds recipes they sent in BEFORE they paid. It only ever looked
+// backward, so somebody who was already a member and contributed AFTERWARDS
+// was never connected to their own membership, and "has this paying member
+// also contributed a recipe" was answerable for people who contributed first
+// and silently wrong for everybody else.
 //
-// So "has this paying member also contributed a recipe" is answerable today
-// for people who contributed first, and silently wrong for people who paid
-// first. That is a real gap, not a rounding error, and it needs its own small
-// piece of work: either three lines in submit.js looking up member by email at
-// intake, or a periodic sweep that links any contributor whose contact matches
-// a member. Either is easy. Neither belongs in a stage that was told not to
-// touch the intake code.
+// The forward half now lives in submit.js, at step 5, and runs at submission
+// time rather than waiting on any event here. It matches the same way this
+// does, ilike to narrow and an exact comparison in JavaScript to settle it, so
+// the two directions always agree about who is the same person. Change the
+// matching in one and change it in the other.
+//
+// The two halves do not overlap. Each only ever sets member_id on a row the
+// other has no reason to touch at the same moment, and setting the same value
+// twice costs nothing.
 //
 //
 // THE SECOND GAP: STRIPE GIVING UP
