@@ -69,21 +69,21 @@ const TOLERANCE_SECONDS = 300;
 
 const PRICE_FACTS = {
   // The Mailing, posted. Canada and the United States. Founding rate.
-  'price_1U2Ht52eC5FgbTwr7pISrsOY': { tier: 'mailing', rate: 'founding', term: '3mo', format: 'print' },
-  'price_1U2Ht52eC5FgbTwrrbx9PFtK': { tier: 'mailing', rate: 'founding', term: '6mo', format: 'print' },
-  'price_1U2Ht62eC5FgbTwrxuON9gB0': { tier: 'mailing', rate: 'founding', term: '1yr', format: 'print' },
+  'price_1U49Bt2eC5FgbTwrexqHKP6R': { tier: 'mailing', rate: 'founding', term: '3mo', format: 'print' },
+  'price_1U49Bt2eC5FgbTwrn7dntiA3': { tier: 'mailing', rate: 'founding', term: '6mo', format: 'print' },
+  'price_1U49Bu2eC5FgbTwrurxeFbMN': { tier: 'mailing', rate: 'founding', term: '1yr', format: 'print' },
 
   // The Mailing, posted. Standing rate. Not reachable from the site yet.
-  'price_1U2Ht62eC5FgbTwrJJGQWlfe': { tier: 'mailing', rate: 'standing', term: '3mo', format: 'print' },
-  'price_1U2Ht62eC5FgbTwrpTKZ3hOS': { tier: 'mailing', rate: 'standing', term: '6mo', format: 'print' },
-  'price_1U2Ht62eC5FgbTwrS4BrgZJH': { tier: 'mailing', rate: 'standing', term: '1yr', format: 'print' },
+  'price_1U49Bu2eC5FgbTwrJ4dRoy3F': { tier: 'mailing', rate: 'standing', term: '3mo', format: 'print' },
+  'price_1U49Bu2eC5FgbTwrWLlui3Rd': { tier: 'mailing', rate: 'standing', term: '6mo', format: 'print' },
+  'price_1U49Bu2eC5FgbTwrRWjzNPv3': { tier: 'mailing', rate: 'standing', term: '1yr', format: 'print' },
 
   // International digital. No founding split, so rate is null rather than a
   // guess. The founding rate thanks people who subsidised a physical mailing,
   // and there is no mailing in this tier.
-  'price_1U2g1g2eC5FgbTwrPaurWfE2': { tier: 'mailing_intl', rate: null, term: '3mo', format: 'digital' },
-  'price_1U2g1g2eC5FgbTwrRgdoJ1Do': { tier: 'mailing_intl', rate: null, term: '6mo', format: 'digital' },
-  'price_1U2g1h2eC5FgbTwrmK9JQpvP': { tier: 'mailing_intl', rate: null, term: '1yr', format: 'digital' }
+  'price_1U49Bv2eC5FgbTwrNE3lQcQl': { tier: 'mailing_intl', rate: null, term: '3mo', format: 'digital' },
+  'price_1U49Bv2eC5FgbTwr56JMu0to': { tier: 'mailing_intl', rate: null, term: '6mo', format: 'digital' },
+  'price_1U49Bv2eC5FgbTwrtQhBhcUw': { tier: 'mailing_intl', rate: null, term: '1yr', format: 'digital' }
 };
 
 

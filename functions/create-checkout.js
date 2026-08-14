@@ -71,22 +71,22 @@
 
 const PRICES = {
   domestic: {
-    '3mo': 'price_1U2Ht52eC5FgbTwr7pISrsOY',   // $39.00 CAD, renews every 3 months
-    '6mo': 'price_1U2Ht52eC5FgbTwrrbx9PFtK',   // $78.00 CAD, renews every 6 months
-    '1yr': 'price_1U2Ht62eC5FgbTwrxuON9gB0'    // $148.20 CAD, renews every year
+    '3mo': 'price_1U49Bt2eC5FgbTwrexqHKP6R',   // $39.00 CAD, renews every 3 months
+    '6mo': 'price_1U49Bt2eC5FgbTwrn7dntiA3',   // $78.00 CAD, renews every 6 months
+    '1yr': 'price_1U49Bu2eC5FgbTwrurxeFbMN'    // $148.20 CAD, renews every year
   },
   international: {
-    '3mo': 'price_1U2g1g2eC5FgbTwrPaurWfE2',   // $33.00 CAD, renews every 3 months
-    '6mo': 'price_1U2g1g2eC5FgbTwrRgdoJ1Do',   // $66.00 CAD, renews every 6 months
-    '1yr': 'price_1U2g1h2eC5FgbTwrmK9JQpvP'    // $125.40 CAD, renews every year
+    '3mo': 'price_1U49Bv2eC5FgbTwrNE3lQcQl',   // $33.00 CAD, renews every 3 months
+    '6mo': 'price_1U49Bv2eC5FgbTwr56JMu0to',   // $66.00 CAD, renews every 6 months
+    '1yr': 'price_1U49Bv2eC5FgbTwrtQhBhcUw'    // $125.40 CAD, renews every year
   }
 };
 
 // Reachable from member 101 onward. See THE CAP below.
 const STANDING = {
-  '3mo': 'price_1U2Ht62eC5FgbTwrJJGQWlfe',   // $45.00 CAD
-  '6mo': 'price_1U2Ht62eC5FgbTwrpTKZ3hOS',   // $90.00 CAD
-  '1yr': 'price_1U2Ht62eC5FgbTwrS4BrgZJH'    // $171.00 CAD
+  '3mo': 'price_1U49Bu2eC5FgbTwrJ4dRoy3F',   // $45.00 CAD
+  '6mo': 'price_1U49Bu2eC5FgbTwrWLlui3Rd',   // $90.00 CAD
+  '1yr': 'price_1U49Bu2eC5FgbTwrRWjzNPv3'    // $171.00 CAD
 };
 
 // ---------------------------------------------------------------------------
