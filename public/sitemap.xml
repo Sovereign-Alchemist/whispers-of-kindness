@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WHISPERS OF KINDNESS
+
+  One page, one entry. The site is a single page with the sections linked
+  by anchors, and a sitemap lists pages rather than fragments, so an entry
+  per anchor would be listing the same URL nine times.
+
+  thank-you.html is absent on purpose. It carries noindex, and a sitemap is
+  a request to index. Listing it would ask for the opposite of what the tag
+  says and give a crawler two contradictory instructions.
+
+  lastmod is the day the page content last changed. It is worth keeping
+  accurate rather than nudging on every deploy, because a lastmod that
+  always reads today teaches a crawler to ignore the field.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://whispersofkindness.ca/</loc>
+    <lastmod>2026-08-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

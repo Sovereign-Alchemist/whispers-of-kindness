@@ -1,0 +1,21 @@
+# WHISPERS OF KINDNESS
+#
+# Everything on this site is meant to be found. There is nothing here to
+# hide from a crawler, so nothing is hidden from one.
+#
+# The one exclusion is the function endpoints. Those are not pages. They
+# take POSTs from the site and from Stripe, and one of them answers a GET
+# with a readiness check meant for a person debugging a deploy. None of it
+# is secret and none of it belongs in a search result.
+#
+# thank-you.html is deliberately NOT excluded here. It carries a noindex
+# tag instead, which is the right tool: a page blocked in robots.txt can
+# still be indexed from a link elsewhere, because the crawler is forbidden
+# from fetching it and therefore never reads the noindex. Blocking it here
+# would make it more likely to appear, not less.
+
+User-agent: *
+Allow: /
+Disallow: /.netlify/functions/
+
+Sitemap: https://whispersofkindness.ca/sitemap.xml

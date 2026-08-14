@@ -3,8 +3,170 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Whispers of Kindness · Kindness whispers</title>
+<title>Family Recipe Cards, Mailed Monthly · Whispers of Kindness</title>
 <meta name="description" content="An archive of human kindness, gathered through family recipes. Keepsake recipe cards mailed monthly, with the story of the person behind them.">
+<link rel="canonical" href="https://whispersofkindness.ca/">
+
+<!-- ============================================================
+     HOW THE LINK LOOKS WHEN SOMEBODY SHARES IT
+
+     The share card is the first thing most people will see of this
+     project, ahead of the site itself, so the wording here is the
+     same wording as the page rather than a second version of it
+     that could drift.
+
+     cards-desk.jpg is used because it is the only landscape image
+     on the site, at 1920x1280. Social cards are cropped toward
+     1.91:1 and a portrait photograph gets its middle cut out.
+     ============================================================ -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://whispersofkindness.ca/">
+<meta property="og:site_name" content="Whispers of Kindness">
+<meta property="og:locale" content="en_CA">
+<meta property="og:title" content="Family Recipe Cards, Mailed Monthly · Whispers of Kindness">
+<meta property="og:description" content="An archive of human kindness, gathered through family recipes. Keepsake recipe cards mailed monthly, with the story of the person behind them.">
+<meta property="og:image" content="https://whispersofkindness.ca/images/cards-desk.jpg">
+<meta property="og:image:width" content="1920">
+<meta property="og:image:height" content="1280">
+<meta property="og:image:alt" content="Keepsake recipe cards laid out on a wooden desk">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Family Recipe Cards, Mailed Monthly · Whispers of Kindness">
+<meta name="twitter:description" content="An archive of human kindness, gathered through family recipes. Keepsake recipe cards mailed monthly, with the story of the person behind them.">
+<meta name="twitter:image" content="https://whispersofkindness.ca/images/cards-desk.jpg">
+<meta name="twitter:image:alt" content="Keepsake recipe cards laid out on a wooden desk">
+
+<!-- ============================================================
+     STRUCTURED DATA
+
+     Two things only: who this is, and the two memberships that are
+     actually open. Every number below is the number printed on the
+     page. Google treats structured data that disagrees with visible
+     text as a spam signal, so this file must never carry a price the
+     reader cannot see.
+
+     THE PRICES HERE ARE KEPT IN STEP BY SCRIPT.
+
+     The domestic prices change when the hundredth founding place is
+     taken, and membership-status rewrites them on the page. The same
+     pass rewrites the Offer prices below, so the two cannot drift
+     apart. Search for ld-membership further down. The offer @ids are
+     what that code matches on, so do not rename them casually.
+
+     No logo and no sameAs. There is no logo file and no social
+     profile, and inventing either would be describing a project that
+     does not exist yet.
+
+     NO FAQPage, deliberately. Google retired FAQ rich results in May
+     2026. The markup would add weight and return nothing. The FAQ
+     stays plain, well structured HTML, which is enough.
+
+     The four unopened tiers are absent, on purpose. They have no
+     price on the page and nothing to sell.
+     ============================================================ -->
+<script type="application/ld+json" id="ld-membership">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://whispersofkindness.ca/#organization",
+      "name": "Whispers of Kindness",
+      "url": "https://whispersofkindness.ca/",
+      "email": "lela@whispersofkindness.ca",
+      "description": "An archive of human kindness, gathered through family recipes.",
+      "parentOrganization": { "@type": "Organization", "name": "Sovereign Alchemist" }
+    },
+    {
+      "@type": "Product",
+      "@id": "https://whispersofkindness.ca/#the-mailing",
+      "name": "The Mailing",
+      "description": "One recipe a month, in the mail. A keepsake recipe card, punched to fit a binder, carrying the original recipe and the story of the person who made it.",
+      "image": "https://whispersofkindness.ca/images/cards-desk.jpg",
+      "brand": { "@id": "https://whispersofkindness.ca/#organization" },
+      "offers": [
+        {
+          "@type": "Offer",
+          "@id": "https://whispersofkindness.ca/#the-mailing-3mo",
+          "name": "3 months",
+          "price": "39.00",
+          "priceCurrency": "CAD",
+          "availability": "https://schema.org/InStock",
+          "url": "https://whispersofkindness.ca/#join",
+          "eligibleRegion": [
+            { "@type": "Country", "name": "CA" },
+            { "@type": "Country", "name": "US" }
+          ]
+        },
+        {
+          "@type": "Offer",
+          "@id": "https://whispersofkindness.ca/#the-mailing-6mo",
+          "name": "6 months",
+          "price": "78.00",
+          "priceCurrency": "CAD",
+          "availability": "https://schema.org/InStock",
+          "url": "https://whispersofkindness.ca/#join",
+          "eligibleRegion": [
+            { "@type": "Country", "name": "CA" },
+            { "@type": "Country", "name": "US" }
+          ]
+        },
+        {
+          "@type": "Offer",
+          "@id": "https://whispersofkindness.ca/#the-mailing-1yr",
+          "name": "1 year",
+          "price": "148.20",
+          "priceCurrency": "CAD",
+          "availability": "https://schema.org/InStock",
+          "url": "https://whispersofkindness.ca/#join",
+          "eligibleRegion": [
+            { "@type": "Country", "name": "CA" },
+            { "@type": "Country", "name": "US" }
+          ]
+        }
+      ]
+    },
+    {
+      "@type": "Product",
+      "@id": "https://whispersofkindness.ca/#international-digital",
+      "name": "International Digital",
+      "description": "The same recipe, delivered online. The month's recipe and the story behind it, with early access to that month's video, for members outside Canada and the United States.",
+      "image": "https://whispersofkindness.ca/images/cards-desk.jpg",
+      "brand": { "@id": "https://whispersofkindness.ca/#organization" },
+      "offers": [
+        {
+          "@type": "Offer",
+          "@id": "https://whispersofkindness.ca/#international-digital-3mo",
+          "name": "3 months",
+          "price": "33.00",
+          "priceCurrency": "CAD",
+          "availability": "https://schema.org/InStock",
+          "url": "https://whispersofkindness.ca/#join-international"
+        },
+        {
+          "@type": "Offer",
+          "@id": "https://whispersofkindness.ca/#international-digital-6mo",
+          "name": "6 months",
+          "price": "66.00",
+          "priceCurrency": "CAD",
+          "availability": "https://schema.org/InStock",
+          "url": "https://whispersofkindness.ca/#join-international"
+        },
+        {
+          "@type": "Offer",
+          "@id": "https://whispersofkindness.ca/#international-digital-1yr",
+          "name": "1 year",
+          "price": "125.40",
+          "priceCurrency": "CAD",
+          "availability": "https://schema.org/InStock",
+          "url": "https://whispersofkindness.ca/#join-international"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Caveat:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1844,6 +2006,49 @@ footer .fsa{
     return input ? input.closest('label') : null;
   }
 
+  /* Keep the structured data saying what the page says.
+     -------------------------------------------------------------------------
+     The JSON-LD in the head carries the three domestic prices. When those
+     prices change here, they have to change there in the same breath, because
+     structured data that disagrees with the visible text is read by Google as
+     a spam signal rather than as an oversight.
+
+     Matched on the offer @id, which ends in the term: #the-mailing-3mo.
+     International is never touched. That tier has no founding rate.
+
+     Wrapped in its own try. A failure to update a search engine hint must
+     never take the price display down with it, and the display is the part a
+     person actually reads. */
+  function syncSchema(terms){
+    var node = document.getElementById('ld-membership');
+    if (!node) return;
+    try {
+      var doc = JSON.parse(node.textContent);
+      var graph = doc['@graph'] || [];
+      var touched = false;
+
+      graph.forEach(function(entry){
+        if (entry['@id'] !== 'https://whispersofkindness.ca/#the-mailing') return;
+        (entry.offers || []).forEach(function(offer){
+          Object.keys(terms).forEach(function(term){
+            var suffix = '-' + term;
+            var id = offer['@id'] || '';
+            if (id.slice(-suffix.length) !== suffix) return;
+            var total = terms[term].total;
+            if (!total) return;
+            /* "$45.00" to "45.00". Schema wants the number alone. */
+            offer.price = String(total).replace(/[^0-9.]/g, '');
+            touched = true;
+          });
+        });
+      });
+
+      if (touched) node.textContent = JSON.stringify(doc, null, 2);
+    } catch (e) {
+      /* Silent, same reason as the fetch below. */
+    }
+  }
+
   function apply(data){
     if (!data || !data.terms) return;
 
@@ -1856,6 +2061,8 @@ footer .fsa{
       if (total && money.total) total.textContent = money.total;
       if (each  && money.each)  each.textContent  = money.each;
     });
+
+    syncSchema(data.terms);
 
     /* The prose only changes when the founding places are gone. While they
        remain, what is already written is both true and warmer than anything
