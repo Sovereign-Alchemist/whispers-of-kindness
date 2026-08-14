@@ -1314,7 +1314,7 @@ footer .fsa{
       <h1 class="reveal">Whispers of Kindness</h1>
       <p class="hero-tagline reveal">Kindness <em>whispers</em>.</p>
       <p class="hero-line reveal">Family recipes, preserved by hand and mailed each month, with the story of the person who wrote them down.</p>
-      <span class="stamp reveal">coming this fall</span>
+      <span class="stamp reveal">now open</span>
       <p class="hero-scroll reveal"><a href="#story">begin with the story ↓</a></p>
     </div>
   </section>
@@ -1609,18 +1609,30 @@ footer .fsa{
         <figure class="print print-blank reveal" aria-hidden="true">
           <img src="images/blank-card.jpg" alt="" loading="lazy">
         </figure>
-        <aside class="waitlist reveal" aria-label="Waiting list">
-        <h3>The first cards mail this fall</h3>
-        <p>Leave your email and we will write to you when the archive opens its doors.</p>
+        <!-- KEPT, AND REPOINTED.
+             This was a waiting list for a project that had not opened. It has
+             opened, so a list of people waiting for that is a list waiting for
+             something that already happened.
+             It is not deleted, because it is the only thing on the page for
+             somebody who is not ready to pay and has no recipe to send. Those
+             two are the whole of the rest of the page. Removing this would
+             leave that person nothing to do, and they are the most common
+             visitor a project this new gets.
+             So it now offers the smallest thing rather than the only thing,
+             and it says membership is open first, so it cannot be mistaken
+             for the main way in. -->
+        <aside class="waitlist reveal" aria-label="Stay in touch">
+        <h3>The first cards mail in September</h3>
+        <p>Membership is open now. If you would rather see the first card before you decide, leave your email and we will write when it goes out.</p>
         <!-- Netlify form: works as-is once hosted on Netlify -->
         <form name="waitlist" method="POST" data-netlify="true" id="waitlistForm">
           <input type="hidden" name="form-name" value="waitlist">
           <label for="wl-email" class="sr-only" style="position:absolute;left:-9999px;">Email address</label>
           <input id="wl-email" type="email" name="email" placeholder="your email" required autocomplete="email">
-          <button type="submit">Join the waiting list</button>
+          <button type="submit">Keep me posted</button>
         </form>
-        <p class="form-thanks" id="formThanks">Thank you. We will write soon.</p>
-        <p class="fine">No noise, no newsletters. Just a note when the doors open.</p>
+        <p class="form-thanks" id="formThanks">Thank you. We will write when the first cards go out.</p>
+        <p class="fine">No noise, no newsletters. Just a note when the first cards go out.</p>
       </aside>
       </div>
     </div>
