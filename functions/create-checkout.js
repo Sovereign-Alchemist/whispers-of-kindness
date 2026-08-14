@@ -206,21 +206,6 @@ exports.handler = async function (event) {
     });
   }
 
-  // ---- the test mode guard ------------------------------------------------
-  //
-  // Stage 2 is test mode only, so this refuses to run on a live key rather
-  // than trusting that nobody swaps the environment variable. It is a
-  // deliberate tripwire and it WILL need removing when this goes live, which
-  // is the point: going live should be an edit somebody made on purpose, not
-  // a variable that quietly started working.
-  if (!/^(sk|rk)_test_/.test(STRIPE_KEY)) {
-    console.error('STRIPE_SECRET_KEY is not a test key. Refusing to create a session.');
-    return reply(500, {
-      error: 'Membership is in test mode and the configured key is not a test key.'
-        + ' Nothing was charged and no session was created.'
-    });
-  }
-
   let body;
   try {
     body = JSON.parse(event.body || '{}');

@@ -778,22 +778,6 @@ exports.handler = async function (event) {
     return reply(400, { error: 'Body was not JSON.' });
   }
 
-  // ---- the test mode tripwire ---------------------------------------------
-  //
-  // Test and live webhook secrets both start whsec_, so the secret cannot say
-  // which mode it belongs to. The event can: Stripe stamps every one with
-  // livemode. Stage 3 is test mode only, so a live event is refused rather
-  // than quietly recorded.
-  //
-  // This WILL need removing when this goes live, deliberately, which is the
-  // point. Going live should be an edit somebody made on purpose, not a
-  // variable that quietly started working. There is a matching tripwire in
-  // create-checkout.js and the two should be removed together.
-  if (stripeEvent.livemode === true) {
-    log('refused-livemode', { id: stripeEvent.id, type: stripeEvent.type });
-    return reply(202, { ignored: 'live mode events are not accepted yet' });
-  }
-
   // Renewals go down their own path entirely. Nothing below this line changed
   // when they were added: the first payment is still handled exactly as it
   // was, by checkout.session.completed, and the two never touch.
