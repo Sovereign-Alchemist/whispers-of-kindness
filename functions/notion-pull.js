@@ -143,22 +143,31 @@ function trimmed(value) {
 // ---------------------------------------------------------------------------
 // THE PROPERTY MAPPING
 //
-// ###########################################################################
-// ## UNVERIFIED. These names and types come from the brief, not from Notion.
-// ## Get-NotionSchema.ps1 prints what the database actually has. Until that
-// ## has been run and this block reconciled against it, expect a 400 on the
-// ## first real page create.
-// ##
-// ## Notion is unforgiving here in two separate ways. A name off by one
-// ## character is rejected. A name that is right with the wrong TYPE is also
-// ## rejected, and 'Status' in particular is a different payload depending on
-// ## whether it is a status property or a select. Select and status options
-// ## are a closed, case sensitive vocabulary: writing 'granted' to a select
-// ## whose option is 'Granted' fails.
-// ###########################################################################
+// Reconciled against the real data source schema. Four things the brief had
+// differently, all of which would have failed:
 //
-// It is one declarative table on purpose. Reconciling it against the real
-// schema is editing this block, not hunting through the code that uses it.
+//   Status is a SELECT, not a status property. Different payload.
+//   Location is called 'Contributor Location'.
+//   Email is called 'Contributor Email'.
+//   Region/Origin is 'Region / Origin', with spaces, and is not written at
+//     all now. See the note on it below, which is the interesting one.
+//
+// Permission Status also needs a translation, because Notion and Postgres do
+// not use the same words. See PERMISSION below.
+//
+// A WARNING ABOUT SELECT PROPERTIES, because it decides several choices here.
+// If you write a select option that does not exist, Notion does NOT reject it.
+// It ADDS it to the schema. So a wrong value here is not a 400 that gets
+// noticed on the first run; it is a new option quietly appearing in Pela's
+// dropdown, and after fifty submissions the list is unusable. Select options
+// are a closed vocabulary that the API will happily open for you.
+//
+// Status properties are the opposite: their options cannot be created through
+// the API at all. Nothing here writes one, and that is worth remembering if
+// any of these ever changes type.
+//
+// It is one declarative table on purpose. Reconciling it against a schema
+// change is editing this block, not hunting through the code that uses it.
 //
 //   notion  the property name, exactly as Notion spells it
 //   type    the Notion property type, which decides the payload shape
@@ -166,12 +175,32 @@ function trimmed(value) {
 //           leave the property off the page entirely
 // ---------------------------------------------------------------------------
 
+// Postgres says one thing, Notion says another, and neither is wrong.
+// contributor.permission_status is constrained to four values. The Notion
+// select offers three, and the middle one is a different WORD rather than a
+// different case: a granted permission is 'Received' in the pipeline.
+//
+// 'withdrawn' has no Notion option and is deliberately NOT folded into
+// 'Declined'. Someone who gave permission and later took it back is not the
+// same as someone who never gave it, and flattening the two would lose the
+// distinction in the one place Pela does the work. It writes nothing and logs,
+// so the field reads as unset and she goes and looks.
+//
+// In practice this is near unreachable for a new submission: the form only
+// ever produces 'granted' or 'pending'. Withdrawal happens later, by hand.
+const PERMISSION = {
+  pending:  'Pending',
+  granted:  'Received',
+  declined: 'Declined'
+};
+
 const MAPPING = [
   { notion: 'Recipe Title', type: 'title',
     from: function (d) { return trimmed(d.recipe.title) || 'Untitled recipe'; } },
 
-  // Always this on creation. Everything after is Pela moving it by hand.
-  { notion: 'Status', type: 'status',
+  // A select, not a status property. 'Submitted' is the first of the eight
+  // options and everything after it is Pela moving the card by hand.
+  { notion: 'Status', type: 'select',
     from: function () { return 'Submitted'; } },
 
   // The TRUE name, not name_display. An anonymous contributor is anonymous in
@@ -182,39 +211,67 @@ const MAPPING = [
   { notion: 'Contributor Name', type: 'rich_text',
     from: function (d) { return trimmed(d.contributor.name); } },
 
-  { notion: 'Location', type: 'rich_text',
+  { notion: 'Contributor Location', type: 'rich_text',
     from: function (d) { return trimmed(d.contributor.location); } },
 
-  // The column is called contact, not email. It is whatever they typed in the
-  // contact box, which is an email address in practice.
-  { notion: 'Email', type: 'email',
+  // The Postgres column is called contact, not email. It is whatever they
+  // typed in the contact box, which is an email address in practice.
+  { notion: 'Contributor Email', type: 'email',
     from: function (d) { return trimmed(d.contributor.contact); } },
 
-  // These three exist on the recipe table and are NULL at submission time.
-  // Nothing on the form asks for them; they are Pela's editorial judgement,
-  // made later. from returning null leaves the property off rather than
-  // writing an empty string, so the Notion field reads as untouched rather
+  // Both are NULL at submission. Nothing on the form asks for a category or a
+  // season; they are Pela's editorial judgement, made later. Returning null
+  // leaves the property off the page entirely, so it reads as untouched rather
   // than as deliberately blank.
+  //
+  // They are still mapped rather than dropped, because the day something does
+  // write them, the values have to be exactly one of the existing options or
+  // Notion silently invents a new one. Mains, Baking, Preserves, Drinks,
+  // Desserts, Soups & Stews. Spring, Summer, Fall, Winter, Any.
   { notion: 'Category', type: 'select',
     from: function (d) { return trimmed(d.recipe.category); } },
   { notion: 'Season', type: 'select',
     from: function (d) { return trimmed(d.recipe.season); } },
-  { notion: 'Region/Origin', type: 'select',
-    from: function (d) {
-      // recipe.region is the editorial field and is empty at submission.
-      // place_of_origin is what the contributor actually told us, so it is
-      // the better answer when the editorial one has not been made yet.
-      return trimmed(d.recipe.region) || trimmed(d.provenance.place_of_origin);
-    } },
+
+  // ---- 'Region / Origin' IS DELIBERATELY NOT WRITTEN ----------------------
+  //
+  // The brief asked for it and it is left off on purpose, because every way of
+  // filling it in makes the pipeline worse.
+  //
+  // It is a SELECT whose only option is 'Unspecified'. The data that would go
+  // in it is free text: recipe.region is NULL at submission, and what the
+  // contributor actually tells us is provenance.place_of_origin, which reads
+  // "Yorkshire, then Saskatchewan" or "my nan's kitchen in Trail".
+  //
+  // Writing that to a select does not fail. Notion ADDS the option. So after
+  // fifty submissions the dropdown holds fifty one-off phrases and is no
+  // longer a filter, and nothing ever raised an error to say so. A property
+  // that quietly destroys itself is worse than one that 400s.
+  //
+  // The information is not lost. place_of_origin is written into the page
+  // body, under the 'Where it comes from' prompt, which is where a sentence
+  // belongs. Pela picks the select from her own list when she knows the answer.
+  //
+  // To turn this on: add the real regions as options in Notion, then map it to
+  // recipe.region only, never to place_of_origin.
 
   { notion: 'Date Submitted', type: 'date',
     from: function (d) { return d.recipe.created_at || null; } },
 
-  // pending / granted / declined / withdrawn, straight from the CHECK
-  // constraint on contributor.permission_status. If the Notion select spells
-  // them with capitals, this needs a translation and the schema dump will say.
+  // Translated, not passed through. See PERMISSION above: Postgres says
+  // 'granted' and the pipeline says 'Received'. An unmapped value writes
+  // nothing rather than guessing.
   { notion: 'Permission Status', type: 'select',
-    from: function (d) { return trimmed(d.contributor.permission_status); } },
+    from: function (d) {
+      const raw = trimmed(d.contributor.permission_status);
+      if (!raw) return null;
+      const mapped = PERMISSION[raw];
+      if (!mapped) {
+        log('permission-unmapped', { value: raw, contributor: d.contributor.id || null });
+        return null;
+      }
+      return mapped;
+    } },
 
   // THE MATCH KEY. Both this chunk and the later push depend on it.
   //
@@ -285,14 +342,19 @@ function buildProperties(data) {
 // THE PAGE BODY
 //
 // ###########################################################################
-// ## ALSO UNVERIFIED, and it is worth knowing WHY it has to be built here at
-// ## all: a Notion database TEMPLATE is a user interface feature. It is NOT
-// ## applied to pages created through the API. A page created by this function
-// ## arrives with exactly the blocks below and nothing else, so if the six
-// ## prompts are to be on it, this is what has to put them there.
+// ## STILL UNVERIFIED. The PROPERTIES have been reconciled against the real
+// ## Notion schema. These body headings have not: the schema dump answered
+// ## what the columns are, not how the six prompts on the page are worded.
 // ##
-// ## Section 4 of Get-NotionSchema.ps1 dumps the blocks of an existing page so
-// ## these headings can be matched to the real ones.
+// ## Nothing here can fail because of it. Blocks are free text and Notion
+// ## accepts any heading, so a mismatch produces a page with slightly wrong
+// ## wording rather than an error. Worth correcting, not worth blocking on.
+// ##
+// ## It is worth knowing WHY this has to be built here at all: a Notion
+// ## database TEMPLATE is a user interface feature. It is NOT applied to pages
+// ## created through the API. A page created by this function arrives with
+// ## exactly the blocks below and nothing else, so if the six prompts are to
+// ## be on it, this is what has to put them there.
 // ###########################################################################
 //
 // Six prompts, six provenance columns, which is very unlikely to be a
