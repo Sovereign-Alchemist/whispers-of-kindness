@@ -887,8 +887,13 @@ exports.handler = async function (event) {
   // The two addresses have defaults so that going live needs one variable set
   // rather than three. Override either if the verified sending domain changes.
   const RESEND_KEY = (process.env.RESEND_API_KEY || '').trim();
+  // The SUBDOMAIN, not the apex, because mail.whispersofkindness.ca is what
+  // Resend has verified and Resend will not send from a domain it has not.
+  // Sending from a subdomain is the better arrangement anyway: transactional
+  // mail builds its own sending reputation there, so a problem with it never
+  // touches the deliverability of ordinary post from the main domain.
   const ALERT_FROM = (process.env.ALERT_FROM || '').trim() ||
-    'Whispers of Kindness <alerts@whispersofkindness.ca>';
+    'Whispers of Kindness <alerts@mail.whispersofkindness.ca>';
   const ALERT_TO   = (process.env.ALERT_TO || '').trim() ||
     'lela@whispersofkindness.ca';
 

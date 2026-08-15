@@ -48,7 +48,7 @@ All set in Netlify, none in this folder, none in the repo.
 | `STRIPE_SECRET_KEY` | yes | create-checkout, stripe-webhook |
 | `STRIPE_WEBHOOK_SECRET` | yes | stripe-webhook |
 | `RESEND_API_KEY` | **no** | stripe-webhook, for the failed-payment alert |
-| `ALERT_FROM` | no | defaults to `Whispers of Kindness <alerts@whispersofkindness.ca>` |
+| `ALERT_FROM` | no | defaults to `Whispers of Kindness <alerts@mail.whispersofkindness.ca>` |
 | `ALERT_TO` | no | defaults to `lela@whispersofkindness.ca` |
 
 `RESEND_API_KEY` is deliberately optional. The required list makes the webhook
@@ -65,16 +65,17 @@ lose an hour here. Open the function address in a browser: it answers with
 `ready`, `missing`, and whether alerting is configured, without disclosing any
 value.
 
-### The alert needs Resend set up before it can send
+### Where the alert sends from
 
-Setting the key is not enough on its own. Resend will not send from a domain it
-has not verified, and the failure comes back as a 403 that looks like a bad key.
+`mail.whispersofkindness.ca`, verified in Resend, with the DKIM and SPF records
+on the DNS. Resend will not send from a domain it has not verified, and the
+refusal comes back as a 403 that reads like a bad key.
 
-1. A Resend account.
-2. `whispersofkindness.ca` added as a sending domain, and the DKIM and SPF
-   records it gives you added to the DNS. Verification is not instant.
-3. The API key into Netlify as `RESEND_API_KEY`.
-4. A fresh deploy.
+The subdomain rather than the apex is deliberate. Transactional mail builds its
+own sending reputation there, so if the alert ever gets marked as spam it does
+not drag down ordinary post from `whispersofkindness.ca`.
 
-Until step 2 is done, either point `ALERT_FROM` at a sender Resend already
-accepts, or expect a 403 with the reason quoted in the webhook's reply.
+If the sending domain ever changes, set `ALERT_FROM` in Netlify rather than
+editing the code. The default here should always be whatever is actually
+verified, so that a fresh deploy works without anybody having to know a secret
+extra step.
