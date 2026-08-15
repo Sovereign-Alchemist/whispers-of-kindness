@@ -48,6 +48,8 @@ All set in Netlify, none in this folder, none in the repo.
 | `STRIPE_SECRET_KEY` | yes | create-checkout, stripe-webhook |
 | `STRIPE_WEBHOOK_SECRET` | yes | stripe-webhook |
 | `RESEND_API_KEY` | **no** | stripe-webhook, for the failed-payment alert |
+| `NOTION_API_KEY` | yes, for notion-pull | notion-pull |
+| `NOTION_PULL_SECRET` | yes, for notion-pull | notion-pull |
 | `ALERT_FROM` | no | defaults to `Whispers of Kindness <alerts@mail.whispersofkindness.ca>` |
 | `ALERT_TO` | no | defaults to `lela@whispersofkindness.ca` |
 
@@ -57,6 +59,20 @@ database key and wrong for a mail key: a successful payment must not be refused
 because an email about a different member could not be sent. Without it,
 failed payments are still recorded and the member is still marked `past_due`.
 Nobody is told, and the log and the reply both say so.
+
+`NOTION_API_KEY` is required, which looks like the opposite rule and is not.
+The mail was a side effect of handling a payment that had already succeeded, so
+refusing over a missing mail key would have thrown away real work to protect
+nothing. For `notion-pull` the Notion write **is** the entire job. A run without
+the key accomplishes nothing, and carrying on quietly would mean pretending a
+submission had been filed when it had not.
+
+`NOTION_PULL_SECRET` is a shared secret you invent, set in Netlify, and set
+again in the Supabase webhook as an `x-notion-pull-secret` header. Supabase
+Database Webhooks do not sign their deliveries the way Stripe does, and the
+function address is public, so a header is the only thing standing between the
+Recipe Pipeline and anything on the internet that finds the URL. It fails
+closed: unset means every delivery is refused.
 
 **A variable added to Netlify is not visible until the next deploy.** Netlify
 fixes the function environment when the deploy is built. Adding a key and
