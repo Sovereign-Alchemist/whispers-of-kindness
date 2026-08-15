@@ -342,13 +342,11 @@ function buildProperties(data) {
 // THE PAGE BODY
 //
 // ###########################################################################
-// ## STILL UNVERIFIED. The PROPERTIES have been reconciled against the real
-// ## Notion schema. These body headings have not: the schema dump answered
-// ## what the columns are, not how the six prompts on the page are worded.
+// ## The six prompts below are the real ones, word for word off the page.
 // ##
-// ## Nothing here can fail because of it. Blocks are free text and Notion
-// ## accepts any heading, so a mismatch produces a page with slightly wrong
-// ## wording rather than an error. Worth correcting, not worth blocking on.
+// ## The em dash in the fifth is hers and is kept on purpose, because these
+// ## headings exist to match her template exactly. It is the one place on this
+// ## project where an em dash is deliberate.
 // ##
 // ## It is worth knowing WHY this has to be built here at all: a Notion
 // ## database TEMPLATE is a user interface feature. It is NOT applied to pages
@@ -364,13 +362,64 @@ function buildProperties(data) {
 // than having to remember what the question was.
 // ---------------------------------------------------------------------------
 
+// The real prompts, word for word from the page. They are NOT one prompt to
+// one column, which is why each carries a function rather than a field name:
+//
+//   one prompt draws on TWO columns        (where and when they lived)
+//   one draws on a column from a DIFFERENT TABLE  (the relationship, which
+//                                           lives on contributor, not
+//                                           provenance)
+//   one has NOTHING behind it              (see the last entry)
+//
+// Each `from` returns a list. Every non-empty item becomes its own paragraph,
+// so two answers under one prompt stay two answers rather than being joined
+// into a sentence nobody wrote.
 const STORY_PROMPTS = [
-  { heading: 'Who made it',              field: 'original_cook' },
-  { heading: 'Who they cooked it for',   field: 'who_they_cooked_for' },
-  { heading: 'Where it comes from',      field: 'place_of_origin' },
-  { heading: 'Roughly when',             field: 'approximate_date' },
-  { heading: 'How it travelled',         field: 'migration_notes' },
-  { heading: 'The story as remembered',  field: 'remembered_story' }
+  {
+    heading: 'Whose recipe was this, and what was your relationship to them?',
+    from: function (d) {
+      // Two tables. The cook is on provenance, the relationship is on
+      // contributor, because it describes the person submitting rather than
+      // the person who cooked.
+      return [
+        d.provenance.original_cook,
+        d.contributor.relationship_to_original_cook
+      ];
+    }
+  },
+  {
+    heading: 'Where and when did they live?',
+    from: function (d) {
+      // Deliberately two paragraphs rather than "Yorkshire, in the 1950s".
+      // Joining them would be writing a sentence the contributor did not.
+      return [d.provenance.place_of_origin, d.provenance.approximate_date];
+    }
+  },
+  {
+    heading: 'Who did they make this for? An occasion, a person, a hard season?',
+    from: function (d) { return [d.provenance.who_they_cooked_for]; }
+  },
+  {
+    heading: 'What do you remember about them making it?',
+    from: function (d) { return [d.provenance.remembered_story]; }
+  },
+  {
+    heading: 'Did it come from further back — another country, another generation?',
+    from: function (d) { return [d.provenance.migration_notes]; }
+  },
+  {
+    // NOTHING FILLS THIS ONE, and that is not an oversight in the mapping.
+    // The submission form does not ask it. submit.js reads nineteen fields off
+    // the body and none of them is this question, so there is no column for it
+    // to have been stored in.
+    //
+    // It writes the heading and an empty space under it, which is the whole
+    // point: a question Pela can answer beats a heading that is silently not
+    // there. Filling it from anything else would be inventing an answer to the
+    // most personal question on the page.
+    heading: "Is there anything about them you'd want remembered?",
+    from: function () { return []; }
+  }
 ];
 
 function paragraph(text) {
@@ -421,10 +470,32 @@ function buildBody(data) {
   blocks.push(heading('The Story'));
   STORY_PROMPTS.forEach(function (prompt) {
     blocks.push(heading(prompt.heading));
-    // Deliberately writes an empty paragraph when there is nothing. The
-    // prompt is the point: an empty space under a question Pela can answer is
-    // more use than a heading that silently is not there.
-    paragraphs(data.provenance[prompt.field]).forEach(function (b) { blocks.push(b); });
+
+    let answers = [];
+    try {
+      answers = prompt.from(data) || [];
+    } catch (e) {
+      // One prompt throwing must not cost the whole page. The heading is
+      // still written, so the question survives even when the answer does not.
+      log('prompt-threw', {
+        prompt: prompt.heading.slice(0, 40),
+        error: String(e.message || e).slice(0, 200)
+      });
+    }
+
+    const filled = answers.map(trimmed).filter(Boolean);
+
+    if (!filled.length) {
+      // Deliberately an empty paragraph. The prompt is the point: an empty
+      // space under a question Pela can answer is more use than a heading
+      // that silently is not there.
+      blocks.push(paragraph(null));
+      return;
+    }
+
+    filled.forEach(function (answer) {
+      paragraphs(answer).forEach(function (b) { blocks.push(b); });
+    });
   });
 
   // Notion caps children at 100 blocks on a create. Anything past that has to
@@ -532,7 +603,16 @@ exports.handler = async function (event) {
   // that costs is bounded and visible: the recipes go on reading
   // notion_page_id NULL and the repair queue finds every one of them.
   const headers = event.headers || {};
-  const offered = headers['x-notion-pull-secret'] || headers['X-Notion-Pull-Secret'] || '';
+  // Trimmed, like the environment variable it is compared against. Slightly
+  // lax for a credential, and worth it: this check answers a bare 401 with no
+  // detail, so a CORRECT secret carrying a stray space pasted into the
+  // Supabase dashboard would be indistinguishable from an attack, permanently,
+  // with nothing anywhere saying why. The value is 256 bits of entropy. Whether
+  // it has a space on the end of it is not what stands between this address
+  // and the internet.
+  const offered = String(
+    headers['x-notion-pull-secret'] || headers['X-Notion-Pull-Secret'] || ''
+  ).trim();
 
   if (!safeEqual(offered, HOOK_SECRET)) {
     // 401 and no detail. A forged caller learns only that it was refused.
