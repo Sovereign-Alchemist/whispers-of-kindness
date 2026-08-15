@@ -14,7 +14,7 @@ level security with no policies. There are two ways to allow a write, and only
 one of them is safe:
 
 **Let the browser write directly.** This needs an INSERT policy for the `anon`
-key. But the `anon` key ships inside the page where anyone can read it, so
+key. The `anon` key ships inside the page where anyone can read it, though, so
 anyone could then insert unlimited rows straight into the contributor table.
 There is no gate.
 
