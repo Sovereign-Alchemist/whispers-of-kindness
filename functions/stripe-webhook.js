@@ -14,13 +14,17 @@
 //                                 member's current period forward.
 //     invoice.payment_failed      a card was declined. Marks the member
 //                                 past_due so the archive stops saying they
-//                                 are fine.
+//                                 are fine, and emails Pela one line about it.
 //
 //   Each has its own handler and its own ledger table. They do not share
 //   state, and the two ledgers are deliberately separate: renewal_count is
 //   derived by counting renewal rows, so a failure recorded alongside them
 //   would read as a renewal and advance somebody through a term they never
 //   paid for.
+//
+//   The email is the only thing this function sends anywhere other than
+//   Supabase and Stripe. It is a stopgap until the daily digest exists, and it
+//   is built so that it cannot take the webhook down with it: see sendAlert.
 //
 // WHY IT EXISTS
 //   Until now a completed payment existed in Stripe and nowhere else. Money
@@ -213,6 +217,78 @@ async function db(url, key, path, options = {}) {
     throw err;
   }
   return text ? JSON.parse(text) : null;
+}
+
+
+// ---------------------------------------------------------------------------
+// TELLING SOMEBODY
+//
+// One line of email when a card is declined. A stopgap until the daily digest
+// exists, and deliberately the smallest thing that closes the gap: no
+// formatting, no batching, no rolling window, one recipient.
+//
+// THIS FUNCTION NEVER THROWS, and that is the whole design.
+//
+//   Stripe reads the HTTP status and nothing else. A 500 means "I did not get
+//   this, send it again", so if a Resend outage were allowed to escape as an
+//   exception, every declined card would answer 500, Stripe would retry the
+//   delivery, the ledger insert would come back 409, and the whole thing would
+//   go round again on Stripe's schedule for days. An email that failed to send
+//   would have turned a recorded, correctly handled payment failure into a
+//   webhook that looks broken.
+//
+//   So the mail result is DATA, not control flow. It gets logged and returned
+//   in the body. The database work has already happened and stands on its own.
+//
+// THE TIMEOUT is the same reasoning one step further. Netlify gives a function
+// ten seconds total, and the failure handler already spends up to four
+// Supabase round trips. A Resend call that hangs would eat the rest of the
+// budget and take the whole delivery down with it, which is the outcome the
+// try/catch exists to prevent. Four seconds, then give up and say so.
+// ---------------------------------------------------------------------------
+
+const RESEND_API = 'https://api.resend.com/emails';
+const ALERT_TIMEOUT_MS = 4000;
+
+async function sendAlert(subject, text, cfg) {
+  if (!cfg.RESEND_KEY) {
+    return { sent: false, reason: 'RESEND_API_KEY is not set' };
+  }
+
+  try {
+    const res = await fetch(RESEND_API, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + cfg.RESEND_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: cfg.ALERT_FROM,
+        to: [cfg.ALERT_TO],
+        subject: subject,
+        text: text
+      }),
+      signal: AbortSignal.timeout(ALERT_TIMEOUT_MS)
+    });
+
+    const body = await res.text();
+
+    if (!res.ok) {
+      // 403 here is almost always the sending domain not being verified yet.
+      // 422 is usually a from address on a domain Resend does not know.
+      return { sent: false, reason: 'resend ' + res.status + ': ' + body.slice(0, 200) };
+    }
+
+    let id = null;
+    try { id = (JSON.parse(body) || {}).id || null; } catch (e) { }
+    return { sent: true, id: id };
+
+  } catch (err) {
+    // AbortSignal.timeout produces a TimeoutError here. So does DNS failing,
+    // Resend being unreachable, and anything else. All of them mean the same
+    // thing to this function: no email, carry on, say so in the log.
+    return { sent: false, reason: String(err.message || err).slice(0, 200) };
+  }
 }
 
 
@@ -550,9 +626,11 @@ async function handlePaymentFailure(stripeEvent, cfg) {
   let stage = 'failure-find-member';
 
   try {
+    // name and email are here for the alert, and for nothing else. They are
+    // never written back, never returned to the caller, and never logged.
     const members = await db(SUPABASE_URL, SERVICE_KEY,
       'member?stripe_subscription_id=eq.' + encodeURIComponent(subscriptionId) +
-      '&select=id,subscription_status');
+      '&select=id,subscription_status,name,email');
 
     if (!members || !members.length) {
       log('failure-unknown-subscription', {
@@ -595,11 +673,14 @@ async function handlePaymentFailure(stripeEvent, cfg) {
 
     stage = 'failure-ledger';
     let alreadyRecorded = false;
+    let failureRowId = null;
+    let alreadyAlerted = false;
 
     try {
-      await db(SUPABASE_URL, SERVICE_KEY, 'member_payment_failure', {
+      // Not return=minimal any more. The row's id is needed to stamp
+      // alerted_at on it once the email has actually gone.
+      const written = await db(SUPABASE_URL, SERVICE_KEY, 'member_payment_failure', {
         method: 'POST',
-        headers: { Prefer: 'return=minimal' },
         body: JSON.stringify({
           member_id: member.id,
           stripe_invoice_id: invoiceId,
@@ -610,9 +691,26 @@ async function handlePaymentFailure(stripeEvent, cfg) {
           billing_reason: reason
         })
       });
+      // A row that was just inserted has never been alerted on. No read needed.
+      if (written && written.length) failureRowId = written[0].id;
+
     } catch (ledgerError) {
       if (ledgerError.status !== 409) throw ledgerError;
       alreadyRecorded = true;
+    }
+
+    // The 409 path is the only one that has to ask. This is Stripe retrying
+    // the same invoice, so the question is whether the email already went the
+    // first time round.
+    if (alreadyRecorded) {
+      stage = 'failure-read-back';
+      const existing = await db(SUPABASE_URL, SERVICE_KEY,
+        'member_payment_failure?stripe_invoice_id=eq.' + encodeURIComponent(invoiceId) +
+        '&select=id,alerted_at');
+      if (existing && existing.length) {
+        failureRowId = existing[0].id;
+        alreadyAlerted = Boolean(existing[0].alerted_at);
+      }
     }
 
     // ---- mark the member, or deliberately do not --------------------------
@@ -646,6 +744,84 @@ async function handlePaymentFailure(stripeEvent, cfg) {
       statusChanged = true;
     }
 
+    // ---- tell Pela --------------------------------------------------------
+    //
+    // WHO GETS AN EMAIL, and why it is not simply "everyone who fails".
+    //
+    //   alreadyAlerted  this invoice has already been reported. Stripe fires
+    //                   payment_failed on every retry of the SAME invoice, up
+    //                   to four times over a fortnight, and four identical
+    //                   emails about one declined card is how somebody learns
+    //                   to ignore the alert. One per invoice, which is one per
+    //                   dunning episode.
+    //   alreadyPaid     the invoice was collected in the end. This is a stale
+    //                   delivery about a problem that resolved itself, and
+    //                   announcing it is exactly the false alarm the ordering
+    //                   guard above exists to prevent.
+    //   cancelled       somebody ended this membership. A bounced invoice on
+    //                   the way out is not news.
+    //
+    // Note what is NOT on that list: a member already past_due from an EARLIER
+    // invoice still gets an email when a NEW invoice fails, because a second
+    // failed term is a different fact from the first one.
+    //
+    // The stamp is what makes this survive a bad day. If Resend is down, the
+    // send fails, alerted_at stays NULL, and Stripe's next retry in a few days
+    // tries again. Nothing is lost, it is only late.
+
+    const worthTelling = !alreadyAlerted && !alreadyPaid &&
+      member.subscription_status !== 'cancelled';
+
+    let alert = { sent: false, reason: 'not attempted' };
+
+    if (worthTelling) {
+      stage = 'failure-alert';
+
+      const who = (member.name ? member.name + ' ' : '') + '<' + member.email + '>';
+      const lines = [
+        'Payment failed: ' + who + ', invoice ' + invoiceId + '.',
+        '',
+        // Not a truthiness test. attemptCount is null when Stripe did not send
+        // one, and null is the only case that has nothing to report.
+        attemptCount !== null ? 'Stripe attempt ' + attemptCount + '.' : 'Attempt count not given.',
+        nextAttempt
+          ? 'It will try again on ' + nextAttempt + '.'
+          : 'No further attempt is scheduled, which means Stripe has stopped trying.',
+        '',
+        'Member ' + member.id + ' is now ' + (statusChanged ? 'past_due' : member.subscription_status) + '.',
+        '',
+        'Automatic note from the membership webhook. Nothing to reply to.'
+      ];
+
+      // Cannot throw. See sendAlert.
+      alert = await sendAlert(
+        'Payment failed: ' + (member.name || member.email),
+        lines.join('\n'),
+        cfg
+      );
+
+      if (alert.sent && failureRowId) {
+        // Stamped in its own try so that a stamp failing cannot 500 the
+        // delivery. If this write is lost the cost is one duplicate email on
+        // Stripe's next retry, days from now. A 500 here would cost an
+        // immediate retry loop, which is far worse.
+        try {
+          await db(SUPABASE_URL, SERVICE_KEY, 'member_payment_failure?id=eq.' + failureRowId, {
+            method: 'PATCH',
+            headers: { Prefer: 'return=minimal' },
+            body: JSON.stringify({ alerted_at: new Date().toISOString() })
+          });
+        } catch (stampError) {
+          log('alert-sent-but-not-stamped', {
+            id: eventId,
+            invoice: invoiceId,
+            row: failureRowId,
+            error: String(stampError.message || stampError).slice(0, 200)
+          });
+        }
+      }
+    }
+
     log('payment-failed', {
       id: eventId,
       invoice: invoiceId,
@@ -657,7 +833,10 @@ async function handlePaymentFailure(stripeEvent, cfg) {
       ledger: alreadyRecorded ? 'already-recorded' : 'recorded',
       status_was: member.subscription_status,
       status_now: statusChanged ? 'past_due' : member.subscription_status,
-      held_because: held
+      held_because: held,
+      // The address is never logged. Whether an email went is operational,
+      // who it was about is already answered by member id above.
+      alert: alert.sent ? 'sent' : (worthTelling ? 'FAILED: ' + alert.reason : 'not needed')
     });
 
     return reply(200, {
@@ -666,7 +845,9 @@ async function handlePaymentFailure(stripeEvent, cfg) {
       subscription_status: statusChanged ? 'past_due' : member.subscription_status,
       status_changed: statusChanged,
       held_because: held,
-      outcome: alreadyRecorded ? 'already-recorded' : 'recorded'
+      outcome: alreadyRecorded ? 'already-recorded' : 'recorded',
+      alert_sent: alert.sent,
+      alert_reason: alert.sent ? null : alert.reason
     });
 
   } catch (err) {
@@ -694,6 +875,28 @@ exports.handler = async function (event) {
   const SUPABASE_URL   = (process.env.SUPABASE_URL || '').trim();
   const SERVICE_KEY    = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 
+  // The alert configuration, which is deliberately NOT in the list below.
+  //
+  // RESEND_API_KEY IS NOT REQUIRED, and adding it to `missing` would be an
+  // outage. `missing` makes every POST answer 500, so listing the mail key
+  // there would mean that until it is set, a genuine successful payment would
+  // be refused too. The money handling must not depend on the ability to send
+  // an email about it. A missing key costs exactly one thing: no email, said
+  // out loud in the log and in the reply.
+  //
+  // The two addresses have defaults so that going live needs one variable set
+  // rather than three. Override either if the verified sending domain changes.
+  const RESEND_KEY = (process.env.RESEND_API_KEY || '').trim();
+  // The SUBDOMAIN, not the apex, because mail.whispersofkindness.ca is what
+  // Resend has verified and Resend will not send from a domain it has not.
+  // Sending from a subdomain is the better arrangement anyway: transactional
+  // mail builds its own sending reputation there, so a problem with it never
+  // touches the deliverability of ordinary post from the main domain.
+  const ALERT_FROM = (process.env.ALERT_FROM || '').trim() ||
+    'Whispers of Kindness <alerts@mail.whispersofkindness.ca>';
+  const ALERT_TO   = (process.env.ALERT_TO || '').trim() ||
+    'lela@whispersofkindness.ca';
+
   const missing = [];
   if (!WEBHOOK_SECRET) missing.push('STRIPE_WEBHOOK_SECRET');
   if (!STRIPE_KEY)     missing.push('STRIPE_SECRET_KEY');
@@ -718,6 +921,17 @@ exports.handler = async function (event) {
       function: 'stripe-webhook',
       ready: missing.length === 0,
       missing,
+      // Reported separately from `missing` because it is not required. ready
+      // stays true without it: payments are handled either way, they are just
+      // handled quietly.
+      //
+      // No address here, in either branch. This endpoint's rule is names
+      // only, never values, and the recipient is a value. Whether alerting is
+      // switched on is operational. Who it reaches is not the internet's
+      // business, even though this particular address is already public.
+      alerts: RESEND_KEY
+        ? { configured: true }
+        : { configured: false, unset: 'RESEND_API_KEY', effect: 'failed payments are recorded but nobody is emailed' },
       note: missing.length
         ? 'Netlify sets a function environment when the deploy is built. A variable added afterwards needs a fresh deploy before the function can see it.'
         : 'Configuration is visible to the running function. This says nothing about whether the values are correct.'
@@ -789,7 +1003,9 @@ exports.handler = async function (event) {
   // two never share a table: renewal_count is derived by counting renewal
   // rows, so a failure recorded there would read as its opposite.
   if (stripeEvent.type === 'invoice.payment_failed') {
-    return await handlePaymentFailure(stripeEvent, { SUPABASE_URL, SERVICE_KEY });
+    return await handlePaymentFailure(stripeEvent, {
+      SUPABASE_URL, SERVICE_KEY, RESEND_KEY, ALERT_FROM, ALERT_TO
+    });
   }
 
   // Anything else is acknowledged and dropped. 200, not an error: the event is
@@ -1089,4 +1305,22 @@ exports.handler = async function (event) {
 // member_payment_failure.next_attempt_on is the near-term substitute. A row
 // whose next_attempt_on has passed, with the member still past_due, is one
 // Stripe has almost certainly stopped chasing.
+//
+// The email now says which of the two it is. "It will try again on the 19th"
+// and "no further attempt is scheduled, which means Stripe has stopped trying"
+// are the same sentence Stripe's own dashboard would tell you, arriving
+// without anybody having to go and ask. It still does not CHANGE the status to
+// cancelled, so the gap above is narrowed rather than closed.
+//
+//
+// THE THIRD GAP: NOBODY IS TOLD WHEN IT RECOVERS
+//
+// A declined card sends one email. A successful retry a week later sends
+// nothing at all, so the last thing anybody heard about that member is that
+// their payment failed. The database is right, the human record is one sided.
+//
+// Not fixed here on purpose. The daily digest is where both sides belong, and
+// a second immediate email saying "never mind" is the kind of thing that turns
+// a useful alert into noise. Until then: a member reading active with a row in
+// member_payment_failure is somebody who recovered.
 // ---------------------------------------------------------------------------
