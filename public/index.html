@@ -1141,6 +1141,17 @@ h1{
 }
 .join-fine a,
 .join-elsewhere a{ color:#5D6A38; }
+/* The renewal terms, one line under the button that starts the charge. It sits
+   above .join-fine and reads a size larger, because the point of it is that
+   somebody sees the terms before they commit to a recurring payment rather
+   than after. Deliberately not set in the handwriting face: this line has to
+   read as a link to a document, not as decoration. */
+.join-policy{ margin:.9rem 0 0; font-size:1rem; }
+.join-policy a{
+  color:#5D6A38;
+  text-decoration:none;
+  border-bottom:1px dotted rgba(93,106,56,.65);
+}
 .join-error{
   display:none;
   margin-top:.9rem;
@@ -1277,6 +1288,7 @@ footer .ftag{
 }
 footer .flinks{ font-size:.98rem; color:var(--ink-soft); }
 footer .flinks a{ color:var(--ink-soft); text-decoration:none; border-bottom:1px dotted var(--ink-soft); }
+footer .fsep{ opacity:.5; padding:0 .5rem; }
 footer .fsa{
   margin-top:1.1rem;
   font-size:.9rem;
@@ -1453,6 +1465,8 @@ footer .fsa{
             <span class="tier-stamp is-open">now open</span>
           </div>
 
+          <p class="join-policy"><a href="/refunds.html">Read how renewal, cancelling, and refunds work</a></p>
+
           <!-- This sentence is always true, in both states, and it is here so
                that the page is honest even with JavaScript off. The prices
                above are updated live by membership-status, and if that never
@@ -1513,6 +1527,8 @@ footer .fsa{
             <button class="joinbtn" type="button" id="joinIntlBtn">Join digitally</button>
             <span class="tier-stamp is-open">now open</span>
           </div>
+
+          <p class="join-policy"><a href="/refunds.html">Read how renewal, cancelling, and refunds work</a></p>
 
           <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. Nothing is posted, so no mailing address is asked for. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
           <p class="join-error" id="joinIntlError" role="alert"></p>
@@ -1883,7 +1899,7 @@ footer .fsa{
 <footer>
   <p class="fname">Whispers of Kindness</p>
   <p class="ftag">Kindness whispers.</p>
-  <p class="flinks"><a href="https://whispersofkindness.ca">whispersofkindness.ca</a></p>
+  <p class="flinks"><a href="https://whispersofkindness.ca">whispersofkindness.ca</a><span class="fsep">·</span><a href="/refunds.html">Refunds and cancellation</a></p>
   <p class="fsa">a Sovereign Alchemist project</p>
 </footer>
 
