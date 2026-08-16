@@ -2,9 +2,15 @@
 <!--
   WHISPERS OF KINDNESS
 
-  One page, one entry. The site is a single page with the sections linked
-  by anchors, and a sitemap lists pages rather than fragments, so an entry
-  per anchor would be listing the same URL nine times.
+  One entry per page. The front of the site is a single page with the
+  sections linked by anchors, and a sitemap lists pages rather than
+  fragments, so an entry per anchor would be listing the same URL nine
+  times.
+
+  refunds.html is a second real page, added 16 August 2026. It is meant to
+  be findable by somebody looking for the terms before they join, so it is
+  listed. Lower priority than the front page and changefreq yearly, because
+  a policy that changed weekly would be a different problem.
 
   thank-you.html is absent on purpose. It carries noindex, and a sitemap is
   a request to index. Listing it would ask for the opposite of what the tag
@@ -17,8 +23,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://whispersofkindness.ca/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://whispersofkindness.ca/refunds.html</loc>
+    <lastmod>2026-08-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

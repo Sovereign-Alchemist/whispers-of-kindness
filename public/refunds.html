@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refunds and cancellation · Whispers of Kindness</title>
+<meta name="description" content="How membership renewal, cancelling, and refunds work at Whispers of Kindness.">
+<link rel="canonical" href="https://whispersofkindness.ca/refunds.html">
+
+<!-- ============================================================
+     WHY THIS IS ITS OWN PAGE
+
+     Signing up is an instant Stripe checkout. Cancelling is an
+     email to a person. The FTC's Negative Option Rule expects
+     cancelling to take no more steps than joining did, and it
+     expects the terms to be readable BEFORE the card is charged,
+     not discoverable afterwards in a receipt.
+
+     An anchor on the single page would have been less work and
+     would not have survived being quoted. A policy needs an
+     address of its own, so it can be linked from checkout, from
+     the footer, from an email, and from Stripe's own settings,
+     and so it still resolves if the front page is rewritten
+     around it.
+
+     NO noindex here, unlike thank-you.html. This one is meant to
+     be found, including by somebody searching for it before they
+     decide to join.
+
+     THE WORDING IN <main> IS APPROVED AS WRITTEN. It is split
+     into paragraphs for reading, and not one word of it is
+     changed. If it needs to change, that is Pela's edit, not a
+     layout decision.
+     ============================================================ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Caveat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* The shared design system, the part of it this page needs. Same values as
+   index.html and thank-you.html, copied rather than invented. There is no
+   shared stylesheet on this site yet, so a second page carries a second copy.
+   If one is ever introduced, these three blocks are what it replaces. */
+:root{
+  --paper:        #F0EBDE;
+  --ink:          #3F3934;
+  --olive:        #7A8352;
+  --rose:         #D67B88;
+  --plum:         #7C466C;
+  --paper-light:  #F7F3E8;
+  --ink-soft:     #6B635B;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'EB Garamond', Georgia, serif;
+  --font-hand:    'Caveat', cursive;
+
+  --shadow-lift:  0 4px 10px rgba(63,57,52,.12), 0 22px 44px rgba(63,57,52,.16);
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation:none !important; transition:none !important; }
+}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:1.14rem;
+  line-height:1.65;
+  overflow-x:hidden;
+}
+/* Paper grain over everything, very quiet */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  z-index:2000;
+  opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.04'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+a{ color:var(--olive); }
+a:focus-visible{
+  outline:2px solid var(--olive);
+  outline-offset:3px;
+  border-radius:2px;
+}
+
+/* ---------- header, the same one the front page wears ---------- */
+header{
+  position:sticky; top:0; z-index:100;
+  background:color-mix(in srgb, var(--paper) 92%, white 8%);
+  border-bottom:1px solid rgba(63,57,52,.14);
+  backdrop-filter:blur(4px);
+}
+.header-inner{
+  max-width:1100px; margin:0 auto;
+  padding:.8rem 1.4rem;
+  display:flex; align-items:baseline; gap:1.6rem;
+}
+.wordmark{
+  font-family:var(--font-display);
+  font-weight:600; font-size:1.18rem;
+  letter-spacing:.02em;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.wordmark span{ color:var(--olive); }
+nav{ margin-left:auto; display:flex; align-items:baseline; gap:1.4rem; }
+nav a{
+  font-family:var(--font-body);
+  font-size:.98rem;
+  color:var(--ink-soft);
+  text-decoration:none;
+  border-bottom:1px solid transparent;
+  padding-bottom:2px;
+}
+nav a:hover{ color:var(--ink); border-bottom-color:var(--rose); }
+/* Inactive sign-in slot. Phase four turns this on, on both pages at once. */
+.signin{
+  font-size:.92rem;
+  color:rgba(63,57,52,.38);
+  border:1px solid rgba(63,57,52,.22);
+  border-radius:3px;
+  padding:.28rem .7rem .3rem;
+  cursor:default;
+  user-select:none;
+}
+@media (max-width:720px){
+  nav a:not(.signin){ display:none; }
+}
+
+/* ---------- the sheet ---------- */
+.page{ padding:4.5rem 1.4rem 5rem; }
+.sheet{
+  position:relative;
+  background:var(--paper-light);
+  max-width:660px;
+  margin:0 auto;
+  padding:3.4rem 3rem 3rem;
+  transform:rotate(-.5deg);
+  box-shadow:var(--shadow-lift);
+}
+/* Faint ruled lines, so it reads as a sheet somebody wrote on rather than a
+   panel. Behind the text, never over it. */
+.sheet::before{
+  content:"";
+  position:absolute; inset:0;
+  background:repeating-linear-gradient(to bottom, transparent 0 27px, rgba(122,131,82,.10) 27px 28px);
+  pointer-events:none;
+}
+.sheet > *{ position:relative; }
+.kicker{
+  font-family:var(--font-hand);
+  font-size:1.5rem;
+  color:var(--olive);
+  display:block;
+  margin-bottom:.3rem;
+  transform:rotate(-1.2deg);
+  transform-origin:left;
+}
+h1{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:clamp(1.9rem, 4vw, 2.6rem);
+  line-height:1.15;
+  margin-bottom:1.4rem;
+}
+.rule{
+  width:64px; height:2px;
+  background:var(--olive);
+  opacity:.55;
+  margin:0 0 2rem;
+  border:0;
+}
+.sheet p{ margin-bottom:1.1rem; }
+.updated{
+  margin-top:2.2rem;
+  padding-top:1.1rem;
+  border-top:1px solid rgba(63,57,52,.14);
+  font-size:.92rem;
+  color:var(--ink-soft);
+}
+.back{
+  display:block;
+  margin-top:.6rem;
+  font-family:var(--font-hand);
+  font-size:1.25rem;
+}
+
+/* ---------- footer, matching the front page ---------- */
+footer{
+  border-top:1px solid rgba(63,57,52,.14);
+  padding:3rem 1.4rem 3.4rem;
+  text-align:center;
+}
+footer .fname{
+  font-family:var(--font-display);
+  font-size:1.2rem;
+  font-weight:500;
+}
+footer .ftag{
+  font-family:var(--font-hand);
+  font-size:1.25rem;
+  color:var(--ink-soft);
+  margin:.3rem 0 .9rem;
+}
+footer .flinks{ font-size:.98rem; color:var(--ink-soft); }
+footer .flinks a{ color:var(--ink-soft); text-decoration:none; border-bottom:1px dotted var(--ink-soft); }
+footer .fsep{ opacity:.5; padding:0 .5rem; }
+footer .fsa{
+  margin-top:1.1rem;
+  font-size:.9rem;
+  color:rgba(63,57,52,.5);
+  letter-spacing:.04em;
+}
+
+@media (max-width:640px){
+  .sheet{ padding:2.4rem 1.6rem 2.2rem; transform:none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="wordmark" href="/">Whispers <span>of</span> Kindness</a>
+    <nav aria-label="Site">
+      <a href="/#story">The story</a>
+      <a href="/#how">How it works</a>
+      <a href="/#membership">Membership</a>
+      <a href="/#invite">Send a recipe</a>
+      <a href="/#faq">Questions</a>
+      <!-- Inactive sign-in slot. Phase four activates this. -->
+      <span class="signin" title="Coming soon" aria-disabled="true">Sign in</span>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <article class="sheet">
+    <span class="kicker">the plain terms</span>
+    <h1>Refunds and cancellation</h1>
+    <hr class="rule">
+
+    <p>Membership renews automatically at the length you chose, until you cancel.</p>
+
+    <p>You can cancel anytime by writing to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a>. It will be done right away, no forms.</p>
+
+    <p>Cancelling stops future renewal. It doesn't refund the card already being prepared for you that month, since printing, mailing, and hand-collaging happen before it reaches you.</p>
+
+    <p>If a payment fails, you'll hear from us directly rather than being quietly cancelled.</p>
+
+    <p class="updated">Last updated 16 August 2026.</p>
+    <a class="back" href="/#membership">back to the membership</a>
+  </article>
+</main>
+
+<footer>
+  <p class="fname">Whispers of Kindness</p>
+  <p class="ftag">Kindness whispers.</p>
+  <p class="flinks"><a href="https://whispersofkindness.ca">whispersofkindness.ca</a><span class="fsep">·</span><a href="/refunds.html">Refunds and cancellation</a></p>
+  <p class="fsa">a Sovereign Alchemist project</p>
+</footer>
+
+</body>
+</html>
