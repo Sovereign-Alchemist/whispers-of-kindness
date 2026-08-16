@@ -63,6 +63,45 @@
 
      The four unopened tiers are absent, on purpose. They have no
      price on the page and nothing to sell.
+
+     RETURN AND SHIPPING, added 16 August 2026, once refunds.html
+     existed to point at. Both are recommended fields that Google
+     warns about when they are missing, and neither could be
+     answered honestly before there was a written policy.
+
+     returnPolicyCategory is MerchantReturnNotPermitted because that
+     is what the page says. Cancelling stops the next renewal and
+     does not refund a card already being made. merchantReturnLink
+     carries the reader to the wording itself, so the nuance lives
+     somewhere a person can read rather than only in a category.
+
+     shippingRate is 0 because it is 0. create-checkout.js sets no
+     shipping_options, so postage is inside the price and nobody is
+     charged for it separately. The destinations are the same CA and
+     US that SHIP_TO allows at checkout.
+
+     Both are written out in full on each of the three domestic
+     offers rather than declared once and referenced by @id. The @id
+     form is legal and is what brand above uses, and it is documented
+     by Google for a policy that lives on another page. Repeating it
+     is the form Google's own examples show, and this is markup that
+     cannot be tested from here before it ships.
+
+     DELIBERATELY STILL MISSING, each one a warning that stays:
+
+       priceValidUntil   The founding rate ends at the hundredth
+                         member, not on a date. A date invented to
+                         silence a warning would be a number the
+                         reader cannot see, which is the one thing
+                         this file must never carry.
+       aggregateRating   There are no members yet, so there are no
+       review            ratings and no reviews. Writing either would
+                         be a fabrication.
+       International     hasMerchantReturnPolicy needs an
+       Digital           applicableCountry, and that tier is sold to
+                         everywhere except CA and US. There is no
+                         honest value, and no country list to invent.
+                         It gets no return markup until there is.
      ============================================================ -->
 <script type="application/ld+json" id="ld-membership">
 {
@@ -92,11 +131,26 @@
           "price": "39.00",
           "priceCurrency": "CAD",
           "availability": "https://schema.org/InStock",
+          "itemCondition": "https://schema.org/NewCondition",
           "url": "https://whispersofkindness.ca/#join",
           "eligibleRegion": [
             { "@type": "Country", "name": "CA" },
             { "@type": "Country", "name": "US" }
-          ]
+          ],
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "applicableCountry": ["CA", "US"],
+            "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+            "merchantReturnLink": "https://whispersofkindness.ca/refunds.html"
+          },
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingRate": { "@type": "MonetaryAmount", "value": "0", "currency": "CAD" },
+            "shippingDestination": [
+              { "@type": "DefinedRegion", "addressCountry": "CA" },
+              { "@type": "DefinedRegion", "addressCountry": "US" }
+            ]
+          }
         },
         {
           "@type": "Offer",
@@ -105,11 +159,26 @@
           "price": "78.00",
           "priceCurrency": "CAD",
           "availability": "https://schema.org/InStock",
+          "itemCondition": "https://schema.org/NewCondition",
           "url": "https://whispersofkindness.ca/#join",
           "eligibleRegion": [
             { "@type": "Country", "name": "CA" },
             { "@type": "Country", "name": "US" }
-          ]
+          ],
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "applicableCountry": ["CA", "US"],
+            "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+            "merchantReturnLink": "https://whispersofkindness.ca/refunds.html"
+          },
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingRate": { "@type": "MonetaryAmount", "value": "0", "currency": "CAD" },
+            "shippingDestination": [
+              { "@type": "DefinedRegion", "addressCountry": "CA" },
+              { "@type": "DefinedRegion", "addressCountry": "US" }
+            ]
+          }
         },
         {
           "@type": "Offer",
@@ -118,11 +187,26 @@
           "price": "148.20",
           "priceCurrency": "CAD",
           "availability": "https://schema.org/InStock",
+          "itemCondition": "https://schema.org/NewCondition",
           "url": "https://whispersofkindness.ca/#join",
           "eligibleRegion": [
             { "@type": "Country", "name": "CA" },
             { "@type": "Country", "name": "US" }
-          ]
+          ],
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "applicableCountry": ["CA", "US"],
+            "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+            "merchantReturnLink": "https://whispersofkindness.ca/refunds.html"
+          },
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingRate": { "@type": "MonetaryAmount", "value": "0", "currency": "CAD" },
+            "shippingDestination": [
+              { "@type": "DefinedRegion", "addressCountry": "CA" },
+              { "@type": "DefinedRegion", "addressCountry": "US" }
+            ]
+          }
         }
       ]
     },
