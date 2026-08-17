@@ -5,7 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Refunds and cancellation · Whispers of Kindness</title>
 <meta name="description" content="How membership renewal, cancelling, and refunds work at Whispers of Kindness.">
-<link rel="canonical" href="https://whispersofkindness.ca/refunds.html">
+<!-- Canonical drops the .html because that is the address Netlify actually
+     serves. Its Pretty URLs post-processing rewrites every href on the way
+     out, so a link written here as /refunds.html reaches a reader as
+     /refunds, and /refunds is therefore the address that gets copied,
+     shared and pasted into Stripe. Both forms return 200.
+
+     The links themselves are deliberately left as /refunds.html. They work
+     whether or not Pretty URLs is on. If that setting is ever turned off,
+     this line, the sitemap entry and the three merchantReturnLink values in
+     index.html are the three places that have to go back to .html. -->
+<link rel="canonical" href="https://whispersofkindness.ca/refunds">
 
 <!-- ============================================================
      WHY THIS IS ITS OWN PAGE
