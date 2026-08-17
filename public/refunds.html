@@ -175,6 +175,15 @@ h1{
   border:0;
 }
 .sheet p{ margin-bottom:1.1rem; }
+/* Anything under a subhead was added after the approved wording, and is
+   marked off from it so the two are never mistaken for each other. */
+.subhead{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:1.45rem;
+  line-height:1.2;
+  margin:2.1rem 0 .7rem;
+}
 .updated{
   margin-top:2.2rem;
   padding-top:1.1rem;
@@ -251,6 +260,14 @@ footer .fsa{
     <p>Cancelling stops future renewal. It doesn't refund the card already being prepared for you that month, since printing, mailing, and hand-collaging happen before it reaches you.</p>
 
     <p>If a payment fails, you'll hear from us directly rather than being quietly cancelled.</p>
+
+    <!-- Added 16 August 2026, below the approved wording and outside it. The
+         structured data on the front page declares free shipping, and a claim
+         made to a search engine that a reader cannot find anywhere on the site
+         is the kind of gap that is worth closing while it is still small. -->
+    <h2 class="subhead">What the price includes</h2>
+
+    <p>Postage is included in the membership price. Nothing extra is added at checkout. Cards are mailed to Canada and the United States.</p>
 
     <p class="updated">Last updated 16 August 2026.</p>
     <a class="back" href="/#membership">back to the membership</a>
