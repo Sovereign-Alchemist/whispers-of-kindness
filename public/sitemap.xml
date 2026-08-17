@@ -7,10 +7,15 @@
   fragments, so an entry per anchor would be listing the same URL nine
   times.
 
-  refunds.html is a second real page, added 16 August 2026. It is meant to
-  be findable by somebody looking for the terms before they join, so it is
+  The refunds page is a second real page, added 16 August 2026. It is meant
+  to be findable by somebody looking for the terms before they join, so it is
   listed. Lower priority than the front page and changefreq yearly, because
   a policy that changed weekly would be a different problem.
+
+  It is listed WITHOUT the .html, matching its canonical tag and matching the
+  address Netlify serves. Pretty URLs rewrites the links on the way out, so
+  /refunds is the address a reader ever sees. A sitemap that named the other
+  form would be handing a crawler a second address for one page.
 
   thank-you.html is absent on purpose. It carries noindex, and a sitemap is
   a request to index. Listing it would ask for the opposite of what the tag
@@ -28,7 +33,7 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://whispersofkindness.ca/refunds.html</loc>
+    <loc>https://whispersofkindness.ca/refunds</loc>
     <lastmod>2026-08-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
