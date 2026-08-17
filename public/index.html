@@ -1396,7 +1396,137 @@ footer .fsa{
   color:rgba(63,57,52,.5);
   letter-spacing:.04em;
 }
+
+/* ============================================================
+   CONSENT STAMP
+
+   Nothing loads Google Analytics until this is dismissed, so
+   this notice is the only thing standing between a first time
+   reader and a third party script. It is a postage stamp rather
+   than a grey cookie bar because the rest of the site is paper
+   and ephemera, and a grey bar would be the one corporate object
+   on the page.
+
+   Lives in three places, like the tag it gates: index.html,
+   refunds.html and thank-you.html. There is no shared template.
+   Change one, change all three.
+
+   THE CLASS IS consent-stamp, NOT stamp. It was .stamp to begin
+   with, which is already the site's own class for the little
+   ephemera tags, the plum "now open" in the hero and the "first
+   class" on the thank-you page. These rules are further down the
+   same stylesheet, so they won, and both of those tags were
+   dragged out of the page and pinned to the bottom right corner
+   with teal perforations on them. Nothing warned about it. If a
+   later phase adds anything here, give it a name of its own and
+   check the name is free first.
+   ============================================================ */
+.consent-stamp{
+  position:fixed;
+  right:32px;
+  bottom:32px;
+  z-index:60;
+  width:250px;
+  padding:1.2rem 1.3rem 1.3rem;
+  background:var(--teal);
+  color:var(--paper);
+  transform:rotate(-3deg);
+  box-shadow:0 14px 30px rgba(63,57,52,.3), 0 3px 8px rgba(63,57,52,.18);
+  transition:opacity .5s ease, transform .5s ease;
+}
+
+/* The perforations. Two teal strips straddling the top and bottom
+   edges, with half circles bitten out of them by a repeating mask.
+   The -webkit- prefixes are for Safari, which shipped mask-image
+   unprefixed well before mask-size and mask-repeat. */
+.consent-stamp::before,
+.consent-stamp::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  height:10px;
+  background:var(--teal);
+  -webkit-mask-image:radial-gradient(circle 6px at 10px 5px, transparent 98%, #000 100%);
+          mask-image:radial-gradient(circle 6px at 10px 5px, transparent 98%, #000 100%);
+  -webkit-mask-repeat:repeat-x;
+          mask-repeat:repeat-x;
+  -webkit-mask-size:20px 20px;
+          mask-size:20px 20px;
+}
+.consent-stamp::before{ top:-5px; }
+.consent-stamp::after{ bottom:-5px; }
+
+.consent-stamp .consent-stamp-h{
+  font-family:var(--font-display);
+  font-style:italic;
+  font-weight:500;
+  font-size:1.45rem;
+  line-height:1.15;
+  margin-bottom:.45rem;
+}
+.consent-stamp .consent-stamp-b{
+  font-family:var(--font-body);
+  font-size:.94rem;
+  line-height:1.45;
+  color:rgba(240,235,222,.9);
+}
+.consent-stamp-actions{
+  display:flex;
+  align-items:center;
+  gap:.9rem;
+  margin-top:1rem;
+}
+.consent-stamp button{
+  padding:.42rem 1.1rem;
+  border:none;
+  background:var(--paper);
+  color:var(--teal);
+  font-family:var(--font-body);
+  font-size:.95rem;
+  letter-spacing:.02em;
+  cursor:pointer;
+}
+.consent-stamp button:hover{ background:#FFFFFF; }
+.consent-stamp button:focus-visible{ outline:2px solid var(--paper); outline-offset:3px; }
+
+/* The decline. Quiet on purpose, and quiet in a specific way: no
+   fill and no border box, just the word with the dotted underline
+   the rest of the site already uses for a link. It has to be
+   genuinely available, which is why it sits beside Understood
+   rather than behind a corner cross, and it has to not compete,
+   which is why it is not a second cream block. */
+.consent-stamp button.quiet{
+  padding:.42rem 0;
+  background:none;
+  color:rgba(240,235,222,.78);
+  border-bottom:1px dotted rgba(240,235,222,.5);
+  font-size:.9rem;
+}
+.consent-stamp button.quiet:hover{
+  background:none;
+  color:var(--paper);
+  border-bottom-color:var(--paper);
+}
+
+/* Dismissed. Opacity carries the fade, and the slight drop keeps
+   it reading as an object taken off the page rather than a box
+   being switched off. */
+.consent-stamp.is-going{
+  opacity:0;
+  transform:rotate(-3deg) translateY(10px);
+  pointer-events:none;
+}
+
+@media (max-width:520px){
+  .consent-stamp{ right:16px; bottom:16px; width:auto; max-width:250px; }
+}
 </style>
+
+<!-- Google Analytics 4 is not loaded here. It used to be. The tag and
+     the consent stamp that gates it now sit together at the foot of
+     the body, so nothing reaches googletagmanager.com before a reader
+     has agreed to it. -->
 </head>
 <body>
 
@@ -2366,6 +2496,98 @@ footer .fsa{
   });
 })();
 
+</script>
+
+
+<!-- ============================================================
+     CONSENT STAMP, AND THE ANALYTICS TAG IT GATES
+
+     The gtag.js script used to sit in the head and load on its own.
+     It does not any more. Nothing reaches googletagmanager.com
+     until somebody clicks Understood.
+
+     No thanks is a real answer and not just a way of closing the
+     box. It stores 'declined', it never loads the tag, and it is
+     remembered exactly as firmly as a yes, so somebody who says no
+     is not asked again on the next page or the next visit.
+
+     Lives in three places: index.html, refunds.html and
+     thank-you.html. There is no shared template, so the markup, the
+     styles and this script are all duplicated. Change one, change
+     all three. The Measurement ID appears once, in GA_ID below.
+     ============================================================ -->
+<aside class="consent-stamp" id="consent-stamp" aria-label="Analytics notice" hidden>
+  <p class="consent-stamp-h">Kept, not sold</p>
+  <p class="consent-stamp-b">We count visits through Google. Nothing you send us is ever sold.</p>
+  <div class="consent-stamp-actions">
+    <button type="button" id="consent-ok">Understood</button>
+    <button type="button" class="quiet" id="consent-no">No thanks</button>
+  </div>
+</aside>
+
+<script>
+(function(){
+  var KEY   = 'wok-consent';
+  var GA_ID = 'G-1855141C8G';
+
+  function loadGA4(){
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', GA_ID);
+  }
+
+  /* localStorage is not always there to be read. Chrome throws on it
+     outright when a reader has site data blocked, and so do some
+     private windows. A notice that took the whole page down with it
+     would be worse than no notice, so a failed read counts as "not
+     asked yet" and a failed write just means the stamp comes back on
+     the next visit. */
+  function stored(){
+    try { return localStorage.getItem(KEY); }
+    catch (e) { return null; }
+  }
+  function remember(answer){
+    try { localStorage.setItem(KEY, answer); }
+    catch (e) {}
+  }
+
+  /* Three states, not two. 'given' loads the tag, 'declined' loads
+     nothing and stays just as answered, and anything else, including
+     a storage read that threw, means they have not been asked yet.
+     Only the exact string 'given' ever reaches loadGA4. */
+  var saved = stored();
+  if (saved === 'given')    { loadGA4(); return; }
+  if (saved === 'declined') { return; }
+
+  var stamp = document.getElementById('consent-stamp');
+  var yes   = document.getElementById('consent-ok');
+  var no    = document.getElementById('consent-no');
+  if (!stamp || !yes || !no) return;
+
+  /* The stamp ships with the hidden attribute set, and is only ever
+     revealed here. That way a returning reader does not get a flash
+     of it before the script has read their answer. */
+  stamp.hidden = false;
+
+  function dismiss(answer){
+    remember(answer);
+    if (answer === 'given') loadGA4();
+    stamp.classList.add('is-going');
+    /* Held back until the fade has finished, so the transition is
+       actually seen. Hidden rather than removed, so the markup stays
+       where anyone reading the page source expects to find it. */
+    setTimeout(function(){ stamp.hidden = true; }, 500);
+  }
+
+  yes.addEventListener('click', function(){ dismiss('given'); });
+  no.addEventListener('click',  function(){ dismiss('declined'); });
+})();
 </script>
 
 </body>
