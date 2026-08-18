@@ -1,0 +1,24 @@
+{
+  "name": "Whispers of Kindness",
+  "short_name": "Whispers",
+  "description": "An archive of human kindness, gathered through family recipes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F0EBDE",
+  "theme_color": "#7A8352",
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

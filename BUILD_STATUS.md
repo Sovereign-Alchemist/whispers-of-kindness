@@ -22,6 +22,57 @@ claim was last checked and how.
 
 ---
 
+## 2026-08-17 — Site favicon
+
+**Built and wired. Not yet confirmed in a browser tab.**
+
+Supersedes the "Open — site favicon" entry at the foot of this file, which was
+true when written.
+
+Seven files at `public/` root, alongside `robots.txt` and `sitemap.xml`, not in
+`public/images/`, which holds content photographs:
+
+| file | size |
+|---|---|
+| `favicon.ico` | 16, 32, 48 in one file, PNG payloads |
+| `favicon-16x16.png` | 16x16 |
+| `favicon-32x32.png` | 32x32 |
+| `apple-touch-icon.png` | 180x180, opaque |
+| `favicon-192x192.png` | 192x192 |
+| `favicon-512x512.png` | 512x512 |
+| `site.webmanifest` | references the 192 and 512 |
+
+All cut from `Downloads/wok-wax-seal.png`, 390x390 and already square, so every
+size is a straight resize with no crop. **The master lives in Downloads and is
+not in the repo**, so regenerating these later means finding it again or
+exporting a new one.
+
+`apple-touch-icon.png` is the one exception to "straight resize": it is
+flattened onto paper `#F0EBDE` and saved as 24bpp with no alpha channel,
+because iOS composites home screen icons onto black and a transparent seal
+would land on a black tile.
+
+Six link tags added to the head of all three pages, identical in each: `.ico`,
+the two PNG sizes, apple-touch-icon, the manifest, and `theme-color` at olive
+`#7A8352`.
+
+`favicon-512x512.png` is a 31% upscale from the 390px master and is therefore
+slightly soft. It is only used by Android home screens. A larger master would
+be sharper.
+
+> Verified 2026-08-17. Every PNG read back and measured at its intended
+> dimensions. `favicon.ico` parsed from its raw bytes: type 1, three entries at
+> 16/32/48, each payload carrying the PNG signature, offsets and lengths
+> summing exactly to the file size. Manifest parses as JSON with both icons.
+> All seven assets return 200 over a local server and all six tags appear
+> exactly once per page. `apple-touch-icon.png` confirmed opaque by sampling
+> pixels: corner and edge are `#F0EBDE` at A=255, centre still carries the
+> seal. **NOT verified: that a browser tab actually shows the seal.** No
+> browser tooling was available in the session that built this, so the render
+> check was left to Pela and has not been reported back as of this entry.
+
+---
+
 ## 2026-08-17 — GA4 and the consent gate
 
 **Done, tested, live.**
