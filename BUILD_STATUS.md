@@ -22,6 +22,24 @@ claim was last checked and how.
 
 ---
 
+## 2026-08-17 — Site favicon, render confirmed
+
+**Closes the one gap left open by the entry below.** The favicon renders. Pela
+checked a browser tab and confirmed the seal shows in place of the default page
+icon.
+
+Nothing changed in the code. This entry exists only to record that the check
+happened, because the entry below says in writing that it had not, and an
+unverified claim left standing reads as a verified one after a few weeks.
+
+> Verified 2026-08-17 by Pela, in a browser, reported back. Not verified by me:
+> I had no browser tooling in this session. Also still unverified, and a
+> separate surface: how `apple-touch-icon.png` looks as an iOS home screen tile
+> and how the manifest icons look on Android. The tab is the common case and it
+> is confirmed; the installed-icon case has not been looked at by anyone yet.
+
+---
+
 ## 2026-08-17 — Site favicon
 
 **Built and wired. Not yet confirmed in a browser tab.**
