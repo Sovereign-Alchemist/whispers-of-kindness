@@ -77,13 +77,32 @@ const TOLERANCE_SECONDS = 300;
 // time would add a second thing that can fail.
 // ---------------------------------------------------------------------------
 
+// THE ARCHIVED PRICES STAY IN THIS TABLE, and that is the difference between
+// this file and create-checkout.js. Checkout must only ever SELL the current
+// six, so it lists those alone. This file has to RECOGNISE anything a real
+// person is on, and members created before 19 August 2026 are on the old
+// ids for as long as their subscriptions run. Removing them would make a
+// renewal from a founding member fall through to the metadata fallback and
+// get logged as an unknown price, on every renewal, for years.
 const PRICE_FACTS = {
   // The Mailing, posted. Canada and the United States. Founding rate.
+  // Repriced 19 August 2026.
+  'price_1U6CMG2eC5FgbTwrEBlKxX8r': { tier: 'mailing', rate: 'founding', term: '3mo', format: 'print' },
+  'price_1U6CMH2eC5FgbTwr5hWDwzhY': { tier: 'mailing', rate: 'founding', term: '6mo', format: 'print' },
+  'price_1U6CMH2eC5FgbTwrygzrX39H': { tier: 'mailing', rate: 'founding', term: '1yr', format: 'print' },
+
+  // The Mailing, posted. Standing rate, which the site calls Regular.
+  // Repriced 19 August 2026.
+  'price_1U6CMI2eC5FgbTwrXWqhknPl': { tier: 'mailing', rate: 'standing', term: '3mo', format: 'print' },
+  'price_1U6CMI2eC5FgbTwro3IDbiPF': { tier: 'mailing', rate: 'standing', term: '6mo', format: 'print' },
+  'price_1U6CMJ2eC5FgbTwrVdiuefDe': { tier: 'mailing', rate: 'standing', term: '1yr', format: 'print' },
+
+  // ---- ARCHIVED 19 August 2026. Nothing can start a new subscription on
+  // these. Existing members go on renewing against them, so they are read
+  // here and nowhere else.
   'price_1U49Bt2eC5FgbTwrexqHKP6R': { tier: 'mailing', rate: 'founding', term: '3mo', format: 'print' },
   'price_1U49Bt2eC5FgbTwrn7dntiA3': { tier: 'mailing', rate: 'founding', term: '6mo', format: 'print' },
   'price_1U49Bu2eC5FgbTwrurxeFbMN': { tier: 'mailing', rate: 'founding', term: '1yr', format: 'print' },
-
-  // The Mailing, posted. Standing rate. Not reachable from the site yet.
   'price_1U49Bu2eC5FgbTwrJ4dRoy3F': { tier: 'mailing', rate: 'standing', term: '3mo', format: 'print' },
   'price_1U49Bu2eC5FgbTwrWLlui3Rd': { tier: 'mailing', rate: 'standing', term: '6mo', format: 'print' },
   'price_1U49Bu2eC5FgbTwrRWjzNPv3': { tier: 'mailing', rate: 'standing', term: '1yr', format: 'print' },

@@ -69,11 +69,18 @@
 // The international tier has no founding split. The cap exists because early
 // members subsidise a physical mailing, and there is no mailing here.
 
+// REPRICED 19 August 2026, domestic only, live ids from
+// Migrate-StripePricesToLive.ps1. The six ids these replace are archived in
+// Stripe and can no longer start a subscription, so nothing here can quietly
+// go on selling the old amounts. Anyone already on one keeps paying it.
+//
+// The international three are the SAME ids as before. They were not repriced
+// and were not recreated.
 const PRICES = {
   domestic: {
-    '3mo': 'price_1U49Bt2eC5FgbTwrexqHKP6R',   // $39.00 CAD, renews every 3 months
-    '6mo': 'price_1U49Bt2eC5FgbTwrn7dntiA3',   // $78.00 CAD, renews every 6 months
-    '1yr': 'price_1U49Bu2eC5FgbTwrurxeFbMN'    // $148.20 CAD, renews every year
+    '3mo': 'price_1U6CMG2eC5FgbTwrEBlKxX8r',   // $45.00 CAD, renews every 3 months
+    '6mo': 'price_1U6CMH2eC5FgbTwr5hWDwzhY',   // $85.00 CAD, renews every 6 months
+    '1yr': 'price_1U6CMH2eC5FgbTwrygzrX39H'    // $165.00 CAD, renews every year
   },
   international: {
     '3mo': 'price_1U49Bv2eC5FgbTwrNE3lQcQl',   // $33.00 CAD, renews every 3 months
@@ -83,10 +90,13 @@ const PRICES = {
 };
 
 // Reachable from member 101 onward. See THE CAP below.
+//
+// The site calls this Regular. The word here stays 'standing' because
+// member.rate is CHECK (rate IS NULL OR rate IN ('founding','standing')).
 const STANDING = {
-  '3mo': 'price_1U49Bu2eC5FgbTwrJ4dRoy3F',   // $45.00 CAD
-  '6mo': 'price_1U49Bu2eC5FgbTwrWLlui3Rd',   // $90.00 CAD
-  '1yr': 'price_1U49Bu2eC5FgbTwrRWjzNPv3'    // $171.00 CAD
+  '3mo': 'price_1U6CMI2eC5FgbTwrXWqhknPl',   // $55.00 CAD
+  '6mo': 'price_1U6CMI2eC5FgbTwro3IDbiPF',   // $95.00 CAD
+  '1yr': 'price_1U6CMJ2eC5FgbTwrVdiuefDe'    // $175.00 CAD
 };
 
 // ---------------------------------------------------------------------------
