@@ -233,7 +233,22 @@ exports.handler = async function (event) {
   // Domestic only. The international tier has no founding rate to run out of,
   // so it never asks.
 
-  let rate = (tier === 'domestic') ? 'founding' : 'standard';
+  // NULL for international, not a word.
+  //
+  // This used to read 'standard', which is a fourth value in a vocabulary of
+  // three. member.rate is CHECK (rate IS NULL OR rate IN ('founding',
+  // 'standing')), and schema.sql says what the NULL means: the question does
+  // not apply, which is not the same as unknown. There is no founding split in
+  // the international tier, so the question genuinely does not apply, and null
+  // is the honest answer. 'standard' is also one letter from 'standing', which
+  // is the kind of resemblance that gets read past.
+  //
+  // Nothing ever wrote it to the database. The webhook takes the price id as
+  // authoritative and reads this only as a fallback, and that fallback returns
+  // null for international before it looks at this field at all
+  // (stripe-webhook.js:1061). So this was a wrong word sitting in Stripe
+  // metadata waiting for the first piece of code that trusted it.
+  let rate = (tier === 'domestic') ? 'founding' : null;
   let foundingTaken = null;
   let capNote = null;
 
@@ -333,13 +348,22 @@ exports.handler = async function (event) {
   //
   // The webhook takes the PRICE ID as authoritative and reads this only as a
   // fallback, so the two agreeing is belt and braces rather than load bearing.
-  params.set('subscription_data[metadata][rate]', rate);
+  //
+  // The rate is SET ONLY WHEN THERE IS ONE. The guard is required rather than
+  // tidy: URLSearchParams stringifies whatever it is given, so set(key, null)
+  // writes the literal text "null", which is a worse wrong word than the one
+  // being removed. An absent key is the metadata equivalent of the NULL in the
+  // column, and both say the same thing, that the question does not apply.
   params.set('subscription_data[metadata][tier]', tier);
   params.set('subscription_data[metadata][term]', term);
   params.set('subscription_data[metadata][project]', 'Whispers of Kindness');
-  params.set('metadata[rate]', rate);
   params.set('metadata[tier]', tier);
   params.set('metadata[term]', term);
+
+  if (rate) {
+    params.set('subscription_data[metadata][rate]', rate);
+    params.set('metadata[rate]', rate);
+  }
 
   try {
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {

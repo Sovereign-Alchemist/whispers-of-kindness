@@ -22,6 +22,68 @@ claim was last checked and how.
 
 ---
 
+## 2026-08-18 — First payment webhook proven live, and the rate metadata fixed
+
+**The `checkout.session.completed` path has now run for a real paying customer,
+and it worked.** This is the first time. Every previous webhook test signed its
+own event on Pela's machine and posted it straight at Netlify, and all three
+harnesses cover only `invoice.paid` and `invoice.payment_failed`. The event that
+turns a payment into a member had never been exercised by anything, for any
+tier.
+
+A live International Digital subscription was created on 2026-08-17. Stripe's
+delivery log shows the event delivered and answered 200, and `member` row 208
+was written, with a timestamp matching the delivery. That row exercises the
+international branch specifically: `PRICE_FACTS` resolved the price to
+`tier: 'mailing_intl'`, `rate: null`, `format: 'digital'`, and
+`shipping_address` was correctly left null because the tier is not `'mailing'`
+(`functions/stripe-webhook.js:1097`).
+
+**The investigation that found this was chasing a row that was never missing.**
+Supabase's Table Editor served a stale cached view and showed no row. The same
+thing had happened earlier the same night on `contributor`. Recorded here
+because the false negative is the reusable lesson: the Table Editor is not a
+witness for whether a row exists, and absence should be confirmed from the SQL
+editor or a REST call before anything is built on it.
+
+**Fixed on this branch.** `functions/create-checkout.js` set
+`rate = 'standard'` for the international tier, a fourth value in a vocabulary
+of three. `member.rate` is `CHECK (rate IS NULL OR rate IN ('founding',
+'standing'))` (`supabase/schema.sql:227`). It now sets `null` and omits the
+metadata key rather than writing the literal string `"null"`, which is what
+`URLSearchParams` does with a null.
+
+Nothing was ever broken by it. The webhook takes the price id as authoritative
+and reads `metadata.rate` only in its unknown-price fallback, where the
+international branch returns `null` before the field is read at all
+(`stripe-webhook.js:1061`). Row 208 was written correctly while the metadata
+still said `standard`. This closes a trap rather than a fault.
+
+**Existing international subscriptions in Stripe still carry
+`rate: "standard"` in their metadata.** Not backfilled, deliberately. Nothing
+reads the field, and rewriting metadata on a live payment record buys nothing.
+
+**Still open, and the next piece of work:** a checkout that completes without
+being paid immediately is never recovered. The handler answers 200 and writes
+nothing when `payment_status` is not `paid`
+(`stripe-webhook.js:1040`), and when the payment later settles, `handleRenewal`
+finds no member for the subscription, logs `renewal-unknown-subscription` and
+answers 200 (`stripe-webhook.js:451-458`). `checkout.session.completed` is the
+only event that can create a member, so a membership missed there stays missed
+while Stripe bills it forever.
+
+> Verified 2026-08-18. The live delivery, the 200 and row 208 were read by Pela
+> in the Stripe dashboard and Supabase and reported back; I did not see them, as
+> this machine has no browser tooling and no database key. The code claims above
+> were verified by reading the named files and line numbers, and the schema
+> constraint by reading `supabase/schema.sql`. **NOT yet verified: the fix
+> itself.** There is no JavaScript runtime on this machine, so
+> `tools/Test-CheckoutMetadata.ps1` was written to create a real Checkout
+> Session against the deploy preview and read its metadata back out of Stripe.
+> It had not been run when this entry was written.
+
+---
+
 ## 2026-08-17 — Site favicon, render confirmed
 
 **Closes the one gap left open by the entry below.** The favicon renders. Pela
