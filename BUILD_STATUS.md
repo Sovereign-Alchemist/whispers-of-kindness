@@ -80,7 +80,12 @@ while Stripe bills it forever.
 > itself.** There is no JavaScript runtime on this machine, so
 > `tools/Test-CheckoutMetadata.ps1` was written to create a real Checkout
 > Session against the deploy preview and read its metadata back out of Stripe.
-> It had not been run when this entry was written.
+> **It had not been run at the time this was merged, and merging did not wait
+> for it.** That was a deliberate call, taken on the strength of the code
+> reading and a live smoke test confirming the deployed function still creates
+> an international session. Running the script is what would turn the fix from
+> reasoned to proven, and until a later entry here says it passed, it has not
+> been.
 
 ---
 
