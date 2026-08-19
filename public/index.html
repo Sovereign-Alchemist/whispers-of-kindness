@@ -1945,23 +1945,28 @@ footer .fsa{
   <defs>
     <filter id="deckle-cream" x="-6%" y="-6%" width="112%" height="112%"
             color-interpolation-filters="sRGB">
+      <!-- scale 15 to 18, 19 August 2026, for deeper cuts. The three scales
+           were raised by the same ratio so the stack keeps its relationship:
+           the top sheet tears hardest, the kraft least. Raising only this one
+           would have left the two behind it looking neatly trimmed next to a
+           badly torn sheet. -->
       <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
                     numOctaves="4" seed="7" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="15"
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="18"
                          xChannelSelector="R" yChannelSelector="G"/>
     </filter>
     <filter id="deckle-kraft" x="-6%" y="-6%" width="112%" height="112%"
             color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.014 0.031"
                     numOctaves="4" seed="23" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="13"
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="16"
                          xChannelSelector="R" yChannelSelector="G"/>
     </filter>
     <filter id="deckle-sage" x="-6%" y="-6%" width="112%" height="112%"
             color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.009 0.022"
                     numOctaves="5" seed="41" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="17"
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="20"
                          xChannelSelector="R" yChannelSelector="G"/>
     </filter>
   </defs>
