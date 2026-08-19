@@ -22,6 +22,12 @@
 //   would read as a renewal and advance somebody through a term they never
 //   paid for.
 //
+//   Both invoice handlers share one more thing. If either finds an invoice for
+//   a subscription no member row holds, it emails about it and creates
+//   nothing. Somebody is being charged and is not in the archive, and an
+//   invoice does not carry the postal address that would be needed to record
+//   them properly. See alertOrphanSubscription.
+//
 //   The email is the only thing this function sends anywhere other than
 //   Supabase and Stripe. It is a stopgap until the daily digest exists, and it
 //   is built so that it cannot take the webhook down with it: see sendAlert.
@@ -71,13 +77,32 @@ const TOLERANCE_SECONDS = 300;
 // time would add a second thing that can fail.
 // ---------------------------------------------------------------------------
 
+// THE ARCHIVED PRICES STAY IN THIS TABLE, and that is the difference between
+// this file and create-checkout.js. Checkout must only ever SELL the current
+// six, so it lists those alone. This file has to RECOGNISE anything a real
+// person is on, and members created before 19 August 2026 are on the old
+// ids for as long as their subscriptions run. Removing them would make a
+// renewal from a founding member fall through to the metadata fallback and
+// get logged as an unknown price, on every renewal, for years.
 const PRICE_FACTS = {
   // The Mailing, posted. Canada and the United States. Founding rate.
+  // Repriced 19 August 2026.
+  'price_1U6CMG2eC5FgbTwrEBlKxX8r': { tier: 'mailing', rate: 'founding', term: '3mo', format: 'print' },
+  'price_1U6CMH2eC5FgbTwr5hWDwzhY': { tier: 'mailing', rate: 'founding', term: '6mo', format: 'print' },
+  'price_1U6CMH2eC5FgbTwrygzrX39H': { tier: 'mailing', rate: 'founding', term: '1yr', format: 'print' },
+
+  // The Mailing, posted. Standing rate, which the site calls Regular.
+  // Repriced 19 August 2026.
+  'price_1U6CMI2eC5FgbTwrXWqhknPl': { tier: 'mailing', rate: 'standing', term: '3mo', format: 'print' },
+  'price_1U6CMI2eC5FgbTwro3IDbiPF': { tier: 'mailing', rate: 'standing', term: '6mo', format: 'print' },
+  'price_1U6CMJ2eC5FgbTwrVdiuefDe': { tier: 'mailing', rate: 'standing', term: '1yr', format: 'print' },
+
+  // ---- ARCHIVED 19 August 2026. Nothing can start a new subscription on
+  // these. Existing members go on renewing against them, so they are read
+  // here and nowhere else.
   'price_1U49Bt2eC5FgbTwrexqHKP6R': { tier: 'mailing', rate: 'founding', term: '3mo', format: 'print' },
   'price_1U49Bt2eC5FgbTwrn7dntiA3': { tier: 'mailing', rate: 'founding', term: '6mo', format: 'print' },
   'price_1U49Bu2eC5FgbTwrurxeFbMN': { tier: 'mailing', rate: 'founding', term: '1yr', format: 'print' },
-
-  // The Mailing, posted. Standing rate. Not reachable from the site yet.
   'price_1U49Bu2eC5FgbTwrJ4dRoy3F': { tier: 'mailing', rate: 'standing', term: '3mo', format: 'print' },
   'price_1U49Bu2eC5FgbTwrWLlui3Rd': { tier: 'mailing', rate: 'standing', term: '6mo', format: 'print' },
   'price_1U49Bu2eC5FgbTwrRWjzNPv3': { tier: 'mailing', rate: 'standing', term: '1yr', format: 'print' },
@@ -293,6 +318,93 @@ async function sendAlert(subject, text, cfg) {
 
 
 // ---------------------------------------------------------------------------
+// AN INVOICE FOR A SUBSCRIPTION NOBODY HOLDS
+//
+// Stripe is billing somebody this database has never heard of. That is the one
+// failure mode where everything looks fine from every angle except the one
+// nobody is looking at: the card is charged, Stripe shows an active member, and
+// the archive does not know they exist.
+//
+// checkout.session.completed is the ONLY event that creates a member. It has
+// three outcomes that answer 200 and write nothing: no session id, not paid at
+// that moment, and no email on the session. Every one of them is deliberate and
+// correct as a response to that event. None of them leaves a trace anybody
+// reads. The renewal that arrives months later finds no member, and the one
+// after that, forever.
+//
+// WHY THIS ONLY TELLS SOMEBODY, and does not create the member itself.
+//
+//   A domestic membership needs a real postal address to be fulfillable, and
+//   that address exists only on the original checkout session. An invoice does
+//   not carry it. A member row invented at renewal time would look complete in
+//   every list and query while being unmailable, which is worse than the gap it
+//   replaced, because the gap is at least visible once somebody looks.
+//
+//   One policy for both tiers, deliberately. The international tier could be
+//   rebuilt from an invoice, since it needs no address. Splitting the rule by
+//   tier would mean two behaviours to remember and one of them silently
+//   different, to save a human reading one email.
+//
+// NEVER THROWS, because sendAlert never throws. The email is data, not control
+// flow. A Resend outage must not turn a correctly handled invoice into a 500
+// that Stripe retries for days.
+// ---------------------------------------------------------------------------
+
+async function alertOrphanSubscription(details, cfg) {
+  const subject = 'Whispers: a payment for somebody with no member record';
+
+  // Written to be read on a phone, by the person who has to act on it. It says
+  // what happened, what it means, and what to do, in that order.
+  const lines = [
+    'Stripe took a payment for a subscription that has no matching member row.',
+    '',
+    'The money is fine. Stripe is billing correctly. What is missing is the',
+    'record on our side, so this person is not in the archive, not in any',
+    'count, and would not receive anything that gets mailed.',
+    '',
+    'subscription : ' + (details.subscriptionId || 'unknown'),
+    'invoice      : ' + (details.invoiceId || 'unknown'),
+    'event        : ' + (details.eventType || 'unknown'),
+    'stripe event : ' + (details.eventId || 'unknown'),
+    '',
+    'WHAT TO DO',
+    '',
+    '1. Open the subscription in Stripe and find the original checkout',
+    '   session on it. The customer name, email and shipping address are',
+    '   there. An invoice does not carry the address, which is why this is',
+    '   an email to you rather than a row this function wrote by itself.',
+    '',
+    '2. Check whether the member row really is missing before doing anything',
+    '   else. Use the SQL editor, not the Table Editor. The Table Editor has',
+    '   served a stale cached view and shown nothing where a row existed.',
+    '',
+    '     select * from member',
+    '     where stripe_subscription_id = \'' + (details.subscriptionId || '') + '\';',
+    '',
+    '3. If it is genuinely missing, add the member by hand from the checkout',
+    '   session, including the shipping address for a posted membership.',
+    '',
+    'This is rare by design. It means checkout.session.completed did not',
+    'create the member when they joined, so the reason is worth finding in',
+    'the Netlify function log for the day they signed up.'
+  ];
+
+  const result = await sendAlert(subject, lines.join('\n'), cfg);
+
+  log('orphan-subscription-alert', {
+    id: details.eventId,
+    invoice: details.invoiceId,
+    subscription: details.subscriptionId,
+    event_type: details.eventType,
+    alert_sent: result.sent,
+    alert_reason: result.sent ? null : result.reason
+  });
+
+  return result;
+}
+
+
+// ---------------------------------------------------------------------------
 // Reading the session
 // ---------------------------------------------------------------------------
 
@@ -414,6 +526,9 @@ function dateFromUnix(seconds) {
 }
 
 async function handleRenewal(stripeEvent, cfg) {
+  // Only the two database values are pulled out here. cfg is passed whole to
+  // alertOrphanSubscription, which reads the Resend settings off it, so adding
+  // a mail key never means threading another argument through this function.
   const { SUPABASE_URL, SERVICE_KEY } = cfg;
   const eventId = stripeEvent.id;
   const invoice = (stripeEvent.data && stripeEvent.data.object) || {};
@@ -452,10 +567,23 @@ async function handleRenewal(stripeEvent, cfg) {
       // A renewal for a subscription this database has never heard of. Not an
       // error to retry: the member was probably created before the webhook
       // existed, or in a different Stripe account. 200 and a loud log.
+      //
+      // The log was the whole response until now, and nothing reads a log
+      // unprompted. Somebody is being charged and is not in the archive, so
+      // this one gets an email as well. See alertOrphanSubscription.
       log('renewal-unknown-subscription', {
         id: eventId, invoice: invoiceId, subscription: subscriptionId
       });
-      return reply(200, { ignored: 'no member holds that subscription' });
+
+      const alert = await alertOrphanSubscription({
+        eventId, invoiceId, subscriptionId, eventType: 'invoice.paid'
+      }, cfg);
+
+      return reply(200, {
+        ignored: 'no member holds that subscription',
+        alerted: alert.sent,
+        alert_reason: alert.sent ? null : alert.reason
+      });
     }
 
     const member = members[0];
@@ -633,10 +761,22 @@ async function handlePaymentFailure(stripeEvent, cfg) {
       '&select=id,subscription_status,name,email');
 
     if (!members || !members.length) {
+      // Same gap as the renewal handler, reached from the other direction: a
+      // card declining for somebody who was never recorded. Worth an email for
+      // the same reason, and it uses the same one.
       log('failure-unknown-subscription', {
         id: eventId, invoice: invoiceId, subscription: subscriptionId
       });
-      return reply(200, { ignored: 'no member holds that subscription' });
+
+      const alert = await alertOrphanSubscription({
+        eventId, invoiceId, subscriptionId, eventType: 'invoice.payment_failed'
+      }, cfg);
+
+      return reply(200, {
+        ignored: 'no member holds that subscription',
+        alerted: alert.sent,
+        alert_reason: alert.sent ? null : alert.reason
+      });
     }
 
     const member = members[0];
@@ -996,7 +1136,13 @@ exports.handler = async function (event) {
   // when they were added: the first payment is still handled exactly as it
   // was, by checkout.session.completed, and the two never touch.
   if (stripeEvent.type === 'invoice.paid') {
-    return await handleRenewal(stripeEvent, { SUPABASE_URL, SERVICE_KEY });
+    // The alert configuration travels here too now. A renewal for a
+    // subscription no member holds is the one thing this handler can find that
+    // a person needs to hear about, and it could not send an email before
+    // because it was never given the means to.
+    return await handleRenewal(stripeEvent, {
+      SUPABASE_URL, SERVICE_KEY, RESEND_KEY, ALERT_FROM, ALERT_TO
+    });
   }
 
   // Failures go down their own path too, and write to their own ledger. The

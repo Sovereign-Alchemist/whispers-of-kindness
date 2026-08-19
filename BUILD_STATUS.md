@@ -22,6 +22,69 @@ claim was last checked and how.
 
 ---
 
+## 2026-08-18 — An invoice for a subscription nobody holds now emails somebody
+
+**Built on `chunk-orphan-subscription-alert`. Not yet run against a deploy.**
+
+Both invoice handlers already found this case and both answered it with a log
+line. Nothing reads a log unprompted, so a person being charged while absent
+from the archive produced no signal at all, on every renewal, forever.
+
+They now send one email and create nothing:
+
+- `functions/stripe-webhook.js`, `alertOrphanSubscription`, one message used by
+  both call sites so they cannot drift apart
+- `handleRenewal`, the `renewal-unknown-subscription` branch
+- `handlePaymentFailure`, the `failure-unknown-subscription` branch
+- the `invoice.paid` dispatch now passes `RESEND_KEY`, `ALERT_FROM` and
+  `ALERT_TO`, which it never had, so the renewal handler could not have sent
+  mail before this change even if it had wanted to
+
+Both branches still answer 200 and still write nothing. The response body
+gained `alerted` and `alert_reason`, so Stripe's own delivery log records
+whether the email went.
+
+**No self-healing member creation, decided deliberately.** A domestic
+membership needs a postal address to be fulfillable and an invoice does not
+carry one. A member row invented at renewal time would look complete in every
+list and query while being unmailable, which is worse than the gap it replaces,
+because the gap is at least visible once somebody looks. One policy for both
+tiers rather than two behaviours to remember.
+
+The email names the subscription and invoice, and tells the reader to confirm
+from the SQL editor rather than the Table Editor. That instruction is there
+because the Table Editor served a stale view twice on 17 August 2026 and would
+otherwise make this alert look like a false alarm.
+
+**Two other things were checked and found already done**, both listed as open
+in the handoff that scoped this work:
+
+- Omitting the invalid `rate` metadata for international. Merged earlier the
+  same day in `be06084`, released in `aae7ecf`.
+- `shipping_address_collection` on the domestic tier. It has been there all
+  along, `functions/create-checkout.js:333-337`, restricted by
+  `SHIP_TO = ['CA','US']` at line 119. Stripe already blocks a domestic
+  checkout from completing without an address.
+
+**Found while working, not fixed:** `tools/Test-RenewalWebhook.ps1` says the
+function "refuses live mode events on purpose" and would answer 202. No
+`livemode` check exists anywhere in `stripe-webhook.js`. The comment is wrong.
+Nothing depends on it, and no harness relies on the behaviour it describes.
+
+> Verified 2026-08-18 by reading the diff and by counting brace and paren
+> balance across the file, which came out even. That is weak evidence rather
+> than proof, since the count includes brackets inside strings and comments,
+> and there is no JavaScript runtime on this machine to parse it properly.
+> **NOT verified: any of the behaviour.** `tools/Test-OrphanSubscriptionAlert.ps1`
+> was written for it. It posts two signed events at a deploy, one
+> `invoice.paid` and one `invoice.payment_failed`, both naming a fake
+> subscription that holds no member, and checks for a 200, the
+> unknown-subscription branch, and an `alerted` field that the old code does
+> not emit. It writes nothing to the database, because both handlers return
+> before any write. It had not been run when this entry was written.
+
+---
+
 ## 2026-08-18 — First payment webhook proven live, and the rate metadata fixed
 
 **The `checkout.session.completed` path has now run for a real paying customer,

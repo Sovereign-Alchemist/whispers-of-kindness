@@ -42,32 +42,36 @@ const FOUNDING_FILTER = 'rate=eq.founding';
 // This is the one place the DISPLAYED numbers live. create-checkout.js holds
 // the Stripe price ids that decide what is actually charged. They have to
 // agree, and the way to check is the test at the boundary, not a comment.
+//
+// REPRICED 19 August 2026, and the card count went with it. A term price is
+// now the whole of what this tier quotes, so there is nothing left to divide
+// and the cards field is gone rather than kept unused. The page has no
+// element to write a per card figure into any more either.
+//
+// 'standing' is still the key here because member.rate still stores that
+// word. The site calls it Regular. The two are the same thing and the
+// database word is the one that would need a migration to change.
 const DISPLAY = {
   founding: {
-    '3mo': { cents: 3900,  cards: 3  },
-    '6mo': { cents: 7800,  cards: 6  },
-    '1yr': { cents: 14820, cards: 12 }
+    '3mo': { cents: 4500  },
+    '6mo': { cents: 8500  },
+    '1yr': { cents: 16500 }
   },
   standing: {
-    '3mo': { cents: 4500,  cards: 3  },
-    '6mo': { cents: 9000,  cards: 6  },
-    '1yr': { cents: 17100, cards: 12 }
+    '3mo': { cents: 5500  },
+    '6mo': { cents: 9500  },
+    '1yr': { cents: 17500 }
   }
 };
 
-// $39.00, always two decimals, because it is a total somebody is about to pay.
+// $45.00, always two decimals, because it is a total somebody is about to pay.
 function money(cents) {
   return '$' + (cents / 100).toFixed(2);
 }
 
-// $13 rather than $13.00, and $12.35 when it does not divide evenly. This one
-// is a rate of thumb, not an amount charged, and the page has always written
-// it the short way.
-function perCard(cents, cards) {
-  const each = cents / cards;
-  const whole = each % 100 === 0;
-  return '$' + (whole ? String(each / 100) : (each / 100).toFixed(2));
-}
+// perCard was here and is deliberately gone, 19 August 2026, along with the
+// per card wording it fed. A helper kept after its last caller is removed is
+// a standing invitation to put the thing back.
 
 // Lifted from submit.js, comment and all, because the two generations of key
 // authenticate differently and getting it wrong fails silently: the request
@@ -128,7 +132,7 @@ exports.handler = async function () {
   //
   // The two MUST fail the same way. If the page fell back to standing while
   // the checkout fell back to founding, an outage would make the page quote
-  // $45 and Stripe charge $39, which is the mismatch this whole endpoint
+  // $55 and Stripe charge $45, which is the mismatch this whole endpoint
   // exists to remove, just pointing the other way.
   //
   // Agreeing matters more than either answer being right.
@@ -148,13 +152,13 @@ exports.handler = async function () {
     }
   }
 
+  // total only. `each` was a per card figure and this tier no longer quotes
+  // one. It is dropped from the response rather than sent and ignored, so
+  // that the shape of this answer matches what the page actually uses.
   const table = DISPLAY[rate];
   const terms = {};
   Object.keys(table).forEach(function (term) {
-    terms[term] = {
-      total: money(table[term].cents),
-      each:  perCard(table[term].cents, table[term].cards) + ' a card'
-    };
+    terms[term] = { total: money(table[term].cents) };
   });
 
   // `degraded` is reported as a boolean, not as the error text. This response
