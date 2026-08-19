@@ -251,6 +251,35 @@ footer .ftag{
 footer .flinks{ font-size:.98rem; color:var(--ink-soft); }
 footer .flinks a{ color:var(--ink-soft); text-decoration:none; border-bottom:1px dotted var(--ink-soft); }
 footer .fsep{ opacity:.5; padding:0 .5rem; }
+/* The two social links. Same block as index.html, copied rather than
+   invented, because there is still no shared stylesheet on this site. If one
+   is ever introduced, this is one of the pieces it replaces. Inline SVG so
+   nothing is fetched from another host. */
+footer .fsocial{
+  margin-top:1.1rem;
+  display:flex;
+  justify-content:center;
+  gap:1.5rem;
+}
+footer .fsocial a{
+  display:inline-flex;
+  color:var(--ink-soft);
+  border-bottom:0;
+  opacity:.75;
+  transition:opacity .2s ease, color .2s ease;
+}
+footer .fsocial a:hover{ opacity:1; color:var(--rose); }
+footer .fsocial a:focus-visible{
+  outline:2px solid var(--olive);
+  outline-offset:3px;
+  border-radius:2px;
+  opacity:1;
+}
+footer .fsocial svg{
+  width:20px; height:20px;
+  fill:currentColor;
+  display:block;
+}
 footer .fsa{
   margin-top:1.1rem;
   font-size:.9rem;
@@ -456,6 +485,16 @@ footer .fsa{
   <p class="fname">Whispers of Kindness</p>
   <p class="ftag">Kindness whispers.</p>
   <p class="flinks"><a href="https://whispersofkindness.ca">whispersofkindness.ca</a><span class="fsep">·</span><a href="/refunds.html">Refunds and cancellation</a></p>
+  <!-- Same two links as the front page, kept identical on purpose. A footer
+       that differs between pages reads as a page somebody forgot. -->
+  <p class="fsocial">
+    <a href="https://www.youtube.com/@Whispers-Of-Kindness" aria-label="Whispers of Kindness on YouTube" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+    </a>
+    <a href="https://www.pinterest.com/Whispers_of_kindness/" aria-label="Whispers of Kindness on Pinterest" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/></svg>
+    </a>
+  </p>
   <p class="fsa">a Sovereign Alchemist project</p>
 </footer>
 
