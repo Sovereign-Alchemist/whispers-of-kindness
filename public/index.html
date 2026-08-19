@@ -692,6 +692,153 @@ h1{
   font-size:1.3rem;
   line-height:1.2;
 }
+/* ---------- the offer card ----------------------------------------------
+   The promotional element in the invitation: send a recipe, a card comes
+   back. Named for what it does rather than what it is called, because the
+   name has not been decided and a class named after a slogan ages badly.
+
+   It is a PIECE OF PAPER, not a banner. A full width strip across the
+   section would read as an advertisement bolted onto the page, and this
+   page has no advertisements on it. Everything else here is an object on a
+   desk: a letter, an index card, a photograph, a stamp. So this is one too,
+   and it is built from the treatments already in this file rather than a
+   new visual idea:
+
+     the torn top edge      lifted from .letter
+     the lifted shadow      --shadow-lift, as on every raised sheet
+     the slight rotation    as on .questions, .letter, .tier
+     the stamp in the       the same construction as .postage on the letter
+       corner
+     plum                   an ephemera colour, and the design system
+                            reserves plum and teal for exactly this, stamps
+                            and tabs and tags
+
+   It sits in the copy column, after the opening paragraph, so somebody
+   reading the invitation meets it before the questions rather than after
+   deciding. ------------------------------------------------------------- */
+.offercard{
+  position:relative;
+  display:block;
+  margin:2rem 0 2.2rem;
+  max-width:560px;
+  padding:2.6rem 2.2rem 2rem;
+  background:var(--paper-card);
+  box-shadow:var(--shadow-lift);
+  transform:rotate(.7deg);
+  /* Rotated the opposite way to .questions below it, so the two read as two
+     separate sheets rather than one crooked column. */
+}
+/* A torn top edge, the same idea as the letter, shallower because this is a
+   smaller sheet and a deep tear would eat the kicker. */
+.offercard::before{
+  content:"";
+  position:absolute; inset:0;
+  background:inherit;
+  clip-path:polygon(
+    0% 1.8%, 3% .5%, 7% 2%, 11% .6%, 15% 1.9%, 19% .4%, 24% 1.7%, 28% .7%,
+    32% 2%, 37% .5%, 41% 1.8%, 46% .6%, 50% 1.9%, 55% .4%, 59% 1.6%, 64% .8%,
+    68% 1.9%, 72% .5%, 77% 1.7%, 81% .6%, 85% 1.8%, 90% .4%, 94% 1.7%, 97% .6%,
+    100% 1.8%,
+    100% 100%, 0% 100%);
+  z-index:0;
+}
+.offercard > *{ position:relative; z-index:1; }
+/* A dotted rule down the left, like the perforation on a page of stamps. */
+.offercard::after{
+  content:"";
+  position:absolute;
+  top:1.6rem; bottom:1.6rem; left:.9rem;
+  border-left:2px dotted rgba(124,70,108,.35);
+  z-index:1;
+}
+.offercard-kicker{
+  display:block;
+  font-family:var(--font-hand);
+  font-size:1.45rem;
+  line-height:1;
+  color:var(--plum);
+  transform:rotate(-1.4deg);
+  transform-origin:left;
+  margin-bottom:.45rem;
+}
+.offercard h3{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:clamp(1.5rem, 2.6vw, 1.95rem);
+  line-height:1.15;
+  margin:0 0 .9rem;
+  max-width:24ch;
+}
+.offercard-lead{
+  font-size:1.1rem;
+  margin:0 0 1.1rem;
+}
+.offercard-terms{
+  list-style:none;
+  margin:0 0 1.1rem;
+  padding:0;
+  border-top:1px solid rgba(124,70,108,.22);
+}
+.offercard-terms li{
+  position:relative;
+  padding:.55rem 0 .55rem 1.4rem;
+  font-size:1.02rem;
+  color:var(--ink);
+  border-bottom:1px solid rgba(124,70,108,.14);
+}
+.offercard-terms li:last-child{ border-bottom:0; }
+.offercard-terms li::before{
+  content:"·";
+  position:absolute; left:.25rem; top:.42rem;
+  color:var(--plum);
+  font-weight:bold;
+  font-size:1.3rem;
+  line-height:1.2;
+}
+.offercard-where{
+  font-size:1rem;
+  color:var(--ink-soft);
+  margin:0;
+}
+/* The stamp, same construction as .postage on the letter: an outer piece of
+   card stock, an inner ruled border, rotated off true. */
+.offercard-stamp{
+  position:absolute;
+  top:-14px; right:1.4rem;
+  width:74px; height:86px;
+  transform:rotate(4deg);
+  background:var(--paper-light);
+  border:1px solid rgba(63,57,52,.15);
+  box-shadow:0 1px 4px rgba(63,57,52,.14);
+  padding:6px;
+  z-index:2;
+}
+.offercard-stamp-inner{
+  width:100%; height:100%;
+  border:1.4px solid var(--plum);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:4px;
+}
+.offercard-stamp-word{
+  font-family:var(--font-hand);
+  font-size:1.15rem;
+  line-height:1.05;
+  color:var(--plum);
+}
+@media (max-width:560px){
+  .offercard{
+    transform:none;
+    padding:2.2rem 1.4rem 1.7rem;
+  }
+  /* The stamp overlaps the heading once the sheet gets narrow, and a stamp
+     sitting on top of a word is worse than no stamp. */
+  .offercard-stamp{ display:none; }
+  .offercard::after{ display:none; }
+}
+
 .contact-lines{ font-size:1.08rem; }
 .contact-lines strong{ font-weight:500; }
 /* white-space:pre-line has been removed. It existed only to hold a postal
@@ -819,6 +966,18 @@ h1{
   line-height:1.5;
   margin-bottom:.5rem;
   max-width:var(--measure);
+}
+/* The promotion's line, set apart from the ordinary hint above it so the two
+   do not read as one long instruction. Plum, because it belongs to the offer
+   card, and a reader who saw the stamp upstairs should recognise this as the
+   same thing speaking. It carries a rule rather than a box, so it stays a
+   note on a form instead of becoming a second advertisement. */
+.field .hint-offer{
+  color:var(--plum);
+  border-left:2px dotted rgba(124,70,108,.4);
+  padding-left:.75rem;
+  margin-top:-.15rem;
+  margin-bottom:.6rem;
 }
 .field .opt{ color:var(--ink-soft); font-size:.92rem; font-style:italic; }
 .field .req{ color:var(--rose); font-size:.92rem; font-style:italic; }
@@ -1885,6 +2044,42 @@ footer .fsa{
         <hr class="rule">
         <p class="reveal">If your family holds a recipe with a story behind it, we would love to receive it. It does not need to be impressive. It needs to have belonged to someone.</p>
 
+        <!-- THE OFFER CARD.
+             Functional name on purpose. What this is called has not been
+             decided, and a class named after a slogan has to be renamed the
+             day the slogan changes.
+
+             It says PROMOTION in as many words, which is deliberate: a
+             thank-you that reads as a permanent entitlement is a promise
+             nobody meant to make. It also says nothing about the offer
+             ending, because that has not been decided either, and inventing
+             an expiry to create urgency is the opposite of how this project
+             talks to people.
+
+             The three terms are here rather than in small print because all
+             three change what somebody gets, and burying any of them would
+             mean somebody sends four recipes expecting four cards. -->
+        <aside class="offercard reveal" aria-labelledby="offercard-title">
+          <span class="offercard-stamp" aria-hidden="true">
+            <span class="offercard-stamp-inner">
+              <span class="offercard-stamp-word">with<br>thanks</span>
+            </span>
+          </span>
+
+          <span class="offercard-kicker">a promotion</span>
+          <h3 id="offercard-title">Send a recipe, and a card comes back</h3>
+
+          <p class="offercard-lead">Send us a full recipe while this promotion is running, and that month's card is mailed to you as a thank you.</p>
+
+          <ul class="offercard-terms">
+            <li>You do not need to be a member, now or ever.</li>
+            <li>One card per person, however many recipes you send.</li>
+            <li>If that month's card is already at the printer when your recipe reaches us, yours is the following month's.</li>
+          </ul>
+
+          <p class="offercard-where">Tell us where to send it in the <a href="#f-story">What do you remember</a> box on the form below, or write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a>. If you forget, we will ask.</p>
+        </aside>
+
         <div class="questions reveal">
           <span class="kicker">to help you begin</span>
           <ul>
@@ -1926,7 +2121,12 @@ footer .fsa{
              and it says membership is open first, so it cannot be mistaken
              for the main way in. -->
         <aside class="waitlist reveal" aria-label="Stay in touch">
-        <h3>The first cards mail in September</h3>
+        <!-- October, corrected 19 August 2026. This said September, which
+             contradicted the mailing dates published on /refunds and the
+             fine print under Join the day before. Two dates for the first
+             mailing is worse than either date being wrong, because a reader
+             who spots both stops believing the rest. -->
+        <h3>The first cards mail in October</h3>
         <p>Membership is open now. If you would rather see the first card before you decide, leave your email and we will write when it goes out.</p>
         <!-- Netlify form: works as-is once hosted on Netlify -->
         <form name="waitlist" method="POST" data-netlify="true" id="waitlistForm">
@@ -2013,6 +2213,17 @@ footer .fsa{
           <div class="field">
             <label for="f-story">What do you remember? <span class="opt">optional</span></label>
             <span class="hint">What do you remember about them making it? Is there anything about them you would want remembered? There is no wrong length here, and this is usually the part we treasure most.</span>
+            <!-- THE PROMOTION'S ADDRESS LINE, and the reason there is no
+                 address field on this form.
+                 A postal address field would sit on the page for everybody,
+                 forever, asking every contributor for their home address
+                 whether or not any promotion is running. An address held for
+                 no purpose is an address that still has to be looked after.
+                 So the promotion borrows a box that already exists, and this
+                 line comes out with the promotion.
+                 Nothing parses it. It is read by a person, and somebody who
+                 forgets gets an email. -->
+            <span class="hint hint-offer">While the promotion is running: if you would like the thank-you card, put your mailing address in here too. Anywhere in the box is fine. We will write and ask if it is missing.</span>
             <textarea id="f-story" class="tall" maxlength="40000"></textarea>
           </div>
         </fieldset>
