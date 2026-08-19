@@ -182,7 +182,7 @@
           "@type": "Offer",
           "@id": "https://whispersofkindness.ca/#the-mailing-3mo",
           "name": "3 months",
-          "price": "39.00",
+          "price": "45.00",
           "priceCurrency": "CAD",
           "availability": "https://schema.org/InStock",
           "itemCondition": "https://schema.org/NewCondition",
@@ -210,7 +210,7 @@
           "@type": "Offer",
           "@id": "https://whispersofkindness.ca/#the-mailing-6mo",
           "name": "6 months",
-          "price": "78.00",
+          "price": "85.00",
           "priceCurrency": "CAD",
           "availability": "https://schema.org/InStock",
           "itemCondition": "https://schema.org/NewCondition",
@@ -238,7 +238,7 @@
           "@type": "Offer",
           "@id": "https://whispersofkindness.ca/#the-mailing-1yr",
           "name": "1 year",
-          "price": "148.20",
+          "price": "165.00",
           "priceCurrency": "CAD",
           "availability": "https://schema.org/InStock",
           "itemCondition": "https://schema.org/NewCondition",
@@ -1678,7 +1678,15 @@ footer .fsa{
       <span class="kicker reveal">the membership</span>
       <h2 class="reveal">Cards on the desk</h2>
       <p class="desk-sub reveal">two are open now, the rest are on their way</p>
-      <p class="founding-note reveal">The first 100 members pay $13 a card, and will always pay less than the current rate.</p>
+      <!-- The per card figure is gone from this tier, deliberately, and this
+           line is the first place it went. A price per card sat oddly beside a
+           flat term price, and it invited the reader to do arithmetic on a
+           keepsake. What is being sold is the card and the record on the back
+           of it, not a quantity of cards at a unit rate.
+
+           The digital tier keeps its per recipe wording. That rule is domestic
+           only, and the two tiers are deliberately not being made to match. -->
+      <p class="founding-note reveal">Founding members receive special pricing for the first 100 memberships.</p>
 
       <!-- The two tiers that are open. Everything is on one face: what
            arrives, what it costs, and the way in. Nothing turns over. -->
@@ -1690,20 +1698,26 @@ footer .fsa{
           <p class="tier-line">One recipe a month, in the mail.</p>
 
           <ul class="tier-what">
-            <li>A keepsake recipe card, mailed monthly</li>
-            <li>Punched to fit a binder</li>
-            <li>The original recipe, and the story of the person who made it</li>
+            <li>A curated keepsake recipe card, mailed to you each month</li>
+            <li>The original recipe on the front, as it was written</li>
+            <li>On the back, the person who made it, and what is remembered of them</li>
+            <li>A collectible card, punched to fit a binder</li>
+            <li>Every card adds to an archive that is still growing</li>
           </ul>
 
           <fieldset class="terms">
             <legend class="sr-only">Choose a term for The Mailing</legend>
 
+            <!-- No term-each here any more. The class still exists and is
+                 still used by the digital tier below, which keeps its per
+                 recipe figure on purpose. Removing the span rather than
+                 emptying it means the layout closes up instead of holding a
+                 gap where a number used to be. -->
             <label class="term">
               <input type="radio" name="term" value="3mo" checked>
               <span class="term-body">
                 <span class="term-len">3 months</span>
-                <span class="term-price">$39.00</span>
-                <span class="term-each">$13 a card</span>
+                <span class="term-price">$45.00</span>
               </span>
             </label>
 
@@ -1711,8 +1725,7 @@ footer .fsa{
               <input type="radio" name="term" value="6mo">
               <span class="term-body">
                 <span class="term-len">6 months</span>
-                <span class="term-price">$78.00</span>
-                <span class="term-each">$13 a card</span>
+                <span class="term-price">$85.00</span>
               </span>
             </label>
 
@@ -1720,13 +1733,12 @@ footer .fsa{
               <input type="radio" name="term" value="1yr">
               <span class="term-body">
                 <span class="term-len">1 year</span>
-                <span class="term-price">$148.20</span>
-                <span class="term-each">$12.35 a card</span>
+                <span class="term-price">$165.00</span>
               </span>
             </label>
           </fieldset>
 
-          <p class="tier-note">$13 a card for the first 100 members, then $15 a card.<br>It renews at the same length until you cancel.</p>
+          <p class="tier-note">Your membership renews automatically for the same length until you cancel.</p>
 
           <div class="tier-act">
             <button class="joinbtn" type="button" id="joinBtn">Join the archive</button>
@@ -1741,7 +1753,7 @@ footer .fsa{
                runs they stay at the founding rate. This line is what stops
                that being a claim rather than a starting point. Stripe shows
                the real figure before anybody pays either way. -->
-          <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. The founding rate is shown while founding places remain. Mailing to Canada and the United States, with postage included in the price. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
+          <p class="join-fine">Secure checkout by Stripe, in Canadian dollars. The founding rate is shown while founding memberships remain. Mailing to Canada and the United States, with postage included in the price. The first mailing is October 2026, and joining by the 15th of a month is what decides whether that month's card is your first. To cancel, write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a> and a person will answer.</p>
           <p class="join-error" id="joinError" role="alert"></p>
 
           <p class="join-elsewhere">Somewhere else in the world? <a href="#faq-shipping">Read how international membership works</a>, or take the digital membership instead.</p>
@@ -2356,33 +2368,36 @@ footer .fsa{
   function apply(data){
     if (!data || !data.terms) return;
 
+    /* Only the total now. The per card figure is gone from this tier, so
+       there is no .term-each to write into and membership-status no longer
+       sends one. Looking for a field nothing sends would be dead code that
+       reads like a bug. The digital tier keeps its own per recipe figure, and
+       it is static markup that this script never touches. */
     Object.keys(data.terms).forEach(function(term){
       var label = chip(term);
       if (!label) return;
-      var money = data.terms[term];
       var total = label.querySelector('.term-price');
-      var each  = label.querySelector('.term-each');
-      if (total && money.total) total.textContent = money.total;
-      if (each  && money.each)  each.textContent  = money.each;
+      if (total && data.terms[term].total) total.textContent = data.terms[term].total;
     });
 
     syncSchema(data.terms);
 
-    /* The prose only changes when the founding places are gone. While they
-       remain, what is already written is both true and warmer than anything
-       generated would be. */
+    /* The prose only changes when the founding memberships are gone. While
+       they remain, what is already written is both true and warmer than
+       anything generated would be. */
     if (data.founding_open) return;
 
     var banner = document.querySelector('.founding-note');
     if (banner) {
-      banner.textContent = 'The first 100 founding places have been taken.'
+      banner.textContent = 'The first 100 founding memberships have been taken.'
         + ' Founding members keep paying less than the current rate.';
     }
 
     var note = panel.querySelector('.tier-note');
     if (note) {
-      note.innerHTML = 'The founding places are taken, so this is the current'
-        + ' rate.<br>It renews at the same length until you cancel.';
+      note.innerHTML = 'The founding memberships are taken, so this is the'
+        + ' regular rate.<br>Your membership renews automatically for the same'
+        + ' length until you cancel.';
     }
   }
 
