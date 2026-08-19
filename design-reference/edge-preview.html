@@ -84,9 +84,23 @@ h1{ font-weight:500; font-size:1.6rem; margin-bottom:.3rem; }
          drop-shadow(0 3px 7px rgba(63,57,52,.22))
          drop-shadow(4px 7px 9px rgba(63,57,52,.10));
 }
-.s15{ filter:url(#deckle-15) drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
-.s18{ filter:url(#deckle-cream) drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
-.s22{ filter:url(#deckle-22) drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
+.s15{ filter:url(#deckle-15)    drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
+.s18{ filter:url(#deckle-18)    drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
+.s22{ filter:url(#deckle-cream) drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
+.s26{ filter:url(#deckle-26)    drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
+.s34{ filter:url(#deckle-34)    drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
+
+/* The photograph, cut out, at the same size as the generated sheets. It is
+   here so the two can be judged against each other rather than against a
+   memory of the other panel. */
+.photo{
+  width:100%;
+  height:230px;
+  transform:rotate(-.8deg);
+  object-fit:cover;
+  display:block;
+  filter:drop-shadow(0 3px 7px rgba(63,57,52,.22));
+}
 
 .zoom{ margin-top:2.5rem; }
 .zoom h2{ font-size:1.05rem; font-weight:500; margin-bottom:.8rem; }
@@ -119,29 +133,45 @@ h1{ font-weight:500; font-size:1.6rem; margin-bottom:.3rem; }
 <svg width="0" height="0" aria-hidden="true" style="position:absolute">
   <defs>
     <!-- The live one, matching index.html exactly. -->
-    <filter id="deckle-cream" x="-6%" y="-6%" width="112%" height="112%"
+    <filter id="deckle-cream" x="-12%" y="-12%" width="124%" height="124%"
             color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
                     numOctaves="4" seed="7" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="18"
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22"
                          xChannelSelector="R" yChannelSelector="G"/>
     </filter>
-    <!-- The previous depth, kept only so the two can be judged against each
-         other. Not used by the site. -->
-    <filter id="deckle-15" x="-6%" y="-6%" width="112%" height="112%"
+    <!-- Earlier depths, kept only so the ladder can be judged. Not used by
+         the site. Same seed throughout, so this is one tear at five depths
+         rather than five different tears. -->
+    <filter id="deckle-15" x="-12%" y="-12%" width="124%" height="124%"
             color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
                     numOctaves="4" seed="7" result="noise"/>
       <feDisplacementMap in="SourceGraphic" in2="noise" scale="15"
                          xChannelSelector="R" yChannelSelector="G"/>
     </filter>
-    <!-- One step deeper again, so the direction of travel is visible before
-         anybody asks for it. Not used by the site. -->
-    <filter id="deckle-22" x="-8%" y="-8%" width="116%" height="116%"
+    <filter id="deckle-18" x="-12%" y="-12%" width="124%" height="124%"
             color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
                     numOctaves="4" seed="7" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22"
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="18"
+                         xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- Above the live setting, so "higher still" can be judged rather than
+         guessed at. 34 is close to where this technique stops reading as a
+         tear and starts reading as a coastline. -->
+    <filter id="deckle-26" x="-14%" y="-14%" width="128%" height="128%"
+            color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
+                    numOctaves="4" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="26"
+                         xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="deckle-34" x="-18%" y="-18%" width="136%" height="136%"
+            color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
+                    numOctaves="4" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="34"
                          xChannelSelector="R" yChannelSelector="G"/>
     </filter>
   </defs>
@@ -164,28 +194,42 @@ h1{ font-weight:500; font-size:1.6rem; margin-bottom:.3rem; }
   </div>
 
   <div class="panel">
-    <h2>3. Turbulence, scale 18</h2>
+    <h2>3. Turbulence, scale 22</h2>
     <p class="note">Fractal noise displacing the edge. No period, so no repeat. The shadow is a drop-shadow after the displacement, so it follows the ragged silhouette rather than the original rectangle.</p>
     <div class="stage"><div class="sheet new"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>4. The photograph, cut out</h2>
+    <p class="note">The transparent version, at the same size and angle as the generated sheets. This is the honest comparison: whether the generated edge is close enough, or whether the real one should mask the top layer.</p>
+    <div class="stage"><img class="photo" src="torn-paper-edge-cutout.png" alt="The torn sheet with its background removed"></div>
   </div>
 </div>
 
 <div class="zoom">
-  <h2>How deep: 15, 18 and 22</h2>
-  <p class="sub">The middle one is what is in the page now. The other two are here only so the direction is visible. Same seed on all three, so the tear is the same tear at three depths rather than three different tears.</p>
+  <h2>How deep: 15, 18, 22, 26, 34</h2>
+  <p class="sub">Scale 22 is what is in the page now. The rest are here only so higher can be judged rather than guessed at. Same seed throughout, so this is one tear at five depths and not five different tears. Somewhere past 26 it stops reading as torn paper and starts reading as a coastline, which is the thing to watch for.</p>
   <div class="zoomstage">
     <div class="zoomrow">
       <div>
         <div class="zoomclip"><div class="sheet s15"></div></div>
-        <p class="caption">scale 15, the previous depth</p>
+        <p class="caption">15</p>
       </div>
       <div>
         <div class="zoomclip"><div class="sheet s18"></div></div>
-        <p class="caption">scale 18, live</p>
+        <p class="caption">18</p>
       </div>
       <div>
         <div class="zoomclip"><div class="sheet s22"></div></div>
-        <p class="caption">scale 22, if 18 is still too tame</p>
+        <p class="caption">22, live</p>
+      </div>
+      <div>
+        <div class="zoomclip"><div class="sheet s26"></div></div>
+        <p class="caption">26</p>
+      </div>
+      <div>
+        <div class="zoomclip"><div class="sheet s34"></div></div>
+        <p class="caption">34, probably too far</p>
       </div>
     </div>
   </div>
@@ -215,8 +259,9 @@ h1{ font-weight:500; font-size:1.6rem; margin-bottom:.3rem; }
     <li>Corners that are not sharp. A torn sheet has no square corners left.</li>
     <li>A shadow that follows the tearing rather than sitting behind a straight line.</li>
   </ul>
-  <p><strong>If it is too ragged or too tame</strong>, the number to change is <code>scale</code>. There are three of them in index.html, one per paper layer: cream 18, kraft 16, sage 20. They are kept in that relationship on purpose, the top sheet tearing hardest, so raising one means raising all three by the same ratio. Higher tears deeper. <code>baseFrequency</code> controls how often the edge wanders, and lower is slower and longer.</p>
-  <p><strong>If the generated edge never convinces</strong>, the fallback is your photograph as a mask on the top cream layer only, leaving the two behind it generated so they cannot repeat it. One thing to know before choosing that: the photo would need its white background knocked out to a real transparency first. A mask reads the alpha channel, and a sheet of cream paper on white has no alpha to read, so as it stands it would mask nothing.</p>
+  <p><strong>If it is too ragged or too tame</strong>, the number to change is <code>scale</code>. There are three of them in index.html, one per paper layer: cream 22, kraft 20, sage 24. They are kept in that relationship on purpose, the top sheet tearing hardest, so raising one means raising all three by the same ratio. Higher tears deeper. <code>baseFrequency</code> controls how often the edge wanders, and lower is slower and longer.</p>
+  <p><strong>Raising scale means widening the filter region too.</strong> Displacement pushes paper outside the element's box, and the region is what decides how far outside it may go. Too small a region cuts the deepest teeth off in a straight line, which puts back the exact fault the whole change was made to remove, and it does it only at the extremes where it is hardest to notice. The three filters are at 124% for this reason, and the 34 sample in this file is at 136%.</p>
+  <p><strong>The photograph is now a real option</strong>, since the cut-out version has a genuine alpha channel. Verified rather than assumed: corners read A=0, the centre reads A=255 on cream, and 37% of the canvas is transparent. If panel 4 beats panel 3 to your eye, the move is to mask the top cream layer with it and leave the kraft and sage generated, so the one photographed edge never repeats itself three times.</p>
 </div>
 
 </body>
