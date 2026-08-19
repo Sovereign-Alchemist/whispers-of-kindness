@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torn edge, side by side</title>
+<!--
+  NOT PART OF THE SITE. This file lives in design-reference/, which is inside
+  the repo and outside public/, so netlify.toml never serves it. It exists to
+  be opened from disk, by double clicking it, so the edge can be judged
+  against the reference without waiting for a deploy.
+
+  Three panels: the reference photograph, the old generated polygon, and the
+  turbulence edge that replaced it. Same colour, same size, same rotation, so
+  the only thing differing between the second and third is the edge.
+-->
+<style>
+:root{
+  --paper:#F0EBDE;
+  --ink:#3F3934;
+  --ink-soft:#6B635B;
+  --olive:#7A8352;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:Georgia, serif;
+  padding:2.5rem 2rem 4rem;
+  line-height:1.6;
+}
+h1{ font-weight:500; font-size:1.6rem; margin-bottom:.3rem; }
+.sub{ color:var(--ink-soft); margin-bottom:2.2rem; max-width:70ch; }
+.row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+  gap:2.5rem;
+  align-items:start;
+}
+.panel h2{
+  font-size:1.05rem;
+  font-weight:500;
+  margin-bottom:.2rem;
+}
+.panel .note{
+  font-size:.9rem;
+  color:var(--ink-soft);
+  margin-bottom:1rem;
+  min-height:3.4rem;
+}
+.stage{
+  background:#fff;
+  padding:2.5rem 2rem;
+  border:1px solid rgba(63,57,52,.14);
+}
+.ref img{ width:100%; height:auto; display:block; }
+
+/* Both sample sheets are the same rectangle at the same angle. */
+.sheet{
+  width:100%;
+  height:230px;
+  transform:rotate(-.8deg);
+  background-color:#F8EEDC;
+  background-image:linear-gradient(158deg, #FBF3E4 0%, #F6EAD6 58%, #F1E2C9 100%);
+}
+
+/* THE OLD WAY. The exact polygon that was in index.html. */
+.old{
+  clip-path:polygon(
+    0% 2%, 8% .4%, 16% 2.2%, 24% .6%, 32% 2%, 40% .5%, 48% 2.3%, 56% .7%,
+    64% 1.9%, 72% .4%, 80% 2.2%, 88% .6%, 96% 2%, 100% 1%,
+    99.6% 8%, 97.8% 17%, 99.8% 26%, 98% 35%, 99.5% 44%, 97.9% 53%,
+    99.7% 62%, 98.2% 71%, 99.6% 80%, 98% 89%, 99.4% 97%,
+    98.8% 100%, 90% 98.2%, 82% 99.8%, 74% 98%, 66% 99.6%, 58% 98.1%,
+    50% 99.7%, 42% 98%, 34% 99.5%, 26% 98.2%, 18% 99.8%, 10% 98%, 2% 99.6%,
+    .4% 92%, 2.2% 83%, .3% 74%, 2% 65%, .5% 56%, 2.3% 47%, .4% 38%,
+    1.9% 29%, .6% 20%, 2.1% 11%);
+  box-shadow:0 4px 12px rgba(63,57,52,.16);
+}
+
+/* THE NEW WAY. Identical values to the ones now in index.html. */
+.new{
+  filter:url(#deckle-cream)
+         drop-shadow(0 3px 7px rgba(63,57,52,.22))
+         drop-shadow(4px 7px 9px rgba(63,57,52,.10));
+}
+
+.zoom{ margin-top:2.5rem; }
+.zoom h2{ font-size:1.05rem; font-weight:500; margin-bottom:.8rem; }
+.zoomstage{
+  background:#fff;
+  border:1px solid rgba(63,57,52,.14);
+  padding:2rem;
+  overflow:hidden;
+}
+/* Scaled up so individual teeth can be counted and compared. */
+.zoomrow{ display:flex; gap:3rem; flex-wrap:wrap; }
+.zoomclip{ width:300px; height:150px; overflow:hidden; }
+.zoomclip > div{
+  width:600px; height:300px;
+  transform:scale(2);
+  transform-origin:top left;
+}
+.caption{ font-size:.85rem; color:var(--ink-soft); margin-top:.6rem; }
+.what{
+  margin-top:2.5rem;
+  border-top:1px solid rgba(63,57,52,.18);
+  padding-top:1.4rem;
+  max-width:70ch;
+}
+.what li{ margin:.4rem 0 .4rem 1.2rem; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <filter id="deckle-cream" x="-6%" y="-6%" width="112%" height="112%"
+            color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
+                    numOctaves="4" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="15"
+                         xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<h1>Torn edge, side by side</h1>
+<p class="sub">Open this from disk and compare the three. The middle panel is the polygon that was in the page. The right panel is what replaced it. Both are the same rectangle, the same cream, and the same angle, so the edge is the only thing that differs.</p>
+
+<div class="row">
+  <div class="panel ref">
+    <h2>1. The reference</h2>
+    <p class="note">Pela's photograph. No two teeth alike, some deep, some barely there, and the sheet does not lie flat.</p>
+    <div class="stage"><img src="torn-paper-edge.png" alt="A torn sheet of cream paper"></div>
+  </div>
+
+  <div class="panel">
+    <h2>2. The old polygon</h2>
+    <p class="note">Every tooth the same depth and the same spacing, because each one was typed. This is the thing that read as decorative trim.</p>
+    <div class="stage"><div class="sheet old"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>3. Turbulence</h2>
+    <p class="note">Fractal noise displacing the edge. No period, so no repeat. The shadow is a drop-shadow after the displacement, so it follows the ragged silhouette rather than the original rectangle.</p>
+    <div class="stage"><div class="sheet new"></div></div>
+  </div>
+</div>
+
+<div class="zoom">
+  <h2>The same two edges, at 2x</h2>
+  <div class="zoomstage">
+    <div class="zoomrow">
+      <div>
+        <div class="zoomclip"><div class="sheet old"></div></div>
+        <p class="caption">old polygon</p>
+      </div>
+      <div>
+        <div class="zoomclip"><div class="sheet new"></div></div>
+        <p class="caption">turbulence</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="what">
+  <p><strong>What to look for, in this order:</strong></p>
+  <ul>
+    <li>Teeth that vary. Some should bite several pixels in, some should barely dent the edge.</li>
+    <li>No rhythm. If you can find a repeating beat along the top, the frequency is still too high.</li>
+    <li>Corners that are not sharp. A torn sheet has no square corners left.</li>
+    <li>A shadow that follows the tearing rather than sitting behind a straight line.</li>
+  </ul>
+  <p><strong>If it is too ragged or too tame</strong>, the number to change is <code>scale</code> on the filter, 15 at present. Higher tears deeper. <code>baseFrequency</code> controls how often the edge wanders, and lower is slower and longer.</p>
+</div>
+
+</body>
+</html>

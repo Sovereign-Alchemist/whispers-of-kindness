@@ -725,17 +725,34 @@ h1{
    already have.
    ---------------------------------------------------------------------- */
 
-.offertag{
-  --deckle:polygon(
-    0% 2%, 8% .4%, 16% 2.2%, 24% .6%, 32% 2%, 40% .5%, 48% 2.3%, 56% .7%,
-    64% 1.9%, 72% .4%, 80% 2.2%, 88% .6%, 96% 2%, 100% 1%,
-    99.6% 8%, 97.8% 17%, 99.8% 26%, 98% 35%, 99.5% 44%, 97.9% 53%,
-    99.7% 62%, 98.2% 71%, 99.6% 80%, 98% 89%, 99.4% 97%,
-    98.8% 100%, 90% 98.2%, 82% 99.8%, 74% 98%, 66% 99.6%, 58% 98.1%,
-    50% 99.7%, 42% 98%, 34% 99.5%, 26% 98.2%, 18% 99.8%, 10% 98%, 2% 99.6%,
-    .4% 92%, 2.2% 83%, .3% 74%, 2% 65%, .5% 56%, 2.3% 47%, .4% 38%,
-    1.9% 29%, .6% 20%, 2.1% 11%);
+/* ---- THE TORN EDGE ------------------------------------------------------
+   A hand written clip-path polygon used to do this, and it was wrong for a
+   reason worth writing down: a polygon has as many teeth as somebody typed,
+   they are as varied as somebody's patience, and three layers sharing one
+   path tear identically. It read as pinking shears, not as paper.
 
+   It is now feTurbulence displacing the edge, filters defined once at the
+   top of the body. Fractal noise has no period, so no two teeth match, some
+   bite deep and some barely register, which is what the torn edge in
+   design-reference/torn-paper-edge.png actually does.
+
+   WHY THIS TECHNIQUE AND NOT AN IMAGE. The letter was checked first, on the
+   theory that it had already solved this. It has not. .letter uses a hand
+   written polygon too, on its top edge only and shallow enough to hide the
+   problem. There was no image or mask on this site to reuse. What there IS,
+   twice already, is feTurbulence for paper grain, so the edge is built from
+   the same thing the paper itself is made of rather than from a second
+   unrelated idea. The same three filters would suit .letter whenever
+   somebody wants the two to match.
+
+   THE SHADOW MOVED INTO THE FILTER. A box-shadow is cast by the element's
+   rectangle, so a torn shape with a box-shadow has a straight shadow behind
+   a ragged edge, which announces the trick. drop-shadow() placed AFTER the
+   displacement follows the real silhouette. The second, offset shadow is the
+   slight curl: paper that has been torn does not lie flat.
+   ---------------------------------------------------------------------- */
+
+.offertag{
   position:relative;
   /* Room for the layers behind and the flowers hanging past the right
      edge. The padding is what stops the sprig being clipped by the grid. */
@@ -750,44 +767,54 @@ h1{
 .offertag::after{
   content:"";
   position:absolute;
-  clip-path:var(--deckle);
   z-index:0;
 }
-/* kraft, behind and up to the left */
+/* kraft, behind and up to the left. Its own filter, so its tear is its own.
+   One filter on all three would give three identically torn sheets, which is
+   the fault being fixed rather than a smaller version of it. */
 .offertag::before{
   top:.35rem; left:.2rem; right:2.4rem; bottom:2.1rem;
   background:linear-gradient(160deg, #E5CDA6 0%, #D9BE93 55%, #CFB185 100%);
   transform:rotate(-3.2deg);
-  box-shadow:0 3px 9px rgba(63,57,52,.14);
+  filter:url(#deckle-kraft) drop-shadow(0 2px 5px rgba(63,57,52,.20));
 }
 /* sage, behind and down to the right */
 .offertag::after{
   top:2.4rem; left:1.9rem; right:.1rem; bottom:.3rem;
   background:linear-gradient(160deg, #CBD0B0 0%, #BCC29E 60%, #AFB68F 100%);
   transform:rotate(2.6deg);
-  box-shadow:0 3px 9px rgba(63,57,52,.13);
+  filter:url(#deckle-sage) drop-shadow(0 2px 5px rgba(63,57,52,.18));
 }
 
-/* The cream tag, the one with the words on it. */
+/* The cream tag, the one with the words on it.
+   The paper moved OFF this element and onto its ::before, because a filter
+   applies to everything inside an element and displacing the paper would
+   have displaced the words with it. The text now sits above an edge it does
+   not share. */
 .offertag-face{
   position:relative;
   z-index:1;
   display:block;
   padding:2.5rem 1.9rem 2.2rem 2.6rem;
-  background:linear-gradient(158deg, #FBF3E4 0%, #F6EAD6 58%, #F1E2C9 100%);
-  clip-path:var(--deckle);
   transform:rotate(-.8deg);
-  box-shadow:0 4px 12px rgba(63,57,52,.16);
 }
-/* A breath of grain, so the cream reads as paper rather than as a fill.
-   Same turbulence technique as the page grain, at a fraction of the
-   strength. */
+/* THE PAPER ITSELF, and the only thing the deckle filter touches on this
+   layer. Cream wash and grain in one element, sitting behind the words.
+   Two drop-shadows: the first is the sheet's own shadow following its torn
+   silhouette, the second is offset and softer, which is what a slight curl
+   looks like from above. */
 .offertag-face::before{
   content:"";
   position:absolute; inset:0;
+  z-index:0;
   pointer-events:none;
-  opacity:.55;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-color:#F8EEDC;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+    linear-gradient(158deg, #FBF3E4 0%, #F6EAD6 58%, #F1E2C9 100%);
+  filter:url(#deckle-cream)
+         drop-shadow(0 3px 7px rgba(63,57,52,.22))
+         drop-shadow(4px 7px 9px rgba(63,57,52,.10));
 }
 .offertag-face > *{ position:relative; z-index:1; }
 
@@ -956,6 +983,10 @@ h1{
   .offertag-title{ font-size:1.5rem; }
   .offertag-title .script{ font-size:1.85rem; margin-left:1.1rem; }
 }
+
+/* The filter definitions carry no pixels of their own. Taken out of the
+   flow so they cannot open a gap at the top of the page. */
+.edge-filters{ position:absolute; width:0; height:0; overflow:hidden; }
 
 .contact-lines{ font-size:1.08rem; }
 .contact-lines strong{ font-weight:500; }
@@ -1871,6 +1902,71 @@ footer .fsa{
      has agreed to it. -->
 </head>
 <body>
+
+<!-- ============================================================
+     TORN EDGES
+
+     Three filters, one per paper layer on the offer tag. Defined
+     once here rather than inside the element, because an SVG
+     filter is referenced by id from CSS and a definition inside a
+     rotated, clipped element is harder to find than it is to use.
+
+     HOW IT WORKS. feTurbulence generates fractal noise, and
+     feDisplacementMap uses that noise to push each pixel of the
+     source sideways and up. At the boundary it drags transparency
+     inward and paper outward, so the straight edge becomes ragged.
+     Fractal noise has no period, which is the whole point: no two
+     teeth come out the same, some bite deep and some barely
+     register, exactly as in
+     design-reference/torn-paper-edge.png.
+
+     A polygon could not do this. It has as many teeth as somebody
+     typed and they are as varied as somebody's patience.
+
+     THREE SEEDS, NOT ONE FILTER. Same noise on all three layers
+     would tear all three identically, which is the fault being
+     fixed rather than a smaller version of it.
+
+     baseFrequency is two numbers on purpose. The horizontal figure
+     is lower than the vertical, so the tear wanders in long slow
+     runs along the top and bottom and in tighter ones up the
+     sides, which is how a sheet pulled apart by hand actually
+     goes.
+
+     The filter region is widened past the element, because
+     displacement pushes paper OUTSIDE the original box and the
+     default region would cut it off in a straight line, which
+     would be the old problem wearing a new coat.
+
+     color-interpolation-filters="sRGB" because the default,
+     linearRGB, shifts these warm creams noticeably grey.
+     ============================================================ -->
+<svg class="edge-filters" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="deckle-cream" x="-6%" y="-6%" width="112%" height="112%"
+            color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
+                    numOctaves="4" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="15"
+                         xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="deckle-kraft" x="-6%" y="-6%" width="112%" height="112%"
+            color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.014 0.031"
+                    numOctaves="4" seed="23" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="13"
+                         xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="deckle-sage" x="-6%" y="-6%" width="112%" height="112%"
+            color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.009 0.022"
+                    numOctaves="5" seed="41" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="17"
+                         xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
 
 <header>
   <div class="header-inner">
