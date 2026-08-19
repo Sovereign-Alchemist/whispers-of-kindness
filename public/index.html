@@ -692,151 +692,269 @@ h1{
   font-size:1.3rem;
   line-height:1.2;
 }
-/* ---------- the offer card ----------------------------------------------
-   The promotional element in the invitation: send a recipe, a card comes
-   back. Named for what it does rather than what it is called, because the
-   name has not been decided and a class named after a slogan ages badly.
+/* ---------- the offer tag -----------------------------------------------
+   The promotional element beside the Send a recipe form.
 
-   It is a PIECE OF PAPER, not a banner. A full width strip across the
-   section would read as an advertisement bolted onto the page, and this
-   page has no advertisements on it. Everything else here is an object on a
-   desk: a letter, an index card, a photograph, a stamp. So this is one too,
-   and it is built from the treatments already in this file rather than a
-   new visual idea:
+   Named functionally. What this is called has not been decided, and a class
+   named after a slogan has to be renamed the day the slogan changes.
 
-     the torn top edge      lifted from .letter
-     the lifted shadow      --shadow-lift, as on every raised sheet
-     the slight rotation    as on .questions, .letter, .tier
-     the stamp in the       the same construction as .postage on the letter
-       corner
-     plum                   an ephemera colour, and the design system
-                            reserves plum and teal for exactly this, stamps
-                            and tabs and tags
+   BUILT FROM PELA'S OWN PRINTED STICKER, kept in the repo at
+   design-reference/offer-tag-sticker.png and outside public/ so it is
+   versioned without being served. Every part below is in that image:
 
-   It sits in the copy column, after the opening paragraph, so somebody
-   reading the invitation meets it before the questions rather than after
-   deciding. ------------------------------------------------------------- */
-.offercard{
+     three stacked tags     kraft behind and up-left, sage behind and
+                            down-right, cream on top, each at its own angle
+     deckled edges          the ragged torn edge of handmade paper, on all
+                            four sides of all three layers
+     a grommet              brass eyelet punched through the left edge
+     twine                  looped through the grommet and hanging left
+     rose tape              a strip across the top corner, torn along its
+                            lower edge, as if taped to the page
+     a leaf sprig           small sage leaves on a stem, under the words
+     a flower sprig         white buds on the right, draping past the edge
+
+   The type follows the sticker too: Cormorant Garamond over Caveat, the
+   same pairing as Kindness over whispers.
+
+   ONE DECKLE PATH, SHARED. The same irregular polygon clips all three
+   layers. Three hand written polygons would be three things to keep in
+   step, and the different rotations already stop the repeat from reading.
+
+   Colours are the site's own. --oak is the kraft, --olive the sage, --rose
+   the tape. Nothing here introduces a colour the design system does not
+   already have.
+   ---------------------------------------------------------------------- */
+
+.offertag{
+  --deckle:polygon(
+    0% 2%, 8% .4%, 16% 2.2%, 24% .6%, 32% 2%, 40% .5%, 48% 2.3%, 56% .7%,
+    64% 1.9%, 72% .4%, 80% 2.2%, 88% .6%, 96% 2%, 100% 1%,
+    99.6% 8%, 97.8% 17%, 99.8% 26%, 98% 35%, 99.5% 44%, 97.9% 53%,
+    99.7% 62%, 98.2% 71%, 99.6% 80%, 98% 89%, 99.4% 97%,
+    98.8% 100%, 90% 98.2%, 82% 99.8%, 74% 98%, 66% 99.6%, 58% 98.1%,
+    50% 99.7%, 42% 98%, 34% 99.5%, 26% 98.2%, 18% 99.8%, 10% 98%, 2% 99.6%,
+    .4% 92%, 2.2% 83%, .3% 74%, 2% 65%, .5% 56%, 2.3% 47%, .4% 38%,
+    1.9% 29%, .6% 20%, 2.1% 11%);
+
   position:relative;
-  display:block;
-  margin:2rem 0 2.2rem;
-  max-width:560px;
-  padding:2.6rem 2.2rem 2rem;
-  background:var(--paper-card);
-  box-shadow:var(--shadow-lift);
-  transform:rotate(.7deg);
-  /* Rotated the opposite way to .questions below it, so the two read as two
-     separate sheets rather than one crooked column. */
+  /* Room for the layers behind and the flowers hanging past the right
+     edge. The padding is what stops the sprig being clipped by the grid. */
+  padding:1.6rem 2.2rem 2.4rem 1.4rem;
+  margin:0;
 }
-/* A torn top edge, the same idea as the letter, shallower because this is a
-   smaller sheet and a deep tear would eat the kicker. */
-.offercard::before{
-  content:"";
-  position:absolute; inset:0;
-  background:inherit;
-  clip-path:polygon(
-    0% 1.8%, 3% .5%, 7% 2%, 11% .6%, 15% 1.9%, 19% .4%, 24% 1.7%, 28% .7%,
-    32% 2%, 37% .5%, 41% 1.8%, 46% .6%, 50% 1.9%, 55% .4%, 59% 1.6%, 64% .8%,
-    68% 1.9%, 72% .5%, 77% 1.7%, 81% .6%, 85% 1.8%, 90% .4%, 94% 1.7%, 97% .6%,
-    100% 1.8%,
-    100% 100%, 0% 100%);
-  z-index:0;
-}
-.offercard > *{ position:relative; z-index:1; }
-/* A dotted rule down the left, like the perforation on a page of stamps. */
-.offercard::after{
+
+/* The two tags underneath. Pseudo elements, because they carry no meaning
+   and a screen reader should not meet two empty divs on the way to the
+   words. */
+.offertag::before,
+.offertag::after{
   content:"";
   position:absolute;
-  top:1.6rem; bottom:1.6rem; left:.9rem;
-  border-left:2px dotted rgba(124,70,108,.35);
-  z-index:1;
+  clip-path:var(--deckle);
+  z-index:0;
 }
-.offercard-kicker{
+/* kraft, behind and up to the left */
+.offertag::before{
+  top:.35rem; left:.2rem; right:2.4rem; bottom:2.1rem;
+  background:linear-gradient(160deg, #E5CDA6 0%, #D9BE93 55%, #CFB185 100%);
+  transform:rotate(-3.2deg);
+  box-shadow:0 3px 9px rgba(63,57,52,.14);
+}
+/* sage, behind and down to the right */
+.offertag::after{
+  top:2.4rem; left:1.9rem; right:.1rem; bottom:.3rem;
+  background:linear-gradient(160deg, #CBD0B0 0%, #BCC29E 60%, #AFB68F 100%);
+  transform:rotate(2.6deg);
+  box-shadow:0 3px 9px rgba(63,57,52,.13);
+}
+
+/* The cream tag, the one with the words on it. */
+.offertag-face{
+  position:relative;
+  z-index:1;
+  display:block;
+  padding:2.5rem 1.9rem 2.2rem 2.6rem;
+  background:linear-gradient(158deg, #FBF3E4 0%, #F6EAD6 58%, #F1E2C9 100%);
+  clip-path:var(--deckle);
+  transform:rotate(-.8deg);
+  box-shadow:0 4px 12px rgba(63,57,52,.16);
+}
+/* A breath of grain, so the cream reads as paper rather than as a fill.
+   Same turbulence technique as the page grain, at a fraction of the
+   strength. */
+.offertag-face::before{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none;
+  opacity:.55;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+.offertag-face > *{ position:relative; z-index:1; }
+
+/* ---- the grommet, punched through the left edge ---- */
+.offertag-grommet{
+  position:absolute;
+  z-index:3;
+  /* Percentage, not a fixed offset. On the sticker the eyelet sits a little
+     above the middle of the left edge, and this tag is far taller than the
+     sticker is, so a rem offset that looked right at one height would ride
+     up near the top at another. */
+  top:44%; left:1.9rem;
+  transform:translateY(-50%);
+  width:26px; height:26px;
+  border-radius:50%;
+  /* Brass ring with a real hole in it: the ring is the border, the middle
+     is the shadow of a hole rather than a lighter disc. */
+  border:5px solid var(--oak);
+  background:rgba(63,57,52,.34);
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.45),
+             0 1px 2px rgba(63,57,52,.28);
+}
+/* ---- twine, looped through it and hanging to the left ---- */
+.offertag-twine{
+  position:absolute;
+  z-index:2;
+  /* Tied to the grommet's 44%, so the two move together. The loop enters at
+     roughly a quarter down its own box, which is what the offset subtracts. */
+  top:44%; left:-1.1rem;
+  transform:translateY(-32%);
+  width:76px; height:92px;
+  pointer-events:none;
+}
+.offertag-twine path{
+  fill:none;
+  stroke:#C2A079;
+  stroke-linecap:round;
+}
+
+/* ---- the tape across the top ---- */
+.offertag-tape{
+  position:absolute;
+  z-index:4;
+  top:-.55rem; left:30%;
+  width:104px; height:34px;
+  /* Tilted right-end-down, which is the way it lies on the sticker. It was
+     rotated the other way until this was checked against the image. */
+  transform:rotate(6deg);
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,.16) 0 2px, rgba(255,255,255,0) 2px 5px),
+    linear-gradient(180deg, #E2A6A6 0%, #D89A9A 100%);
+  opacity:.92;
+  box-shadow:0 1px 3px rgba(63,57,52,.16);
+  /* Torn along the lower edge, straight along the top, the way a piece
+     torn off a roll actually looks. */
+  clip-path:polygon(
+    0% 0%, 100% 0%, 100% 84%, 92% 100%, 84% 86%, 76% 99%, 68% 85%,
+    60% 98%, 52% 84%, 44% 99%, 36% 85%, 28% 98%, 20% 84%, 12% 99%,
+    4% 86%, 0% 96%);
+}
+
+/* ---- the words ---- */
+.offertag-kicker{
   display:block;
   font-family:var(--font-hand);
-  font-size:1.45rem;
+  font-size:1.4rem;
   line-height:1;
-  color:var(--plum);
-  transform:rotate(-1.4deg);
+  color:var(--olive);
+  transform:rotate(-1.6deg);
   transform-origin:left;
-  margin-bottom:.45rem;
+  margin-bottom:.5rem;
 }
-.offercard h3{
+/* Cormorant over Caveat, the second offset right and overlapping upward,
+   which is how Kindness sits over whispers on the sticker. */
+.offertag-title{
   font-family:var(--font-display);
   font-weight:500;
-  font-size:clamp(1.5rem, 2.6vw, 1.95rem);
-  line-height:1.15;
+  font-size:1.72rem;
+  line-height:1.05;
   margin:0 0 .9rem;
-  max-width:24ch;
-}
-.offercard-lead{
-  font-size:1.1rem;
-  margin:0 0 1.1rem;
-}
-.offercard-terms{
-  list-style:none;
-  margin:0 0 1.1rem;
-  padding:0;
-  border-top:1px solid rgba(124,70,108,.22);
-}
-.offercard-terms li{
-  position:relative;
-  padding:.55rem 0 .55rem 1.4rem;
-  font-size:1.02rem;
   color:var(--ink);
-  border-bottom:1px solid rgba(124,70,108,.14);
 }
-.offercard-terms li:last-child{ border-bottom:0; }
-.offercard-terms li::before{
+.offertag-title .script{
+  display:block;
+  font-family:var(--font-hand);
+  font-size:2.1rem;
+  line-height:.95;
+  margin:.1rem 0 0 1.6rem;
+  color:var(--ink);
+}
+.offertag-lead{
+  font-size:1.02rem;
+  line-height:1.5;
+  margin:0 0 .9rem;
+}
+.offertag-terms{
+  list-style:none;
+  margin:0 0 .9rem;
+  padding:0;
+  border-top:1px solid rgba(122,131,82,.3);
+}
+.offertag-terms li{
+  position:relative;
+  padding:.45rem 0 .45rem 1.15rem;
+  font-size:.95rem;
+  line-height:1.45;
+  border-bottom:1px solid rgba(122,131,82,.18);
+}
+.offertag-terms li:last-child{ border-bottom:0; }
+.offertag-terms li::before{
   content:"·";
-  position:absolute; left:.25rem; top:.42rem;
-  color:var(--plum);
+  position:absolute; left:.2rem; top:.32rem;
+  color:var(--olive);
   font-weight:bold;
-  font-size:1.3rem;
+  font-size:1.25rem;
   line-height:1.2;
 }
-.offercard-where{
-  font-size:1rem;
+.offertag-where{
+  font-size:.92rem;
+  line-height:1.5;
   color:var(--ink-soft);
   margin:0;
 }
-/* The stamp, same construction as .postage on the letter: an outer piece of
-   card stock, an inner ruled border, rotated off true. */
-.offercard-stamp{
+.offertag-where a{ color:var(--olive); }
+
+/* ---- the botanicals ---- */
+/* The leaf sprig sits under the words, inside the tag. */
+.offertag-leaves{
+  display:block;
+  width:120px; height:26px;
+  margin:.9rem 0 .2rem;
+  opacity:.9;
+}
+/* The flowers hang off the right edge and over the sage layer, which is
+   what makes the stack read as three separate pieces of paper rather than
+   one printed picture of three. */
+.offertag-flowers{
   position:absolute;
-  top:-14px; right:1.4rem;
-  width:74px; height:86px;
-  transform:rotate(4deg);
-  background:var(--paper-light);
-  border:1px solid rgba(63,57,52,.15);
-  box-shadow:0 1px 4px rgba(63,57,52,.14);
-  padding:6px;
-  z-index:2;
+  z-index:5;
+  /* On the sticker the sprig starts above the middle and hangs past the
+     bottom edge, over the sage layer. Percentage top for the same reason as
+     the grommet, and the height is deliberately long enough to overhang. */
+  top:22%; right:-.4rem;
+  /* Fixed height, not a percentage. The viewBox is 78x210 and a percentage
+     height would leave the browser to reconcile that ratio against a box
+     that keeps changing, which either letterboxes the sprig or stretches
+     it. The overhang comes from where it starts, not from how tall it is. */
+  width:78px; height:210px;
+  pointer-events:none;
 }
-.offercard-stamp-inner{
-  width:100%; height:100%;
-  border:1.4px solid var(--plum);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:4px;
-}
-.offercard-stamp-word{
-  font-family:var(--font-hand);
-  font-size:1.15rem;
-  line-height:1.05;
-  color:var(--plum);
+
+/* ---- narrow ---- */
+@media (max-width:1000px){
+  /* Off the side and above the form. It keeps its construction, and only
+     the room it has changes. */
+  .offertag{ max-width:460px; margin:0 0 2.5rem; }
 }
 @media (max-width:560px){
-  .offercard{
-    transform:none;
-    padding:2.2rem 1.4rem 1.7rem;
-  }
-  /* The stamp overlaps the heading once the sheet gets narrow, and a stamp
-     sitting on top of a word is worse than no stamp. */
-  .offercard-stamp{ display:none; }
-  .offercard::after{ display:none; }
+  .offertag{ padding:1.2rem 1.6rem 1.8rem 1rem; }
+  .offertag-face{ padding:2.1rem 1.3rem 1.8rem 2rem; }
+  /* The twine hangs off the left of a page that has no room for it, and a
+     rope disappearing off the screen reads as a bug. */
+  .offertag-twine{ display:none; }
+  .offertag-flowers{ width:58px; height:160px; top:4.6rem; right:-.6rem; }
+  .offertag-title{ font-size:1.5rem; }
+  .offertag-title .script{ font-size:1.85rem; margin-left:1.1rem; }
 }
 
 .contact-lines{ font-size:1.08rem; }
@@ -925,7 +1043,35 @@ h1{
    top of this file. Nothing here is redefined.
    ============================================================ */
 .send{ padding:4.5rem 1.4rem 6rem; }
-.send .inner{ max-width:760px; margin:0 auto; }
+/* Two columns from 1000px up: the form, and the offer tag beside it.
+   This section used to be a single 760px column with empty page either
+   side of it, which is the room the tag now occupies. The form column is
+   still capped near its old width, because a form field stretched to
+   1100px is harder to read, not easier. */
+.send .inner{
+  max-width:1100px; margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,400px);
+  column-gap:3.2rem;
+  align-items:start;
+}
+/* The heading and the lede span both columns. The form and the tag sit
+   side by side underneath, so the tag starts level with the first field
+   rather than level with the kicker. */
+.send .inner > .kicker,
+.send .inner > h2,
+.send .inner > .rule,
+.send .inner > .lede{ grid-column:1 / -1; }
+.send .recipe-form{ grid-column:1; max-width:720px; }
+.send .offertag{ grid-column:2; }
+@media (max-width:1000px){
+  .send .inner{ grid-template-columns:1fr; max-width:760px; }
+  /* Above the form rather than below it. Somebody who reads to the end of
+     a long form has already decided, and an offer met then is an offer
+     met too late. */
+  .send .offertag{ grid-column:1; grid-row:5; }
+  .send .recipe-form{ grid-row:6; max-width:none; }
+}
 .send .lede{ max-width:var(--measure); color:var(--ink-soft); margin-bottom:2.2rem; }
 
 .recipe-form{
@@ -2044,42 +2190,6 @@ footer .fsa{
         <hr class="rule">
         <p class="reveal">If your family holds a recipe with a story behind it, we would love to receive it. It does not need to be impressive. It needs to have belonged to someone.</p>
 
-        <!-- THE OFFER CARD.
-             Functional name on purpose. What this is called has not been
-             decided, and a class named after a slogan has to be renamed the
-             day the slogan changes.
-
-             It says PROMOTION in as many words, which is deliberate: a
-             thank-you that reads as a permanent entitlement is a promise
-             nobody meant to make. It also says nothing about the offer
-             ending, because that has not been decided either, and inventing
-             an expiry to create urgency is the opposite of how this project
-             talks to people.
-
-             The three terms are here rather than in small print because all
-             three change what somebody gets, and burying any of them would
-             mean somebody sends four recipes expecting four cards. -->
-        <aside class="offercard reveal" aria-labelledby="offercard-title">
-          <span class="offercard-stamp" aria-hidden="true">
-            <span class="offercard-stamp-inner">
-              <span class="offercard-stamp-word">with<br>thanks</span>
-            </span>
-          </span>
-
-          <span class="offercard-kicker">a promotion</span>
-          <h3 id="offercard-title">Send a recipe, and a card comes back</h3>
-
-          <p class="offercard-lead">Send us a full recipe while this promotion is running, and that month's card is mailed to you as a thank you.</p>
-
-          <ul class="offercard-terms">
-            <li>You do not need to be a member, now or ever.</li>
-            <li>One card per person, however many recipes you send.</li>
-            <li>If that month's card is already at the printer when your recipe reaches us, yours is the following month's.</li>
-          </ul>
-
-          <p class="offercard-where">Tell us where to send it in the <a href="#f-story">What do you remember</a> box on the form below, or write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a>. If you forget, we will ask.</p>
-        </aside>
-
         <div class="questions reveal">
           <span class="kicker">to help you begin</span>
           <ul>
@@ -2149,6 +2259,109 @@ footer .fsa{
       <h2 class="reveal">Send a recipe</h2>
       <hr class="rule">
       <p class="lede reveal">Four things are needed: your name, an email, what the recipe is called, and the recipe itself. Everything else is optional, and a blank is always better than a guess. You can also write to us instead, if a form is not how you want to do this.</p>
+
+      <!-- THE OFFER TAG.
+           Functional name on purpose. What this is called has not been
+           decided, and a class named after a slogan has to be renamed the
+           day the slogan changes.
+
+           Built from Pela's own printed sticker, kept at
+           design-reference/offer-tag-sticker.png. It is in the repo and
+           outside public/, so it is versioned without being published.
+
+           It sits beside the form rather than in the invitation above,
+           because this is the moment somebody is actually deciding to send
+           something. In the invitation it was one more thing to read before
+           the prompting questions.
+
+           It says PROMOTION in as many words, which is deliberate: a
+           thank-you that reads as a permanent entitlement is a promise
+           nobody meant to make. It says nothing about the offer ending,
+           because that has not been decided, and inventing an expiry to
+           manufacture urgency is the opposite of how this project talks to
+           people.
+
+           All three terms are on the face rather than in small print. Every
+           one of them changes what somebody gets, and the second one buried
+           would have people sending four recipes expecting four cards. -->
+      <aside class="offertag reveal" aria-labelledby="offertag-title">
+
+        <!-- Twine first in the source so it passes behind the grommet. -->
+        <svg class="offertag-twine" viewBox="0 0 76 92" aria-hidden="true" focusable="false">
+          <path d="M46 20 C30 14, 14 22, 12 36 C10 50, 24 58, 38 52" stroke-width="3.2"/>
+          <path d="M38 52 C26 58, 16 70, 20 84" stroke-width="3"/>
+          <path d="M46 20 C34 24, 26 34, 30 44" stroke-width="2.4" opacity=".75"/>
+        </svg>
+        <span class="offertag-grommet" aria-hidden="true"></span>
+        <span class="offertag-tape" aria-hidden="true"></span>
+
+        <!-- The white buds, hanging off the right edge and over the sage
+             layer, which is what makes the stack read as three separate
+             pieces of paper rather than one picture of three. -->
+        <svg class="offertag-flowers" viewBox="0 0 78 210" aria-hidden="true" focusable="false">
+          <g fill="none" stroke="#7A8352" stroke-width="2" stroke-linecap="round">
+            <path d="M40 6 C46 50, 44 110, 30 204"/>
+            <path d="M42 40 C32 46, 26 56, 25 66"/>
+            <path d="M41 70 C51 76, 57 86, 58 98"/>
+            <path d="M38 104 C28 112, 22 124, 22 136"/>
+            <path d="M36 140 C46 148, 52 160, 52 172"/>
+          </g>
+          <g fill="#8C9B63">
+            <ellipse cx="20" cy="70" rx="9" ry="4.5" transform="rotate(-24 20 70)"/>
+            <ellipse cx="62" cy="102" rx="9" ry="4.5" transform="rotate(22 62 102)"/>
+            <ellipse cx="17" cy="140" rx="9" ry="4.5" transform="rotate(-26 17 140)"/>
+            <ellipse cx="56" cy="176" rx="9" ry="4.5" transform="rotate(24 56 176)"/>
+          </g>
+          <g fill="#F7F3E8" stroke="#C9C7AE" stroke-width="1">
+            <circle cx="40" cy="8"  r="5"/>
+            <circle cx="31" cy="18" r="5.5"/><circle cx="49" cy="20" r="5"/>
+            <circle cx="38" cy="28" r="6"/>
+            <circle cx="28" cy="38" r="5"/><circle cx="50" cy="40" r="5.5"/>
+            <circle cx="40" cy="50" r="5.5"/>
+            <circle cx="30" cy="60" r="5"/><circle cx="51" cy="62" r="5"/>
+            <circle cx="41" cy="72" r="5.5"/>
+            <circle cx="33" cy="84" r="5"/><circle cx="49" cy="88" r="4.5"/>
+          </g>
+        </svg>
+
+        <!-- A div, not a span. This wraps a heading, a paragraph and a list,
+             which are flow content, and a span may only hold phrasing.
+             Browsers would render it either way, which is exactly why it is
+             worth getting right rather than leaving to them. -->
+        <div class="offertag-face">
+          <span class="offertag-kicker">a promotion</span>
+
+          <!-- Cormorant over Caveat, the second line offset right, the same
+               pairing and the same arrangement as Kindness over whispers on
+               the sticker this is built from. -->
+          <h3 class="offertag-title" id="offertag-title">Send a recipe<span class="script">a card comes back</span></h3>
+
+          <p class="offertag-lead">Send us a full recipe while this promotion is running, and that month's card is mailed to you as a thank you.</p>
+
+          <ul class="offertag-terms">
+            <li>You do not need to be a member, now or ever.</li>
+            <li>One card per person, however many recipes you send.</li>
+            <li>If that month's card is already at the printer when your recipe reaches us, yours is the following month's.</li>
+          </ul>
+
+          <!-- The sage sprig from the sticker, under the words. -->
+          <svg class="offertag-leaves" viewBox="0 0 120 26" aria-hidden="true" focusable="false">
+            <path d="M4 20 C36 15, 78 12, 116 9" fill="none" stroke="#7A8352" stroke-width="1.8" stroke-linecap="round"/>
+            <g fill="#8C9B63">
+              <ellipse cx="22" cy="12" rx="8" ry="3.6" transform="rotate(-22 22 12)"/>
+              <ellipse cx="30" cy="23" rx="8" ry="3.6" transform="rotate(18 30 23)"/>
+              <ellipse cx="46" cy="9"  rx="8.5" ry="3.8" transform="rotate(-20 46 9)"/>
+              <ellipse cx="54" cy="20" rx="8.5" ry="3.8" transform="rotate(16 54 20)"/>
+              <ellipse cx="70" cy="6"  rx="8" ry="3.6" transform="rotate(-18 70 6)"/>
+              <ellipse cx="78" cy="17" rx="8" ry="3.6" transform="rotate(15 78 17)"/>
+              <ellipse cx="94" cy="4"  rx="7" ry="3.2" transform="rotate(-16 94 4)"/>
+              <ellipse cx="100" cy="14" rx="7" ry="3.2" transform="rotate(14 100 14)"/>
+            </g>
+          </svg>
+
+          <p class="offertag-where">Tell us where to send it in the <a href="#f-story">What do you remember</a> box, or write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a>. If you forget, we will ask.</p>
+        </div>
+      </aside>
 
       <form id="recipeForm" class="recipe-form reveal" novalidate>
 
