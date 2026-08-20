@@ -717,9 +717,10 @@ h1{
 
 .offertag{
   position:relative;
-  /* Room for the twine on the left and the flowers on the right, both of
-     which hang outside the paper. */
-  padding:.6rem 1.9rem 1.2rem 1.2rem;
+  /* Room on the left for the twine, which hangs outside the paper. The
+     right padding came down when the flowers went, since nothing overhangs
+     that side any more. */
+  padding:.6rem .5rem 1.2rem 1.2rem;
   margin:0;
 }
 
@@ -776,11 +777,14 @@ h1{
           mask-position:center;
 }
 
+/* The padding is generous on purpose. Torn paper has no straight edge to
+   sit type against, so text run close to it looks like it is falling off.
+   The left is widest because the grommet is punched through that side. */
 .offertag-face{
   position:relative;
   z-index:1;
   display:block;
-  padding:1.5rem 1.5rem 1.4rem 2rem;
+  padding:2.1rem 2rem 2rem 2.6rem;
   transform:rotate(-.8deg);
 }
 .offertag-face > *{ position:relative; z-index:1; }
@@ -843,7 +847,7 @@ h1{
   color:var(--olive);
   transform:rotate(-1.6deg);
   transform-origin:left;
-  margin-bottom:.2rem;
+  margin-bottom:.45rem;
 }
 /* Cormorant over Caveat, the second offset right, the way Kindness sits
    over whispers on the sticker. */
@@ -852,7 +856,7 @@ h1{
   font-weight:500;
   font-size:1.25rem;
   line-height:1.02;
-  margin:0 0 .5rem;
+  margin:0 0 .95rem;
   color:var(--ink);
 }
 .offertag-title .script{
@@ -865,20 +869,20 @@ h1{
 }
 .offertag-lead{
   font-size:.9rem;
-  line-height:1.4;
-  margin:0 0 .5rem;
+  line-height:1.45;
+  margin:0 0 1rem;
 }
 .offertag-terms{
   list-style:none;
-  margin:0 0 .5rem;
-  padding:0;
+  margin:0 0 1rem;
+  padding:.35rem 0 0;
   border-top:1px solid rgba(122,131,82,.3);
 }
 .offertag-terms li{
   position:relative;
-  padding:.25rem 0 .25rem .95rem;
+  padding:.42rem 0 .42rem .95rem;
   font-size:.83rem;
-  line-height:1.35;
+  line-height:1.4;
   border-bottom:1px solid rgba(122,131,82,.18);
 }
 .offertag-terms li:last-child{ border-bottom:0; }
@@ -892,23 +896,22 @@ h1{
 }
 .offertag-where{
   font-size:.8rem;
-  line-height:1.4;
+  line-height:1.45;
   color:var(--ink-soft);
-  margin:0;
+  margin:.15rem 0 0;
+  padding-top:.55rem;
+  border-top:1px solid rgba(122,131,82,.18);
 }
 .offertag-where a{ color:var(--olive); }
 
-/* ---- the flowers ----
-   The leaf sprig that used to sit under the words is gone. It was
-   decoration inside a space that no longer has room for any. These hang off
-   the right edge, outside the paper, which is where the sticker has them. */
-.offertag-flowers{
-  position:absolute;
-  z-index:5;
-  top:16%; right:-.2rem;
-  width:52px; height:150px;
-  pointer-events:none;
-}
+/* Both botanicals are gone now, 19 August 2026: the leaf sprig that sat
+   under the words, and the flower sprig that hung off the right edge. What
+   is left is paper, tape, a grommet and twine, which is the whole of the
+   object rather than the decoration on it.
+
+   The flowers were doing one real job, breaking the outline so the sheet
+   did not read as a rectangle with a picture in it. That job now falls to
+   the torn edge itself, which is the honest place for it. */
 
 /* ---- narrow ---- */
 @media (max-width:1000px){
@@ -918,11 +921,10 @@ h1{
 }
 @media (max-width:560px){
   .offertag{ padding:.5rem 1.5rem 1rem .9rem; }
-  .offertag-face{ padding:1.3rem 1.1rem 1.2rem 1.7rem; }
+  .offertag-face{ padding:1.8rem 1.5rem 1.7rem 2.2rem; }
   /* The twine hangs off the left of a page that has no room for it, and a
      rope disappearing off the screen reads as a bug. */
   .offertag-twine{ display:none; }
-  .offertag-flowers{ width:42px; height:118px; }
 }
 .contact-lines{ font-size:1.08rem; }
 .contact-lines strong{ font-weight:500; }
@@ -1032,8 +1034,19 @@ h1{
 .send .inner > h2,
 .send .inner > .rule,
 .send .inner > .lede{ grid-column:1 / -1; }
-.send .recipe-form{ grid-column:1; max-width:720px; }
-.send .offertag{ grid-column:2; }
+/* BOTH ARE PINNED TO ROW 5, and that is not decoration.
+   The four items above span 1/-1 and take rows 1 to 4. The tag comes before
+   the form in the source, because somebody should meet the offer before
+   they start filling things in. Grid auto-placement only ever moves
+   forward, so once the tag claimed row 5 column 2 the form could not go
+   back to row 5 column 1 and dropped to row 6. That left row 5 column 1
+   empty, a full tag-height of nothing between the lede and the form.
+   Naming the row for both puts them side by side and keeps the reading
+   order.
+   If a fifth full-width element is ever added above, this number moves
+   with it. */
+.send .recipe-form{ grid-column:1; grid-row:5; max-width:720px; }
+.send .offertag{ grid-column:2; grid-row:5; }
 @media (max-width:1000px){
   .send .inner{ grid-template-columns:1fr; max-width:760px; }
   /* Above the form rather than below it. Somebody who reads to the end of
@@ -2267,37 +2280,6 @@ footer .fsa{
         <span class="offertag-grommet" aria-hidden="true"></span>
         <span class="offertag-tape" aria-hidden="true"></span>
 
-        <!-- The white buds, hanging off the right edge and past the paper.
-             They used to drape over the sage layer. There is no sage layer
-             any more, and they still work, because what they were really
-             doing was breaking the outline so the sheet does not read as a
-             rectangle with a picture in it. -->
-        <svg class="offertag-flowers" viewBox="0 0 78 210" aria-hidden="true" focusable="false">
-          <g fill="none" stroke="#7A8352" stroke-width="2" stroke-linecap="round">
-            <path d="M40 6 C46 50, 44 110, 30 204"/>
-            <path d="M42 40 C32 46, 26 56, 25 66"/>
-            <path d="M41 70 C51 76, 57 86, 58 98"/>
-            <path d="M38 104 C28 112, 22 124, 22 136"/>
-            <path d="M36 140 C46 148, 52 160, 52 172"/>
-          </g>
-          <g fill="#8C9B63">
-            <ellipse cx="20" cy="70" rx="9" ry="4.5" transform="rotate(-24 20 70)"/>
-            <ellipse cx="62" cy="102" rx="9" ry="4.5" transform="rotate(22 62 102)"/>
-            <ellipse cx="17" cy="140" rx="9" ry="4.5" transform="rotate(-26 17 140)"/>
-            <ellipse cx="56" cy="176" rx="9" ry="4.5" transform="rotate(24 56 176)"/>
-          </g>
-          <g fill="#F7F3E8" stroke="#C9C7AE" stroke-width="1">
-            <circle cx="40" cy="8"  r="5"/>
-            <circle cx="31" cy="18" r="5.5"/><circle cx="49" cy="20" r="5"/>
-            <circle cx="38" cy="28" r="6"/>
-            <circle cx="28" cy="38" r="5"/><circle cx="50" cy="40" r="5.5"/>
-            <circle cx="40" cy="50" r="5.5"/>
-            <circle cx="30" cy="60" r="5"/><circle cx="51" cy="62" r="5"/>
-            <circle cx="41" cy="72" r="5.5"/>
-            <circle cx="33" cy="84" r="5"/><circle cx="49" cy="88" r="4.5"/>
-          </g>
-        </svg>
-
         <!-- A div, not a span. This wraps a heading, a paragraph and a list,
              which are flow content, and a span may only hold phrasing.
              Browsers would render it either way, which is exactly why it is
@@ -2328,7 +2310,12 @@ footer .fsa{
             <li>If that month's card is already printing, yours is the next one.</li>
           </ul>
 
-          <p class="offertag-where">Put your address in the <a href="#f-story">What do you remember</a> box, or write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a>.</p>
+          <!-- No email address on the tag. There is already one under the
+               Join button, one in the FAQ, one on /refunds and one in the
+               invitation above. A fifth, on the one element whose job is to
+               point at the form, invites somebody to write instead of
+               sending the recipe. -->
+          <p class="offertag-where">Put your mailing address in either the <a href="#f-text">recipe</a> box or the <a href="#f-story">What do you remember</a> box.</p>
         </div>
       </aside>
 
