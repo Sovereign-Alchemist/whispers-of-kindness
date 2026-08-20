@@ -754,11 +754,20 @@ h1{
     linear-gradient(158deg, #FBF3E4 0%, #F6EAD6 58%, #F1E2C9 100%);
   /* The -webkit- pair is for Safari, which shipped mask-image behind the
      prefix and still wants it. Unprefixed second so it wins where both are
-     understood. Leading slash, not a relative path: this rule is inside a
-     style block, so a relative url resolves against the document, and the
-     document is served from more than one address once Pretty URLs is on. */
-  -webkit-mask-image:url("/images/torn-edge-mask.png");
-          mask-image:url("/images/torn-edge-mask.png");
+     understood.
+
+     RELATIVE, NOT ROOT ABSOLUTE, and this was briefly got wrong. A leading
+     slash was added on the theory that Pretty URLs serves this page from
+     more than one address. It does, and it makes no difference: index.html
+     is served at / and at /index.html, and images/... resolves to
+     /images/... from both. What the leading slash DOES break is opening
+     this file from disk, where it points at the root of the C drive.
+     Checking a change by double clicking public/index.html is the fastest
+     loop there is on a machine with no browser tooling, and a path that
+     works everywhere except there is a path that costs an afternoon.
+     Relative also matches every other image on this page. */
+  -webkit-mask-image:url("images/torn-edge-mask.png");
+          mask-image:url("images/torn-edge-mask.png");
   -webkit-mask-size:100% 100%;
           mask-size:100% 100%;
   -webkit-mask-repeat:no-repeat;
