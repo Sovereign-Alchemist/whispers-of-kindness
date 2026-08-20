@@ -784,7 +784,13 @@ h1{
   position:relative;
   z-index:1;
   display:block;
-  padding:2.1rem 2rem 2rem 2.6rem;
+  /* The bottom is deeper than the top. The closing line was sitting close
+     to the torn bottom edge, and a torn edge is ragged, so the distance
+     between the last line and the paper's actual boundary changes along
+     its length. More room underneath moves the whole block up the sheet
+     and stops the gap looking uneven. The bottom tape strip crosses that
+     edge too, and this keeps the words clear of it. */
+  padding:2.1rem 2rem 2.9rem 2.6rem;
   transform:rotate(-.8deg);
 }
 .offertag-face > *{ position:relative; z-index:1; }
@@ -818,10 +824,17 @@ h1{
 }
 
 /* ---- the tape across the top ---- */
-.offertag-tape{
+/* THE SELECTOR NAMES THE PARENT ON PURPOSE. `.offertag-tape` alone ties
+   with `.offertag-face > *` below and loses on source order, which is
+   exactly what once turned position:absolute into relative and made the
+   cream sheet vanish. Same trap, same fix, and it is worth paying the extra
+   token every time rather than depending on where a rule happens to sit. */
+.offertag-face > .offertag-tape{
   position:absolute;
   z-index:4;
-  top:-.45rem; left:28%;
+  /* Offsets are against the SHEET now, so a negative value genuinely
+     crosses the torn edge rather than hovering near it. */
+  top:-.5rem; left:24%;
   width:80px; height:26px;
   transform:rotate(6deg);
   background:
@@ -846,22 +859,11 @@ h1{
    scaleY(-1) flips the torn edge to face upward. A strip at the bottom of a
    sheet tears along its top, and reusing the same clip-path unflipped would
    put the ragged edge against the table. */
-.offertag-tape-b{
+.offertag-face > .offertag-tape-b{
   top:auto; bottom:-.5rem;
-  left:auto; right:14%;
+  left:auto; right:12%;
   width:72px; height:24px;
   transform:rotate(-7deg) scaleY(-1);
-}
-/* A third, smaller, across the left edge just below the grommet. It is
-   deliberately the least of the three, and it is the one to delete first if
-   three turns out to be busy on a sheet this size. It sits half on and half
-   off the paper, which is what makes it read as tape rather than as a
-   printed stripe. */
-.offertag-tape-c{
-  top:56%; left:-.55rem;
-  width:46px; height:18px;
-  transform:rotate(72deg);
-  opacity:.82;
 }
 
 /* ---- the words, tightened to fit a small sheet ---- */
@@ -2304,18 +2306,25 @@ footer .fsa{
           <path d="M46 20 C34 24, 26 34, 30 44" stroke-width="2.4" opacity=".75"/>
         </svg>
         <span class="offertag-grommet" aria-hidden="true"></span>
-        <!-- Three strips. One reads as a sticker with a tab on it. Three,
-             at the top, the opposite corner and across the twine, read as a
-             piece of paper somebody taped down. -->
-        <span class="offertag-tape" aria-hidden="true"></span>
-        <span class="offertag-tape offertag-tape-b" aria-hidden="true"></span>
-        <span class="offertag-tape offertag-tape-c" aria-hidden="true"></span>
 
         <!-- A div, not a span. This wraps a heading, a paragraph and a list,
              which are flow content, and a span may only hold phrasing.
              Browsers would render it either way, which is exactly why it is
              worth getting right rather than leaving to them. -->
         <div class="offertag-face">
+          <!-- THE TAPE LIVES IN HERE NOW, not out on the aside.
+               Out there it was positioned against the outer padded box,
+               which is inset from the paper and not rotated with it, so the
+               strips floated near the edge instead of straddling it. In
+               here they share the sheet's box and its rotation, so a
+               negative offset genuinely crosses the torn edge.
+
+               Two strips, not three. The third sat across the left edge at
+               72 degrees, and where a rotated box lands is not something
+               that can be worked out reliably without looking at it. Top
+               and bottom are horizontal, so they straddle predictably. -->
+          <span class="offertag-tape" aria-hidden="true"></span>
+          <span class="offertag-tape offertag-tape-b" aria-hidden="true"></span>
           <!-- The cream sheet. Decorative, and it exists as its own element
                because CSS runs filter before mask: the shadows have to sit
                on a wrapper so they are cast by the torn shape rather than by
