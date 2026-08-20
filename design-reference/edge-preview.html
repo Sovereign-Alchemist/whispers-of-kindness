@@ -78,15 +78,42 @@ h1{ font-weight:500; font-size:1.6rem; margin-bottom:.3rem; }
   box-shadow:0 4px 12px rgba(63,57,52,.16);
 }
 
-/* THE NEW WAY. Identical values to the ones now in index.html. */
-.new{
-  filter:url(#deckle-cream)
-         drop-shadow(0 3px 7px rgba(63,57,52,.22))
+/* WHAT THE TOP SHEET IS NOW: the real photograph as a mask, on the same two
+   elements index.html uses. The wrapper carries the shadows and the child
+   carries the mask, because CSS runs filter before mask and a shadow on the
+   masked element would be cast by its rectangle. */
+.masked{
+  position:relative;
+  width:100%; height:230px;
+  transform:rotate(-.8deg);
+  filter:drop-shadow(0 3px 7px rgba(63,57,52,.22))
          drop-shadow(4px 7px 9px rgba(63,57,52,.10));
+}
+.masked::before{
+  content:"";
+  position:absolute; inset:0;
+  background-color:#F8EEDC;
+  background-image:linear-gradient(158deg, #FBF3E4 0%, #F6EAD6 58%, #F1E2C9 100%);
+  -webkit-mask-image:url("../public/images/torn-edge-mask.png");
+          mask-image:url("../public/images/torn-edge-mask.png");
+  -webkit-mask-size:100% 100%;
+          mask-size:100% 100%;
+  -webkit-mask-repeat:no-repeat;
+          mask-repeat:no-repeat;
+}
+/* The same mask at the tag's real proportion, portrait rather than
+   landscape, so the stretching can be judged rather than discovered later. */
+.masked.portrait{ width:230px; height:340px; }
+
+/* The generated edge, kept for comparison only. It is no longer what the
+   top sheet uses, and it IS still what kraft and sage use. */
+.new{
+  filter:url(#deckle-22gen)
+         drop-shadow(0 3px 7px rgba(63,57,52,.22));
 }
 .s15{ filter:url(#deckle-15)    drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
 .s18{ filter:url(#deckle-18)    drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
-.s22{ filter:url(#deckle-cream) drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
+.s22{ filter:url(#deckle-22gen) drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
 .s26{ filter:url(#deckle-26)    drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
 .s34{ filter:url(#deckle-34)    drop-shadow(0 3px 7px rgba(63,57,52,.22)); }
 
@@ -133,7 +160,7 @@ h1{ font-weight:500; font-size:1.6rem; margin-bottom:.3rem; }
 <svg width="0" height="0" aria-hidden="true" style="position:absolute">
   <defs>
     <!-- The live one, matching index.html exactly. -->
-    <filter id="deckle-cream" x="-12%" y="-12%" width="124%" height="124%"
+    <filter id="deckle-22gen" x="-12%" y="-12%" width="124%" height="124%"
             color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
                     numOctaves="4" seed="7" result="noise"/>
@@ -194,15 +221,32 @@ h1{ font-weight:500; font-size:1.6rem; margin-bottom:.3rem; }
   </div>
 
   <div class="panel">
-    <h2>3. Turbulence, scale 22</h2>
-    <p class="note">Fractal noise displacing the edge. No period, so no repeat. The shadow is a drop-shadow after the displacement, so it follows the ragged silhouette rather than the original rectangle.</p>
+    <h2>3. Generated, scale 22</h2>
+    <p class="note">What the top sheet used to be, and what the kraft and sage behind it still are. Kept here because those two are still made this way and still have to be judged.</p>
     <div class="stage"><div class="sheet new"></div></div>
   </div>
 
   <div class="panel">
-    <h2>4. The photograph, cut out</h2>
-    <p class="note">The transparent version, at the same size and angle as the generated sheets. This is the honest comparison: whether the generated edge is close enough, or whether the real one should mask the top layer.</p>
-    <div class="stage"><img class="photo" src="torn-paper-edge-cutout.png" alt="The torn sheet with its background removed"></div>
+    <h2>4. The mask. This is now the top sheet.</h2>
+    <p class="note">Your photograph, cut out and used as a mask over the cream wash. Same two elements as the page uses, so the shadow is cast by the torn shape rather than by the rectangle behind it.</p>
+    <div class="stage"><div class="masked"></div></div>
+  </div>
+</div>
+
+<div class="zoom">
+  <h2>The stretch, which is the one real cost of using a photograph</h2>
+  <p class="sub">The mask is 800 by 587, landscape. The tag is portrait. Stretching one to the other squeezes the top and bottom teeth closer together and leaves the side teeth about right. Left is the mask at its own proportion, right is roughly the tag's. If the right one reads as combed rather than torn, that is the thing to say, and the answer is a taller crop of the photograph rather than a different technique.</p>
+  <div class="zoomstage">
+    <div class="zoomrow">
+      <div>
+        <div class="masked" style="width:300px;height:220px"></div>
+        <p class="caption">the mask at its own proportion</p>
+      </div>
+      <div>
+        <div class="masked portrait"></div>
+        <p class="caption">stretched to roughly the tag's proportion</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -261,7 +305,8 @@ h1{ font-weight:500; font-size:1.6rem; margin-bottom:.3rem; }
   </ul>
   <p><strong>If it is too ragged or too tame</strong>, the number to change is <code>scale</code>. There are three of them in index.html, one per paper layer: cream 22, kraft 20, sage 24. They are kept in that relationship on purpose, the top sheet tearing hardest, so raising one means raising all three by the same ratio. Higher tears deeper. <code>baseFrequency</code> controls how often the edge wanders, and lower is slower and longer.</p>
   <p><strong>Raising scale means widening the filter region too.</strong> Displacement pushes paper outside the element's box, and the region is what decides how far outside it may go. Too small a region cuts the deepest teeth off in a straight line, which puts back the exact fault the whole change was made to remove, and it does it only at the extremes where it is hardest to notice. The three filters are at 124% for this reason, and the 34 sample in this file is at 136%.</p>
-  <p><strong>The photograph is now a real option</strong>, since the cut-out version has a genuine alpha channel. Verified rather than assumed: corners read A=0, the centre reads A=255 on cream, and 37% of the canvas is transparent. If panel 4 beats panel 3 to your eye, the move is to mask the top cream layer with it and leave the kraft and sage generated, so the one photographed edge never repeats itself three times.</p>
+  <p><strong>The top sheet is now the photograph</strong>, masked. The kraft and sage behind it are still generated at scale 22, so the one photographed edge cannot appear three times. That split is the whole point of doing it this way.</p>
+  <p><strong>The mask lives at public/images/torn-edge-mask.png</strong>, not in this folder, because this folder is not served and the live page has to be able to fetch it. It is your cut-out, cropped to the paper, scaled to 800 wide, with its colour flattened to white. A mask reads only the alpha channel, so the photograph underneath was dead weight. Dropping it took the file from 2.4 MB to 49 KB, which is the difference between an ornament and a tax on every visitor.</p>
 </div>
 
 </body>

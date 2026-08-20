@@ -798,23 +798,51 @@ h1{
   padding:2.5rem 1.9rem 2.2rem 2.6rem;
   transform:rotate(-.8deg);
 }
-/* THE PAPER ITSELF, and the only thing the deckle filter touches on this
-   layer. Cream wash and grain in one element, sitting behind the words.
-   Two drop-shadows: the first is the sheet's own shadow following its torn
-   silhouette, the second is offset and softer, which is what a slight curl
-   looks like from above. */
-.offertag-face::before{
-  content:"";
+/* THE TOP SHEET IS NOW THE REAL PHOTOGRAPH, masked.
+   images/torn-edge-mask.png is Pela's own torn sheet, cut out, cropped to
+   the paper, scaled down and with its colour flattened to white. A mask
+   reads only the alpha channel, so the photograph underneath was dead
+   weight: dropping it took the file from 2.4 MB to 49 KB, which is the
+   difference between an ornament and a tax on every visitor.
+
+   The kraft and sage behind it stay generated, so the one photographed edge
+   never appears three times. That is the whole reason for the split.
+
+   WHY THERE ARE TWO ELEMENTS HERE, and it is not tidiness.
+   CSS applies filter BEFORE mask. So a drop-shadow on the masked element
+   would be cast by its original rectangle, and the result is a straight
+   shadow behind a torn edge, which is the tell this entire exercise has
+   been about removing. The fix is to put them on separate elements: the
+   wrapper carries the shadows, its child carries the mask, and by the time
+   the wrapper's filter runs it has a torn shape to read.
+
+   .offertag-sheet is decorative and aria-hidden. It exists because the
+   render order says so, not because a span was convenient. */
+.offertag-sheet{
   position:absolute; inset:0;
   z-index:0;
   pointer-events:none;
+  filter:drop-shadow(0 3px 7px rgba(63,57,52,.22))
+         drop-shadow(4px 7px 9px rgba(63,57,52,.10));
+}
+.offertag-sheet::before{
+  content:"";
+  position:absolute; inset:0;
   background-color:#F8EEDC;
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
     linear-gradient(158deg, #FBF3E4 0%, #F6EAD6 58%, #F1E2C9 100%);
-  filter:url(#deckle-cream)
-         drop-shadow(0 3px 7px rgba(63,57,52,.22))
-         drop-shadow(4px 7px 9px rgba(63,57,52,.10));
+  /* The -webkit- pair is for Safari, which shipped mask-image behind the
+     prefix and still wants it. Same reasoning as the other masked element
+     on this page. Unprefixed second so it wins where both are understood. */
+  -webkit-mask-image:url("images/torn-edge-mask.png");
+          mask-image:url("images/torn-edge-mask.png");
+  -webkit-mask-size:100% 100%;
+          mask-size:100% 100%;
+  -webkit-mask-repeat:no-repeat;
+          mask-repeat:no-repeat;
+  -webkit-mask-position:center;
+          mask-position:center;
 }
 .offertag-face > *{ position:relative; z-index:1; }
 
@@ -1943,31 +1971,29 @@ footer .fsa{
      ============================================================ -->
 <svg class="edge-filters" width="0" height="0" aria-hidden="true" focusable="false">
   <defs>
-    <filter id="deckle-cream" x="-12%" y="-12%" width="124%" height="124%"
-            color-interpolation-filters="sRGB">
-      <!-- scale 15 to 18 to 22 over 19 August 2026, chosen against the
-           reference in the preview file rather than guessed. The three
-           scales move together by the same ratio so the stack keeps its
-           relationship: the top sheet tears hardest, the kraft least.
-           Raising only this one would leave the two behind it looking
-           neatly trimmed next to a badly torn sheet. -->
-      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.026"
-                    numOctaves="4" seed="7" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22"
-                         xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
+    <!-- deckle-cream is GONE, 19 August 2026. The top sheet is now masked
+         with the real photograph, images/torn-edge-mask.png, so the filter
+         that used to tear it has nothing left to do. An unused filter is a
+         thing somebody later has to work out the purpose of before they can
+         safely delete it, so it goes now rather than sitting here looking
+         load bearing.
+
+         Both remaining scales are 22, as asked. They no longer follow the
+         old "top tears hardest" ladder, because the top is not generated
+         any more and there is nothing left to rank them against. Different
+         seeds and different frequencies still keep the two edges apart. -->
     <filter id="deckle-kraft" x="-12%" y="-12%" width="124%" height="124%"
             color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.014 0.031"
                     numOctaves="4" seed="23" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="20"
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22"
                          xChannelSelector="R" yChannelSelector="G"/>
     </filter>
     <filter id="deckle-sage" x="-12%" y="-12%" width="124%" height="124%"
             color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency="0.009 0.022"
                     numOctaves="5" seed="41" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="24"
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22"
                          xChannelSelector="R" yChannelSelector="G"/>
     </filter>
   </defs>
@@ -2431,6 +2457,12 @@ footer .fsa{
              Browsers would render it either way, which is exactly why it is
              worth getting right rather than leaving to them. -->
         <div class="offertag-face">
+          <!-- The cream sheet. Decorative, and it exists as its own element
+               because CSS runs filter before mask: the shadows have to sit
+               on a wrapper so they are cast by the torn shape rather than by
+               the rectangle underneath it. See the note in the styles. -->
+          <span class="offertag-sheet" aria-hidden="true"></span>
+
           <span class="offertag-kicker">a promotion</span>
 
           <!-- Cormorant over Caveat, the second line offset right, the same
