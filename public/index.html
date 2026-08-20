@@ -692,6 +692,268 @@ h1{
   font-size:1.3rem;
   line-height:1.2;
 }
+/* ---------- the offer tag -----------------------------------------------
+   The promotional element beside the Send a recipe form.
+
+   Named functionally. What this is called has not been decided, and a class
+   named after a slogan has to be renamed the day the slogan changes.
+
+   ONE SHEET, 19 August 2026. It was three stacked papers, kraft and sage
+   behind cream. Both are gone, and the small leaf sprig with them. What is
+   left is the construction from Pela's own sticker reduced to the parts
+   that carry meaning: torn cream paper, a strip of tape holding it down, the
+   grommet and twine it hangs by, and the flowers.
+
+   THE EDGE IS A PHOTOGRAPH, images/torn-edge-mask.png, cut from Pela's own
+   torn sheet and used as a mask. Nothing is generated any more, so the two
+   feTurbulence filters that used to tear the layers behind are gone too.
+
+   SIZE. It is deliberately small and roughly the proportion of the paper in
+   the reference, near square rather than tall. When the copy grew, the tag
+   grew with it and turned into a column, which is the shape a tag is not.
+   The wording and the type were tightened instead. If more has to be said
+   later, it goes on /refunds and this points at it.
+   ---------------------------------------------------------------------- */
+
+.offertag{
+  position:relative;
+  /* Room on the left for the twine, which hangs outside the paper. The
+     right padding came down when the flowers went, since nothing overhangs
+     that side any more. */
+  padding:.6rem .5rem 1.2rem 1.2rem;
+  margin:0;
+}
+
+/* The cream sheet.
+   Two elements, and not for tidiness. CSS applies filter BEFORE mask, so a
+   drop-shadow on the masked element is cast by its original rectangle and
+   puts a straight shadow behind a torn edge. The wrapper carries the
+   shadows, its child carries the mask, and by the time the wrapper's filter
+   runs there is a torn shape to read.
+
+   THE SELECTOR IS DELIBERATELY SPECIFIC. This rule used to be
+   `.offertag-sheet`, which ties with `.offertag-face > *` further down and
+   loses on source order. That turned position:absolute into relative,
+   inset:0 stopped applying, the empty span collapsed to nothing, and the
+   cream sheet vanished, leaving the sage layer behind it as the whole tag.
+   Naming the parent wins the tie outright rather than relying on where the
+   rule happens to sit in the file. */
+.offertag-face > .offertag-sheet{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  filter:drop-shadow(0 3px 7px rgba(63,57,52,.22))
+         drop-shadow(4px 7px 9px rgba(63,57,52,.10));
+}
+.offertag-face > .offertag-sheet::before{
+  content:"";
+  position:absolute; inset:0;
+  background-color:#F8EEDC;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+    linear-gradient(158deg, #FBF3E4 0%, #F6EAD6 58%, #F1E2C9 100%);
+  /* The -webkit- pair is for Safari, which shipped mask-image behind the
+     prefix and still wants it. Unprefixed second so it wins where both are
+     understood.
+
+     RELATIVE, NOT ROOT ABSOLUTE, and this was briefly got wrong. A leading
+     slash was added on the theory that Pretty URLs serves this page from
+     more than one address. It does, and it makes no difference: index.html
+     is served at / and at /index.html, and images/... resolves to
+     /images/... from both. What the leading slash DOES break is opening
+     this file from disk, where it points at the root of the C drive.
+     Checking a change by double clicking public/index.html is the fastest
+     loop there is on a machine with no browser tooling, and a path that
+     works everywhere except there is a path that costs an afternoon.
+     Relative also matches every other image on this page. */
+  -webkit-mask-image:url("images/torn-edge-mask.png");
+          mask-image:url("images/torn-edge-mask.png");
+  -webkit-mask-size:100% 100%;
+          mask-size:100% 100%;
+  -webkit-mask-repeat:no-repeat;
+          mask-repeat:no-repeat;
+  -webkit-mask-position:center;
+          mask-position:center;
+}
+
+/* The padding is generous on purpose. Torn paper has no straight edge to
+   sit type against, so text run close to it looks like it is falling off.
+   The left is widest because the grommet is punched through that side. */
+.offertag-face{
+  position:relative;
+  z-index:1;
+  display:block;
+  /* The bottom is deeper than the top. The closing line was sitting close
+     to the torn bottom edge, and a torn edge is ragged, so the distance
+     between the last line and the paper's actual boundary changes along
+     its length. More room underneath moves the whole block up the sheet
+     and stops the gap looking uneven. The bottom tape strip crosses that
+     edge too, and this keeps the words clear of it. */
+  padding:2.1rem 2rem 2.9rem 2.6rem;
+  transform:rotate(-.8deg);
+}
+.offertag-face > *{ position:relative; z-index:1; }
+
+/* ---- the grommet, punched through the left edge ---- */
+.offertag-grommet{
+  position:absolute;
+  z-index:3;
+  top:44%; left:1.5rem;
+  transform:translateY(-50%);
+  width:20px; height:20px;
+  border-radius:50%;
+  border:4px solid var(--oak);
+  background:rgba(63,57,52,.34);
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.45),
+             0 1px 2px rgba(63,57,52,.28);
+}
+/* ---- twine, looped through it and hanging to the left ---- */
+.offertag-twine{
+  position:absolute;
+  z-index:2;
+  top:44%; left:-.6rem;
+  transform:translateY(-32%);
+  width:58px; height:70px;
+  pointer-events:none;
+}
+.offertag-twine path{
+  fill:none;
+  stroke:#C2A079;
+  stroke-linecap:round;
+}
+
+/* ---- the tape across the top ---- */
+/* THE SELECTOR NAMES THE PARENT ON PURPOSE. `.offertag-tape` alone ties
+   with `.offertag-face > *` below and loses on source order, which is
+   exactly what once turned position:absolute into relative and made the
+   cream sheet vanish. Same trap, same fix, and it is worth paying the extra
+   token every time rather than depending on where a rule happens to sit. */
+.offertag-face > .offertag-tape{
+  position:absolute;
+  z-index:4;
+  /* Offsets are against the SHEET now, so a negative value genuinely
+     crosses the torn edge rather than hovering near it. */
+  top:-.5rem; left:24%;
+  width:80px; height:26px;
+  transform:rotate(6deg);
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,.16) 0 2px, rgba(255,255,255,0) 2px 5px),
+    linear-gradient(180deg, #E2A6A6 0%, #D89A9A 100%);
+  opacity:.92;
+  box-shadow:0 1px 3px rgba(63,57,52,.16);
+  /* Torn along the lower edge, straight along the top, the way a piece
+     torn off a roll actually looks. */
+  clip-path:polygon(
+    0% 0%, 100% 0%, 100% 84%, 92% 100%, 84% 86%, 76% 99%, 68% 85%,
+    60% 98%, 52% 84%, 44% 99%, 36% 85%, 28% 98%, 20% 84%, 12% 99%,
+    4% 86%, 0% 96%);
+}
+/* A SECOND PIECE, holding the opposite corner.
+   One strip reads as a sticker somebody put a tab on. Two, at opposite
+   corners, read as a piece of paper somebody taped down, which is the thing
+   this is meant to be. The right side also went bare when the flowers came
+   off, and this is what fills it.
+
+   scaleY(-1) flips the torn edge to face upward. A strip at the bottom of a
+   sheet tears along its top, and reusing the same clip-path unflipped would
+   put the ragged edge against the table. */
+.offertag-face > .offertag-tape-b{
+  top:auto; bottom:-.5rem;
+  left:auto; right:12%;
+  width:72px; height:24px;
+  transform:rotate(-7deg) scaleY(-1);
+}
+
+/* ---- the words, tightened to fit a small sheet ---- */
+.offertag-kicker{
+  display:block;
+  font-family:var(--font-hand);
+  font-size:1.15rem;
+  line-height:1;
+  color:var(--olive);
+  transform:rotate(-1.6deg);
+  transform-origin:left;
+  margin-bottom:.45rem;
+}
+/* Cormorant over Caveat, the second offset right, the way Kindness sits
+   over whispers on the sticker. */
+.offertag-title{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:1.25rem;
+  line-height:1.02;
+  margin:0 0 .95rem;
+  color:var(--ink);
+}
+.offertag-title .script{
+  display:block;
+  font-family:var(--font-hand);
+  font-size:1.5rem;
+  line-height:.95;
+  margin:.05rem 0 0 1rem;
+  color:var(--ink);
+}
+.offertag-lead{
+  font-size:.9rem;
+  line-height:1.45;
+  margin:0 0 1rem;
+}
+.offertag-terms{
+  list-style:none;
+  margin:0 0 1rem;
+  padding:.35rem 0 0;
+  border-top:1px solid rgba(122,131,82,.3);
+}
+.offertag-terms li{
+  position:relative;
+  padding:.42rem 0 .42rem .95rem;
+  font-size:.83rem;
+  line-height:1.4;
+  border-bottom:1px solid rgba(122,131,82,.18);
+}
+.offertag-terms li:last-child{ border-bottom:0; }
+.offertag-terms li::before{
+  content:"·";
+  position:absolute; left:.15rem; top:.1rem;
+  color:var(--olive);
+  font-weight:bold;
+  font-size:1.1rem;
+  line-height:1.2;
+}
+.offertag-where{
+  font-size:.8rem;
+  line-height:1.45;
+  color:var(--ink-soft);
+  margin:.15rem 0 0;
+  padding-top:.55rem;
+  border-top:1px solid rgba(122,131,82,.18);
+}
+.offertag-where a{ color:var(--olive); }
+
+/* Both botanicals are gone now, 19 August 2026: the leaf sprig that sat
+   under the words, and the flower sprig that hung off the right edge. What
+   is left is paper, tape, a grommet and twine, which is the whole of the
+   object rather than the decoration on it.
+
+   The flowers were doing one real job, breaking the outline so the sheet
+   did not read as a rectangle with a picture in it. That job now falls to
+   the torn edge itself, which is the honest place for it. */
+
+/* ---- narrow ---- */
+@media (max-width:1000px){
+  /* Off the side and above the form. It keeps its construction, and only
+     the room it has changes. */
+  .offertag{ max-width:380px; margin:0 0 2.5rem; }
+}
+@media (max-width:560px){
+  .offertag{ padding:.5rem 1.5rem 1rem .9rem; }
+  .offertag-face{ padding:1.8rem 1.5rem 1.7rem 2.2rem; }
+  /* The twine hangs off the left of a page that has no room for it, and a
+     rope disappearing off the screen reads as a bug. */
+  .offertag-twine{ display:none; }
+}
 .contact-lines{ font-size:1.08rem; }
 .contact-lines strong{ font-weight:500; }
 /* white-space:pre-line has been removed. It existed only to hold a postal
@@ -778,7 +1040,49 @@ h1{
    top of this file. Nothing here is redefined.
    ============================================================ */
 .send{ padding:4.5rem 1.4rem 6rem; }
-.send .inner{ max-width:760px; margin:0 auto; }
+/* Two columns from 1000px up: the form, and the offer tag beside it.
+   This section used to be a single 760px column with empty page either
+   side of it, which is the room the tag now occupies. The form column is
+   still capped near its old width, because a form field stretched to
+   1100px is harder to read, not easier. */
+.send .inner{
+  max-width:1100px; margin:0 auto;
+  display:grid;
+  /* Narrowed from 400px, 19 August 2026, with the tag itself. The tag is
+     one small sheet now rather than a stack of three, and a column wider
+     than the thing in it is just a gap with a name. */
+  grid-template-columns:minmax(0,1fr) minmax(0,330px);
+  column-gap:3.2rem;
+  align-items:start;
+}
+/* The heading and the lede span both columns. The form and the tag sit
+   side by side underneath, so the tag starts level with the first field
+   rather than level with the kicker. */
+.send .inner > .kicker,
+.send .inner > h2,
+.send .inner > .rule,
+.send .inner > .lede{ grid-column:1 / -1; }
+/* BOTH ARE PINNED TO ROW 5, and that is not decoration.
+   The four items above span 1/-1 and take rows 1 to 4. The tag comes before
+   the form in the source, because somebody should meet the offer before
+   they start filling things in. Grid auto-placement only ever moves
+   forward, so once the tag claimed row 5 column 2 the form could not go
+   back to row 5 column 1 and dropped to row 6. That left row 5 column 1
+   empty, a full tag-height of nothing between the lede and the form.
+   Naming the row for both puts them side by side and keeps the reading
+   order.
+   If a fifth full-width element is ever added above, this number moves
+   with it. */
+.send .recipe-form{ grid-column:1; grid-row:5; max-width:720px; }
+.send .offertag{ grid-column:2; grid-row:5; }
+@media (max-width:1000px){
+  .send .inner{ grid-template-columns:1fr; max-width:760px; }
+  /* Above the form rather than below it. Somebody who reads to the end of
+     a long form has already decided, and an offer met then is an offer
+     met too late. */
+  .send .offertag{ grid-column:1; grid-row:5; }
+  .send .recipe-form{ grid-row:6; max-width:none; }
+}
 .send .lede{ max-width:var(--measure); color:var(--ink-soft); margin-bottom:2.2rem; }
 
 .recipe-form{
@@ -819,6 +1123,18 @@ h1{
   line-height:1.5;
   margin-bottom:.5rem;
   max-width:var(--measure);
+}
+/* The promotion's line, set apart from the ordinary hint above it so the two
+   do not read as one long instruction. Plum, because it belongs to the offer
+   card, and a reader who saw the stamp upstairs should recognise this as the
+   same thing speaking. It carries a rule rather than a box, so it stays a
+   note on a form instead of becoming a second advertisement. */
+.field .hint-offer{
+  color:var(--plum);
+  border-left:2px dotted rgba(124,70,108,.4);
+  padding-left:.75rem;
+  margin-top:-.15rem;
+  margin-bottom:.6rem;
 }
 .field .opt{ color:var(--ink-soft); font-size:.92rem; font-style:italic; }
 .field .req{ color:var(--rose); font-size:.92rem; font-style:italic; }
@@ -1606,6 +1922,8 @@ footer .fsa{
 </head>
 <body>
 
+
+
 <header>
   <div class="header-inner">
     <a class="wordmark" href="#top">Whispers <span>of</span> Kindness</a>
@@ -1965,7 +2283,12 @@ footer .fsa{
              and it says membership is open first, so it cannot be mistaken
              for the main way in. -->
         <aside class="waitlist reveal" aria-label="Stay in touch">
-        <h3>The first cards mail in September</h3>
+        <!-- October, corrected 19 August 2026. This said September, which
+             contradicted the mailing dates published on /refunds and the
+             fine print under Join the day before. Two dates for the first
+             mailing is worse than either date being wrong, because a reader
+             who spots both stops believing the rest. -->
+        <h3>The first cards mail in October</h3>
         <p>Membership is open now. If you would rather see the first card before you decide, leave your email and we will write when it goes out.</p>
         <!-- Netlify form: works as-is once hosted on Netlify -->
         <form name="waitlist" method="POST" data-netlify="true" id="waitlistForm">
@@ -1988,6 +2311,92 @@ footer .fsa{
       <h2 class="reveal">Send a recipe</h2>
       <hr class="rule">
       <p class="lede reveal">Four things are needed: your name, an email, what the recipe is called, and the recipe itself. Everything else is optional, and a blank is always better than a guess. You can also write to us instead, if a form is not how you want to do this.</p>
+
+      <!-- THE OFFER TAG.
+           Functional name on purpose. What this is called has not been
+           decided, and a class named after a slogan has to be renamed the
+           day the slogan changes.
+
+           Built from Pela's own printed sticker, kept at
+           design-reference/offer-tag-sticker.png. It is in the repo and
+           outside public/, so it is versioned without being published.
+
+           It sits beside the form rather than in the invitation above,
+           because this is the moment somebody is actually deciding to send
+           something. In the invitation it was one more thing to read before
+           the prompting questions.
+
+           It says PROMOTION in as many words, which is deliberate: a
+           thank-you that reads as a permanent entitlement is a promise
+           nobody meant to make. It says nothing about the offer ending,
+           because that has not been decided, and inventing an expiry to
+           manufacture urgency is the opposite of how this project talks to
+           people.
+
+           All three terms are on the face rather than in small print. Every
+           one of them changes what somebody gets, and the second one buried
+           would have people sending four recipes expecting four cards. -->
+      <aside class="offertag reveal" aria-labelledby="offertag-title">
+
+        <!-- Twine first in the source so it passes behind the grommet. -->
+        <svg class="offertag-twine" viewBox="0 0 76 92" aria-hidden="true" focusable="false">
+          <path d="M46 20 C30 14, 14 22, 12 36 C10 50, 24 58, 38 52" stroke-width="3.2"/>
+          <path d="M38 52 C26 58, 16 70, 20 84" stroke-width="3"/>
+          <path d="M46 20 C34 24, 26 34, 30 44" stroke-width="2.4" opacity=".75"/>
+        </svg>
+        <span class="offertag-grommet" aria-hidden="true"></span>
+
+        <!-- A div, not a span. This wraps a heading, a paragraph and a list,
+             which are flow content, and a span may only hold phrasing.
+             Browsers would render it either way, which is exactly why it is
+             worth getting right rather than leaving to them. -->
+        <div class="offertag-face">
+          <!-- THE TAPE LIVES IN HERE NOW, not out on the aside.
+               Out there it was positioned against the outer padded box,
+               which is inset from the paper and not rotated with it, so the
+               strips floated near the edge instead of straddling it. In
+               here they share the sheet's box and its rotation, so a
+               negative offset genuinely crosses the torn edge.
+
+               Two strips, not three. The third sat across the left edge at
+               72 degrees, and where a rotated box lands is not something
+               that can be worked out reliably without looking at it. Top
+               and bottom are horizontal, so they straddle predictably. -->
+          <span class="offertag-tape" aria-hidden="true"></span>
+          <span class="offertag-tape offertag-tape-b" aria-hidden="true"></span>
+          <!-- The cream sheet. Decorative, and it exists as its own element
+               because CSS runs filter before mask: the shadows have to sit
+               on a wrapper so they are cast by the torn shape rather than by
+               the rectangle underneath it. See the note in the styles. -->
+          <span class="offertag-sheet" aria-hidden="true"></span>
+
+          <span class="offertag-kicker">a promotion</span>
+
+          <!-- Cormorant over Caveat, the second line offset right, the same
+               pairing and the same arrangement as Kindness over whispers on
+               the sticker this is built from. -->
+          <h3 class="offertag-title" id="offertag-title">Send a recipe<span class="script">a card comes back</span></h3>
+
+          <!-- TIGHTENED, not shortened for its own sake. The tag had grown
+               into a column to hold this copy, which is the shape a tag is
+               not. Every fact that changes what somebody gets is still here,
+               in fewer words. Nothing was moved into small print. -->
+          <p class="offertag-lead">Send a full recipe while this promotion runs, and that month's card is mailed to you.</p>
+
+          <ul class="offertag-terms">
+            <li>No membership needed, now or ever.</li>
+            <li>One card per person, however many recipes you send.</li>
+            <li>If that month's card is already printing, yours is the next one.</li>
+          </ul>
+
+          <!-- No email address on the tag. There is already one under the
+               Join button, one in the FAQ, one on /refunds and one in the
+               invitation above. A fifth, on the one element whose job is to
+               point at the form, invites somebody to write instead of
+               sending the recipe. -->
+          <p class="offertag-where">Put your mailing address in either the <a href="#f-text">recipe</a> box or the <a href="#f-story">What do you remember</a> box.</p>
+        </div>
+      </aside>
 
       <form id="recipeForm" class="recipe-form reveal" novalidate>
 
@@ -2052,6 +2461,17 @@ footer .fsa{
           <div class="field">
             <label for="f-story">What do you remember? <span class="opt">optional</span></label>
             <span class="hint">What do you remember about them making it? Is there anything about them you would want remembered? There is no wrong length here, and this is usually the part we treasure most.</span>
+            <!-- THE PROMOTION'S ADDRESS LINE, and the reason there is no
+                 address field on this form.
+                 A postal address field would sit on the page for everybody,
+                 forever, asking every contributor for their home address
+                 whether or not any promotion is running. An address held for
+                 no purpose is an address that still has to be looked after.
+                 So the promotion borrows a box that already exists, and this
+                 line comes out with the promotion.
+                 Nothing parses it. It is read by a person, and somebody who
+                 forgets gets an email. -->
+            <span class="hint hint-offer">While the promotion is running: if you would like the thank-you card, put your mailing address in here too. Anywhere in the box is fine. We will write and ask if it is missing.</span>
             <textarea id="f-story" class="tall" maxlength="40000"></textarea>
           </div>
         </fieldset>
