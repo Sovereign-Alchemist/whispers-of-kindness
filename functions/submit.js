@@ -67,6 +67,37 @@ function permission(value) {
   return 'pending';
 }
 
+// The date a recipe arrived, in the timezone the decision about it gets made
+// in. This used to be new Date().toISOString().slice(0,10), which is UTC.
+//
+// It matters because of the 15th. Join or send by the 15th and you are in that
+// month's mailing, after it you are in the next one, and the offer tag on the
+// front page now says so out loud. Vancouver is seven hours behind UTC in
+// summer, so under UTC the last seven hours of the 15th were already stamped
+// the 16th. Somebody sending a recipe at eight in the evening on the deadline
+// would have been recorded as a day late. The error only ever ran one way, and
+// it ran against the contributor, which is the wrong way for this project.
+//
+// en-CA formats as YYYY-MM-DD, which is the shape the `date` column wants.
+//
+// THE FALLBACK IS NOT DECORATION. Intl with a named timezone needs full ICU in
+// the runtime. Netlify's Node 20 has it, and there is no Node on the machine
+// this was written on, so that is a reasonable belief rather than a tested
+// fact. A throw here would take down the whole submission, which is the one
+// path in this project that must never fail. If it throws, the old UTC value
+// is used, so the worst case is exactly the behaviour of the line it replaced.
+function submissionDate() {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Vancouver',
+      year: 'numeric', month: '2-digit', day: '2-digit'
+    }).format(new Date());
+  } catch (err) {
+    console.log('submission-date-fallback', err && err.message);
+    return new Date().toISOString().slice(0, 10);
+  }
+}
+
 // recipe-0007 plus a surname gives recipe-0007-hendricks, the folder a person
 // can find by hand. Accents are folded here because folder names stay plain
 // ASCII, but the true spelling is kept intact in the contributor record. The
@@ -258,7 +289,7 @@ exports.handler = async function (event) {
         permission_status:           permission(body.permission_publish),
         adaptation_permission:       permission(body.permission_adaptation),
         video_consideration_consent: permission(body.permission_video),
-        date_submitted: new Date().toISOString().slice(0, 10)
+        date_submitted: submissionDate()
       })
     });
     contributorId = contributor[0].id;
