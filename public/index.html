@@ -837,6 +837,32 @@ h1{
     60% 98%, 52% 84%, 44% 99%, 36% 85%, 28% 98%, 20% 84%, 12% 99%,
     4% 86%, 0% 96%);
 }
+/* A SECOND PIECE, holding the opposite corner.
+   One strip reads as a sticker somebody put a tab on. Two, at opposite
+   corners, read as a piece of paper somebody taped down, which is the thing
+   this is meant to be. The right side also went bare when the flowers came
+   off, and this is what fills it.
+
+   scaleY(-1) flips the torn edge to face upward. A strip at the bottom of a
+   sheet tears along its top, and reusing the same clip-path unflipped would
+   put the ragged edge against the table. */
+.offertag-tape-b{
+  top:auto; bottom:-.5rem;
+  left:auto; right:14%;
+  width:72px; height:24px;
+  transform:rotate(-7deg) scaleY(-1);
+}
+/* A third, smaller, across the left edge just below the grommet. It is
+   deliberately the least of the three, and it is the one to delete first if
+   three turns out to be busy on a sheet this size. It sits half on and half
+   off the paper, which is what makes it read as tape rather than as a
+   printed stripe. */
+.offertag-tape-c{
+  top:56%; left:-.55rem;
+  width:46px; height:18px;
+  transform:rotate(72deg);
+  opacity:.82;
+}
 
 /* ---- the words, tightened to fit a small sheet ---- */
 .offertag-kicker{
@@ -2278,7 +2304,12 @@ footer .fsa{
           <path d="M46 20 C34 24, 26 34, 30 44" stroke-width="2.4" opacity=".75"/>
         </svg>
         <span class="offertag-grommet" aria-hidden="true"></span>
+        <!-- Three strips. One reads as a sticker with a tab on it. Three,
+             at the top, the opposite corner and across the twine, read as a
+             piece of paper somebody taped down. -->
         <span class="offertag-tape" aria-hidden="true"></span>
+        <span class="offertag-tape offertag-tape-b" aria-hidden="true"></span>
+        <span class="offertag-tape offertag-tape-c" aria-hidden="true"></span>
 
         <!-- A div, not a span. This wraps a heading, a paragraph and a list,
              which are flow content, and a span may only hold phrasing.
