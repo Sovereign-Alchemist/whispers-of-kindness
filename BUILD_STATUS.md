@@ -22,6 +22,23 @@ claim was last checked and how.
 
 ---
 
+## 2026-08-20 — The offer tag was looked at, and it is right
+
+Pela confirmed the tag on the live site after the clearance fix. The bottom
+tape sits clear of the closing line and crosses the torn edge below it.
+
+**This is the entry the two above could not write.** Both of them end by
+saying nobody had looked, because there is no browser on this machine and
+every number in them is arithmetic against the alpha channel of
+`images/torn-edge-mask.png`. That method located the fault correctly twice
+and produced a value that turned out to be right, which is worth knowing the
+next time something has to be positioned against that mask. It is still not
+the same as seeing it, and the confirmation had to come from a person.
+
+**Verified:** by eye, on `whispersofkindness.ca`, by Pela.
+
+---
+
 ## 2026-08-20 — The bottom tape again: the gap was the fault, not the offset
 
 The `bottom:7%` fix earlier today put the tape on the paper and put it
