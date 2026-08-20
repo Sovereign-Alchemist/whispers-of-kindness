@@ -22,6 +22,54 @@ claim was last checked and how.
 
 ---
 
+## 2026-08-20 — Correction: the orphan alert went live inside the repricing merge
+
+**The 2026-08-18 entry below says the orphan subscription alert was "built on
+`chunk-orphan-subscription-alert`, not yet run against a deploy". The first
+half is still true. The second half now reads as though the code is sitting
+on a branch waiting. It is not. It has been live on production since
+`6febdef` on 19 August, and it got there by accident.**
+
+`chunk-domestic-repricing` was created with `git checkout -b` while HEAD was
+still on `chunk-orphan-subscription-alert`, not on `main`. So the repricing
+branch carried the webhook commit as its parent, and merging the repricing
+carried it onto `main` and into production with it. Nobody decided that. The
+repricing entry above does not mention it, because I did not know.
+
+**What is actually live, therefore, is untested.** `alertOrphanSubscription`
+now runs on both invoice handlers on the production webhook.
+`tools/Test-OrphanSubscriptionAlert.ps1` was written for it and has still
+never been run. The risk is bounded and worth stating precisely rather than
+either dismissing or dramatising:
+
+- Both handlers still answer 200 and still write nothing on that branch, as
+  they always did. The database behaviour is unchanged.
+- `sendAlert` cannot throw. A Resend failure returns a result object rather
+  than an exception, so it cannot turn a handled invoice into a 500 that
+  Stripe retries.
+- The new code only runs when an invoice arrives for a subscription no
+  member row holds, which is the rare case it exists to catch.
+- What is genuinely unproven is whether the email sends, whether it is
+  legible, and whether `handleRenewal` still behaves now that its config
+  object carries three more keys.
+
+Running the harness against production settles all four in about a minute.
+It posts two signed events naming a fake subscription and writes nothing.
+
+**The process lesson, which is the reusable part.** `git checkout -b` from
+wherever HEAD happens to be is how unrelated work rides into a merge
+unnoticed. Branch from `main` explicitly. A branch that carries somebody
+else's commit looks identical to one that does not until you go looking.
+
+> Verified 2026-08-20. `git merge-base --is-ancestor` confirms the orphan
+> alert commit is an ancestor of `main`, `git log main..branch` is empty, and
+> `git show main:functions/stripe-webhook.js` contains
+> `alertOrphanSubscription` six times. The ancestry path names `6febdef`, the
+> repricing merge, as the commit that carried it. Not verified: any of the
+> behaviour, which is the whole point of this entry.
+
+---
+
 ## 2026-08-19 — Domestic repricing, shipped and proven at every price point
 
 **Done, live, and verified against Stripe rather than against the source.**
