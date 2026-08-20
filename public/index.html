@@ -784,13 +784,26 @@ h1{
   position:relative;
   z-index:1;
   display:block;
-  /* The bottom is deeper than the top. The closing line was sitting close
-     to the torn bottom edge, and a torn edge is ragged, so the distance
-     between the last line and the paper's actual boundary changes along
-     its length. More room underneath moves the whole block up the sheet
-     and stops the gap looking uneven. The bottom tape strip crosses that
-     edge too, and this keeps the words clear of it. */
-  padding:2.1rem 2rem 2.9rem 2.6rem;
+  /* THE BOTTOM PADDING IS DOING TWO JOBS, AND THE SECOND ONE IS WHY IT IS
+     THIS DEEP. It is measured, not chosen by eye.
+
+     Padding is a fixed pixel distance from the last line to the BOX bottom.
+     The torn edge is a fraction of the box, because mask-size is 100% 100%.
+     Those two do not move together, and at 2.9rem they had converged: the
+     closing line sat 46px above the box bottom, the tear in the tape's span
+     sat about 38px above it, and the 8px between them could not hold a 24px
+     strip of tape. The tape overlapped the words. Moved down far enough to
+     clear them it fell off the paper entirely, which is the fault it had
+     before. There was no offset that worked, because the gap was the
+     problem rather than the position.
+
+     At 5rem the words lift clear of the tear and the tape sits in the room
+     that opens underneath. The visible result is not a wide empty margin:
+     the bottom tenth of this box has no paper on it at all, so of the 80px
+     only about 38px reads as paper below the last line, against about 28px
+     of paper above the first. Slightly deeper at the bottom, which is right
+     for an edge that is ragged and therefore uneven along its length. */
+  padding:2.1rem 2rem 5rem 2.6rem;
   transform:rotate(-.8deg);
 }
 .offertag-face > *{ position:relative; z-index:1; }
@@ -874,11 +887,17 @@ h1{
    so the torn edge sits at a fixed FRACTION of the box however the box is
    sized, and the same value survives the narrow breakpoints changing the
    padding. bottom:7% puts the strip across the 90% to 93% band: most of it
-   lies on the sheet, and the lower sliver hangs past the tear. */
+   lies on the sheet, and the lower sliver hangs past the tear.
+
+   HEIGHT IS 22px RATHER THAN 24px. The strip has to fit between the last line of type
+   and the bottom of the paper, and two pixels off its height is two more
+   pixels of daylight above it. The rotation costs some of that back: over
+   72px at 7 degrees the right end lifts about 4px, and the right end is the
+   one nearest the words. */
 .offertag-face > .offertag-tape-b{
   top:auto; bottom:7%;
   left:auto; right:12%;
-  width:72px; height:24px;
+  width:72px; height:22px;
   transform:rotate(-7deg) scaleY(-1);
 }
 
@@ -965,7 +984,16 @@ h1{
 }
 @media (max-width:560px){
   .offertag{ padding:.5rem 1.5rem 1rem .9rem; }
-  .offertag-face{ padding:1.8rem 1.5rem 1.7rem 2.2rem; }
+  /* THE BOTTOM STAYS DEEP HERE, and it is not a copy of the desktop value
+     for tidiness. It matters more on a phone, not less. The tag is narrower,
+     so the same words wrap into more lines and the box gets taller, and the
+     torn edge is a PERCENTAGE of that box. A taller box puts the tear
+     further up in real pixels while a rem of padding stays exactly where it
+     was. At 1.7rem the closing line sat about 27px above the box bottom with
+     the tear roughly 50px above it, which put the last line of type past the
+     edge of the paper and floating on nothing. That was true before any tape
+     was involved. */
+  .offertag-face{ padding:1.8rem 1.5rem 5.4rem 2.2rem; }
   /* The twine hangs off the left of a page that has no room for it, and a
      rope disappearing off the screen reads as a bug. */
   .offertag-twine{ display:none; }

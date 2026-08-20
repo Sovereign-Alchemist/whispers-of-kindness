@@ -22,6 +22,57 @@ claim was last checked and how.
 
 ---
 
+## 2026-08-20 — The bottom tape again: the gap was the fault, not the offset
+
+The `bottom:7%` fix earlier today put the tape on the paper and put it
+through the closing line of type at the same time. The follow-up is recorded
+here because the first attempt was aimed at the wrong quantity.
+
+**No offset could have worked.** Padding is a fixed pixel distance from the
+last line to the box bottom. The tear is a fraction of the box, because
+`mask-size` is `100% 100%`. At `padding-bottom:2.9rem` the closing line sat
+46px above the box bottom and the tear sat about 38px above it, so the gap
+between the words and the paper's edge was 8px and the tape was 24px tall.
+Above the tear it hit the type. Below the type it hung off the paper, which
+was the original fault. **Moving it was never going to resolve that**, and an
+afternoon could have gone into tuning a number that had no solution.
+
+**What changed.** `padding-bottom` on `.offertag-face` goes 2.9rem to 5rem,
+lifting the words clear while the tape stays pinned to the tear by its
+percentage. The strip goes 24px to 22px. `bottom:7%` is unchanged.
+
+**A separate fault found in the same place, and it was already live.** The
+narrow breakpoint set `padding-bottom:1.7rem`. On a phone the tag is
+narrower, so the copy wraps into more lines, the box gets taller, and the
+tear moves further up in real pixels while a rem of padding does not move at
+all. At roughly 500px tall the closing line sat 27px above the box bottom
+with the tear near 50px, meaning **the last line of type was rendering past
+the edge of the paper, on nothing.** That had nothing to do with the tape and
+was true before any of this. Now 5.4rem.
+
+**Verified:** the geometry modelled across box heights of 340px to 700px for
+both breakpoints. The tape clears the type and crosses the tear at its right
+end in every case, including the 4.4px the right end gains from
+`rotate(-7deg)` over a 72px strip. Desktop tightens to 4.6px of clearance
+only at 700px tall, which this tag is not.
+
+**One thing nearly shipped broken, and it is the second time.** The edit left
+a stray `*/` with five lines of prose loose outside any comment, directly
+above the `.offertag-tape-b` rule. CSS would have parsed that as declarations
+and most likely discarded the rule it precedes, so the tape would have
+reverted to the top strip's styling with no error anywhere. It was caught by
+counting `/*` against `*/` and noticing the skew had gone from 3 to 2, not by
+reading the diff, which looked fine. **The count is only meaningful against
+HEAD's own skew of 3**, which comes from the two `accept="image/*"` and
+`accept="audio/*"` attributes, and is not a real imbalance. A parity check
+that walks the `<style>` block pairing openers to closers now confirms zero
+stray or nested comments.
+
+**Still not verified:** nobody has looked at the tag. This is arithmetic
+against a measured edge on a machine with no browser.
+
+---
+
 ## 2026-08-20 — Offer tag copy, the bottom tape, and the 15th in the submission record
 
 Three changes to the offer tag beside the Send a recipe form, plus one fix
