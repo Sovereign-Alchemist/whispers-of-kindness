@@ -698,134 +698,54 @@ h1{
    Named functionally. What this is called has not been decided, and a class
    named after a slogan has to be renamed the day the slogan changes.
 
-   BUILT FROM PELA'S OWN PRINTED STICKER, kept in the repo at
-   design-reference/offer-tag-sticker.png and outside public/ so it is
-   versioned without being served. Every part below is in that image:
+   ONE SHEET, 19 August 2026. It was three stacked papers, kraft and sage
+   behind cream. Both are gone, and the small leaf sprig with them. What is
+   left is the construction from Pela's own sticker reduced to the parts
+   that carry meaning: torn cream paper, a strip of tape holding it down, the
+   grommet and twine it hangs by, and the flowers.
 
-     three stacked tags     kraft behind and up-left, sage behind and
-                            down-right, cream on top, each at its own angle
-     deckled edges          the ragged torn edge of handmade paper, on all
-                            four sides of all three layers
-     a grommet              brass eyelet punched through the left edge
-     twine                  looped through the grommet and hanging left
-     rose tape              a strip across the top corner, torn along its
-                            lower edge, as if taped to the page
-     a leaf sprig           small sage leaves on a stem, under the words
-     a flower sprig         white buds on the right, draping past the edge
+   THE EDGE IS A PHOTOGRAPH, images/torn-edge-mask.png, cut from Pela's own
+   torn sheet and used as a mask. Nothing is generated any more, so the two
+   feTurbulence filters that used to tear the layers behind are gone too.
 
-   The type follows the sticker too: Cormorant Garamond over Caveat, the
-   same pairing as Kindness over whispers.
-
-   ONE DECKLE PATH, SHARED. The same irregular polygon clips all three
-   layers. Three hand written polygons would be three things to keep in
-   step, and the different rotations already stop the repeat from reading.
-
-   Colours are the site's own. --oak is the kraft, --olive the sage, --rose
-   the tape. Nothing here introduces a colour the design system does not
-   already have.
-   ---------------------------------------------------------------------- */
-
-/* ---- THE TORN EDGE ------------------------------------------------------
-   A hand written clip-path polygon used to do this, and it was wrong for a
-   reason worth writing down: a polygon has as many teeth as somebody typed,
-   they are as varied as somebody's patience, and three layers sharing one
-   path tear identically. It read as pinking shears, not as paper.
-
-   It is now feTurbulence displacing the edge, filters defined once at the
-   top of the body. Fractal noise has no period, so no two teeth match, some
-   bite deep and some barely register, which is what the torn edge in
-   design-reference/torn-paper-edge.png actually does.
-
-   WHY THIS TECHNIQUE AND NOT AN IMAGE. The letter was checked first, on the
-   theory that it had already solved this. It has not. .letter uses a hand
-   written polygon too, on its top edge only and shallow enough to hide the
-   problem. There was no image or mask on this site to reuse. What there IS,
-   twice already, is feTurbulence for paper grain, so the edge is built from
-   the same thing the paper itself is made of rather than from a second
-   unrelated idea. The same three filters would suit .letter whenever
-   somebody wants the two to match.
-
-   THE SHADOW MOVED INTO THE FILTER. A box-shadow is cast by the element's
-   rectangle, so a torn shape with a box-shadow has a straight shadow behind
-   a ragged edge, which announces the trick. drop-shadow() placed AFTER the
-   displacement follows the real silhouette. The second, offset shadow is the
-   slight curl: paper that has been torn does not lie flat.
+   SIZE. It is deliberately small and roughly the proportion of the paper in
+   the reference, near square rather than tall. When the copy grew, the tag
+   grew with it and turned into a column, which is the shape a tag is not.
+   The wording and the type were tightened instead. If more has to be said
+   later, it goes on /refunds and this points at it.
    ---------------------------------------------------------------------- */
 
 .offertag{
   position:relative;
-  /* Room for the layers behind and the flowers hanging past the right
-     edge. The padding is what stops the sprig being clipped by the grid. */
-  padding:1.6rem 2.2rem 2.4rem 1.4rem;
+  /* Room for the twine on the left and the flowers on the right, both of
+     which hang outside the paper. */
+  padding:.6rem 1.9rem 1.2rem 1.2rem;
   margin:0;
 }
 
-/* The two tags underneath. Pseudo elements, because they carry no meaning
-   and a screen reader should not meet two empty divs on the way to the
-   words. */
-.offertag::before,
-.offertag::after{
-  content:"";
+/* The cream sheet.
+   Two elements, and not for tidiness. CSS applies filter BEFORE mask, so a
+   drop-shadow on the masked element is cast by its original rectangle and
+   puts a straight shadow behind a torn edge. The wrapper carries the
+   shadows, its child carries the mask, and by the time the wrapper's filter
+   runs there is a torn shape to read.
+
+   THE SELECTOR IS DELIBERATELY SPECIFIC. This rule used to be
+   `.offertag-sheet`, which ties with `.offertag-face > *` further down and
+   loses on source order. That turned position:absolute into relative,
+   inset:0 stopped applying, the empty span collapsed to nothing, and the
+   cream sheet vanished, leaving the sage layer behind it as the whole tag.
+   Naming the parent wins the tie outright rather than relying on where the
+   rule happens to sit in the file. */
+.offertag-face > .offertag-sheet{
   position:absolute;
-  z-index:0;
-}
-/* kraft, behind and up to the left. Its own filter, so its tear is its own.
-   One filter on all three would give three identically torn sheets, which is
-   the fault being fixed rather than a smaller version of it. */
-.offertag::before{
-  top:.35rem; left:.2rem; right:2.4rem; bottom:2.1rem;
-  background:linear-gradient(160deg, #E5CDA6 0%, #D9BE93 55%, #CFB185 100%);
-  transform:rotate(-3.2deg);
-  filter:url(#deckle-kraft) drop-shadow(0 2px 5px rgba(63,57,52,.20));
-}
-/* sage, behind and down to the right */
-.offertag::after{
-  top:2.4rem; left:1.9rem; right:.1rem; bottom:.3rem;
-  background:linear-gradient(160deg, #CBD0B0 0%, #BCC29E 60%, #AFB68F 100%);
-  transform:rotate(2.6deg);
-  filter:url(#deckle-sage) drop-shadow(0 2px 5px rgba(63,57,52,.18));
-}
-
-/* The cream tag, the one with the words on it.
-   The paper moved OFF this element and onto its ::before, because a filter
-   applies to everything inside an element and displacing the paper would
-   have displaced the words with it. The text now sits above an edge it does
-   not share. */
-.offertag-face{
-  position:relative;
-  z-index:1;
-  display:block;
-  padding:2.5rem 1.9rem 2.2rem 2.6rem;
-  transform:rotate(-.8deg);
-}
-/* THE TOP SHEET IS NOW THE REAL PHOTOGRAPH, masked.
-   images/torn-edge-mask.png is Pela's own torn sheet, cut out, cropped to
-   the paper, scaled down and with its colour flattened to white. A mask
-   reads only the alpha channel, so the photograph underneath was dead
-   weight: dropping it took the file from 2.4 MB to 49 KB, which is the
-   difference between an ornament and a tax on every visitor.
-
-   The kraft and sage behind it stay generated, so the one photographed edge
-   never appears three times. That is the whole reason for the split.
-
-   WHY THERE ARE TWO ELEMENTS HERE, and it is not tidiness.
-   CSS applies filter BEFORE mask. So a drop-shadow on the masked element
-   would be cast by its original rectangle, and the result is a straight
-   shadow behind a torn edge, which is the tell this entire exercise has
-   been about removing. The fix is to put them on separate elements: the
-   wrapper carries the shadows, its child carries the mask, and by the time
-   the wrapper's filter runs it has a torn shape to read.
-
-   .offertag-sheet is decorative and aria-hidden. It exists because the
-   render order says so, not because a span was convenient. */
-.offertag-sheet{
-  position:absolute; inset:0;
+  inset:0;
   z-index:0;
   pointer-events:none;
   filter:drop-shadow(0 3px 7px rgba(63,57,52,.22))
          drop-shadow(4px 7px 9px rgba(63,57,52,.10));
 }
-.offertag-sheet::before{
+.offertag-face > .offertag-sheet::before{
   content:"";
   position:absolute; inset:0;
   background-color:#F8EEDC;
@@ -833,10 +753,12 @@ h1{
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
     linear-gradient(158deg, #FBF3E4 0%, #F6EAD6 58%, #F1E2C9 100%);
   /* The -webkit- pair is for Safari, which shipped mask-image behind the
-     prefix and still wants it. Same reasoning as the other masked element
-     on this page. Unprefixed second so it wins where both are understood. */
-  -webkit-mask-image:url("images/torn-edge-mask.png");
-          mask-image:url("images/torn-edge-mask.png");
+     prefix and still wants it. Unprefixed second so it wins where both are
+     understood. Leading slash, not a relative path: this rule is inside a
+     style block, so a relative url resolves against the document, and the
+     document is served from more than one address once Pretty URLs is on. */
+  -webkit-mask-image:url("/images/torn-edge-mask.png");
+          mask-image:url("/images/torn-edge-mask.png");
   -webkit-mask-size:100% 100%;
           mask-size:100% 100%;
   -webkit-mask-repeat:no-repeat;
@@ -844,23 +766,25 @@ h1{
   -webkit-mask-position:center;
           mask-position:center;
 }
+
+.offertag-face{
+  position:relative;
+  z-index:1;
+  display:block;
+  padding:1.5rem 1.5rem 1.4rem 2rem;
+  transform:rotate(-.8deg);
+}
 .offertag-face > *{ position:relative; z-index:1; }
 
 /* ---- the grommet, punched through the left edge ---- */
 .offertag-grommet{
   position:absolute;
   z-index:3;
-  /* Percentage, not a fixed offset. On the sticker the eyelet sits a little
-     above the middle of the left edge, and this tag is far taller than the
-     sticker is, so a rem offset that looked right at one height would ride
-     up near the top at another. */
-  top:44%; left:1.9rem;
+  top:44%; left:1.5rem;
   transform:translateY(-50%);
-  width:26px; height:26px;
+  width:20px; height:20px;
   border-radius:50%;
-  /* Brass ring with a real hole in it: the ring is the border, the middle
-     is the shadow of a hole rather than a lighter disc. */
-  border:5px solid var(--oak);
+  border:4px solid var(--oak);
   background:rgba(63,57,52,.34);
   box-shadow:inset 0 1px 2px rgba(255,255,255,.45),
              0 1px 2px rgba(63,57,52,.28);
@@ -869,11 +793,9 @@ h1{
 .offertag-twine{
   position:absolute;
   z-index:2;
-  /* Tied to the grommet's 44%, so the two move together. The loop enters at
-     roughly a quarter down its own box, which is what the offset subtracts. */
-  top:44%; left:-1.1rem;
+  top:44%; left:-.6rem;
   transform:translateY(-32%);
-  width:76px; height:92px;
+  width:58px; height:70px;
   pointer-events:none;
 }
 .offertag-twine path{
@@ -886,10 +808,8 @@ h1{
 .offertag-tape{
   position:absolute;
   z-index:4;
-  top:-.55rem; left:30%;
-  width:104px; height:34px;
-  /* Tilted right-end-down, which is the way it lies on the sticker. It was
-     rotated the other way until this was checked against the image. */
+  top:-.45rem; left:28%;
+  width:80px; height:26px;
   transform:rotate(6deg);
   background:
     repeating-linear-gradient(90deg,
@@ -905,93 +825,79 @@ h1{
     4% 86%, 0% 96%);
 }
 
-/* ---- the words ---- */
+/* ---- the words, tightened to fit a small sheet ---- */
 .offertag-kicker{
   display:block;
   font-family:var(--font-hand);
-  font-size:1.4rem;
+  font-size:1.15rem;
   line-height:1;
   color:var(--olive);
   transform:rotate(-1.6deg);
   transform-origin:left;
-  margin-bottom:.5rem;
+  margin-bottom:.2rem;
 }
-/* Cormorant over Caveat, the second offset right and overlapping upward,
-   which is how Kindness sits over whispers on the sticker. */
+/* Cormorant over Caveat, the second offset right, the way Kindness sits
+   over whispers on the sticker. */
 .offertag-title{
   font-family:var(--font-display);
   font-weight:500;
-  font-size:1.72rem;
-  line-height:1.05;
-  margin:0 0 .9rem;
+  font-size:1.25rem;
+  line-height:1.02;
+  margin:0 0 .5rem;
   color:var(--ink);
 }
 .offertag-title .script{
   display:block;
   font-family:var(--font-hand);
-  font-size:2.1rem;
+  font-size:1.5rem;
   line-height:.95;
-  margin:.1rem 0 0 1.6rem;
+  margin:.05rem 0 0 1rem;
   color:var(--ink);
 }
 .offertag-lead{
-  font-size:1.02rem;
-  line-height:1.5;
-  margin:0 0 .9rem;
+  font-size:.9rem;
+  line-height:1.4;
+  margin:0 0 .5rem;
 }
 .offertag-terms{
   list-style:none;
-  margin:0 0 .9rem;
+  margin:0 0 .5rem;
   padding:0;
   border-top:1px solid rgba(122,131,82,.3);
 }
 .offertag-terms li{
   position:relative;
-  padding:.45rem 0 .45rem 1.15rem;
-  font-size:.95rem;
-  line-height:1.45;
+  padding:.25rem 0 .25rem .95rem;
+  font-size:.83rem;
+  line-height:1.35;
   border-bottom:1px solid rgba(122,131,82,.18);
 }
 .offertag-terms li:last-child{ border-bottom:0; }
 .offertag-terms li::before{
   content:"·";
-  position:absolute; left:.2rem; top:.32rem;
+  position:absolute; left:.15rem; top:.1rem;
   color:var(--olive);
   font-weight:bold;
-  font-size:1.25rem;
+  font-size:1.1rem;
   line-height:1.2;
 }
 .offertag-where{
-  font-size:.92rem;
-  line-height:1.5;
+  font-size:.8rem;
+  line-height:1.4;
   color:var(--ink-soft);
   margin:0;
 }
 .offertag-where a{ color:var(--olive); }
 
-/* ---- the botanicals ---- */
-/* The leaf sprig sits under the words, inside the tag. */
-.offertag-leaves{
-  display:block;
-  width:120px; height:26px;
-  margin:.9rem 0 .2rem;
-  opacity:.9;
-}
-/* The flowers hang off the right edge and over the sage layer, which is
-   what makes the stack read as three separate pieces of paper rather than
-   one printed picture of three. */
+/* ---- the flowers ----
+   The leaf sprig that used to sit under the words is gone. It was
+   decoration inside a space that no longer has room for any. These hang off
+   the right edge, outside the paper, which is where the sticker has them. */
 .offertag-flowers{
   position:absolute;
   z-index:5;
-  /* On the sticker the sprig starts above the middle and hangs past the
-     bottom edge, over the sage layer. Percentage top for the same reason as
-     the grommet, and the height is deliberately long enough to overhang. */
-  top:22%; right:-.4rem;
-  /* Fixed height, not a percentage. The viewBox is 78x210 and a percentage
-     height would leave the browser to reconcile that ratio against a box
-     that keeps changing, which either letterboxes the sprig or stretches
-     it. The overhang comes from where it starts, not from how tall it is. */
-  width:78px; height:210px;
+  top:16%; right:-.2rem;
+  width:52px; height:150px;
   pointer-events:none;
 }
 
@@ -999,23 +905,16 @@ h1{
 @media (max-width:1000px){
   /* Off the side and above the form. It keeps its construction, and only
      the room it has changes. */
-  .offertag{ max-width:460px; margin:0 0 2.5rem; }
+  .offertag{ max-width:380px; margin:0 0 2.5rem; }
 }
 @media (max-width:560px){
-  .offertag{ padding:1.2rem 1.6rem 1.8rem 1rem; }
-  .offertag-face{ padding:2.1rem 1.3rem 1.8rem 2rem; }
+  .offertag{ padding:.5rem 1.5rem 1rem .9rem; }
+  .offertag-face{ padding:1.3rem 1.1rem 1.2rem 1.7rem; }
   /* The twine hangs off the left of a page that has no room for it, and a
      rope disappearing off the screen reads as a bug. */
   .offertag-twine{ display:none; }
-  .offertag-flowers{ width:58px; height:160px; top:4.6rem; right:-.6rem; }
-  .offertag-title{ font-size:1.5rem; }
-  .offertag-title .script{ font-size:1.85rem; margin-left:1.1rem; }
+  .offertag-flowers{ width:42px; height:118px; }
 }
-
-/* The filter definitions carry no pixels of their own. Taken out of the
-   flow so they cannot open a gap at the top of the page. */
-.edge-filters{ position:absolute; width:0; height:0; overflow:hidden; }
-
 .contact-lines{ font-size:1.08rem; }
 .contact-lines strong{ font-weight:500; }
 /* white-space:pre-line has been removed. It existed only to hold a postal
@@ -1110,7 +1009,10 @@ h1{
 .send .inner{
   max-width:1100px; margin:0 auto;
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,400px);
+  /* Narrowed from 400px, 19 August 2026, with the tag itself. The tag is
+     one small sheet now rather than a stack of three, and a column wider
+     than the thing in it is just a gap with a name. */
+  grid-template-columns:minmax(0,1fr) minmax(0,330px);
   column-gap:3.2rem;
   align-items:start;
 }
@@ -1931,73 +1833,6 @@ footer .fsa{
 </head>
 <body>
 
-<!-- ============================================================
-     TORN EDGES
-
-     Three filters, one per paper layer on the offer tag. Defined
-     once here rather than inside the element, because an SVG
-     filter is referenced by id from CSS and a definition inside a
-     rotated, clipped element is harder to find than it is to use.
-
-     HOW IT WORKS. feTurbulence generates fractal noise, and
-     feDisplacementMap uses that noise to push each pixel of the
-     source sideways and up. At the boundary it drags transparency
-     inward and paper outward, so the straight edge becomes ragged.
-     Fractal noise has no period, which is the whole point: no two
-     teeth come out the same, some bite deep and some barely
-     register, exactly as in
-     design-reference/torn-paper-edge.png.
-
-     A polygon could not do this. It has as many teeth as somebody
-     typed and they are as varied as somebody's patience.
-
-     THREE SEEDS, NOT ONE FILTER. Same noise on all three layers
-     would tear all three identically, which is the fault being
-     fixed rather than a smaller version of it.
-
-     baseFrequency is two numbers on purpose. The horizontal figure
-     is lower than the vertical, so the tear wanders in long slow
-     runs along the top and bottom and in tighter ones up the
-     sides, which is how a sheet pulled apart by hand actually
-     goes.
-
-     The filter region is widened past the element, because
-     displacement pushes paper OUTSIDE the original box and the
-     default region would cut it off in a straight line, which
-     would be the old problem wearing a new coat.
-
-     color-interpolation-filters="sRGB" because the default,
-     linearRGB, shifts these warm creams noticeably grey.
-     ============================================================ -->
-<svg class="edge-filters" width="0" height="0" aria-hidden="true" focusable="false">
-  <defs>
-    <!-- deckle-cream is GONE, 19 August 2026. The top sheet is now masked
-         with the real photograph, images/torn-edge-mask.png, so the filter
-         that used to tear it has nothing left to do. An unused filter is a
-         thing somebody later has to work out the purpose of before they can
-         safely delete it, so it goes now rather than sitting here looking
-         load bearing.
-
-         Both remaining scales are 22, as asked. They no longer follow the
-         old "top tears hardest" ladder, because the top is not generated
-         any more and there is nothing left to rank them against. Different
-         seeds and different frequencies still keep the two edges apart. -->
-    <filter id="deckle-kraft" x="-12%" y="-12%" width="124%" height="124%"
-            color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.014 0.031"
-                    numOctaves="4" seed="23" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22"
-                         xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-    <filter id="deckle-sage" x="-12%" y="-12%" width="124%" height="124%"
-            color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.009 0.022"
-                    numOctaves="5" seed="41" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22"
-                         xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-  </defs>
-</svg>
 
 
 <header>
@@ -2423,9 +2258,11 @@ footer .fsa{
         <span class="offertag-grommet" aria-hidden="true"></span>
         <span class="offertag-tape" aria-hidden="true"></span>
 
-        <!-- The white buds, hanging off the right edge and over the sage
-             layer, which is what makes the stack read as three separate
-             pieces of paper rather than one picture of three. -->
+        <!-- The white buds, hanging off the right edge and past the paper.
+             They used to drape over the sage layer. There is no sage layer
+             any more, and they still work, because what they were really
+             doing was breaking the outline so the sheet does not read as a
+             rectangle with a picture in it. -->
         <svg class="offertag-flowers" viewBox="0 0 78 210" aria-hidden="true" focusable="false">
           <g fill="none" stroke="#7A8352" stroke-width="2" stroke-linecap="round">
             <path d="M40 6 C46 50, 44 110, 30 204"/>
@@ -2470,30 +2307,19 @@ footer .fsa{
                the sticker this is built from. -->
           <h3 class="offertag-title" id="offertag-title">Send a recipe<span class="script">a card comes back</span></h3>
 
-          <p class="offertag-lead">Send us a full recipe while this promotion is running, and that month's card is mailed to you as a thank you.</p>
+          <!-- TIGHTENED, not shortened for its own sake. The tag had grown
+               into a column to hold this copy, which is the shape a tag is
+               not. Every fact that changes what somebody gets is still here,
+               in fewer words. Nothing was moved into small print. -->
+          <p class="offertag-lead">Send a full recipe while this promotion runs, and that month's card is mailed to you.</p>
 
           <ul class="offertag-terms">
-            <li>You do not need to be a member, now or ever.</li>
+            <li>No membership needed, now or ever.</li>
             <li>One card per person, however many recipes you send.</li>
-            <li>If that month's card is already at the printer when your recipe reaches us, yours is the following month's.</li>
+            <li>If that month's card is already printing, yours is the next one.</li>
           </ul>
 
-          <!-- The sage sprig from the sticker, under the words. -->
-          <svg class="offertag-leaves" viewBox="0 0 120 26" aria-hidden="true" focusable="false">
-            <path d="M4 20 C36 15, 78 12, 116 9" fill="none" stroke="#7A8352" stroke-width="1.8" stroke-linecap="round"/>
-            <g fill="#8C9B63">
-              <ellipse cx="22" cy="12" rx="8" ry="3.6" transform="rotate(-22 22 12)"/>
-              <ellipse cx="30" cy="23" rx="8" ry="3.6" transform="rotate(18 30 23)"/>
-              <ellipse cx="46" cy="9"  rx="8.5" ry="3.8" transform="rotate(-20 46 9)"/>
-              <ellipse cx="54" cy="20" rx="8.5" ry="3.8" transform="rotate(16 54 20)"/>
-              <ellipse cx="70" cy="6"  rx="8" ry="3.6" transform="rotate(-18 70 6)"/>
-              <ellipse cx="78" cy="17" rx="8" ry="3.6" transform="rotate(15 78 17)"/>
-              <ellipse cx="94" cy="4"  rx="7" ry="3.2" transform="rotate(-16 94 4)"/>
-              <ellipse cx="100" cy="14" rx="7" ry="3.2" transform="rotate(14 100 14)"/>
-            </g>
-          </svg>
-
-          <p class="offertag-where">Tell us where to send it in the <a href="#f-story">What do you remember</a> box, or write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a>. If you forget, we will ask.</p>
+          <p class="offertag-where">Put your address in the <a href="#f-story">What do you remember</a> box, or write to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a>.</p>
         </div>
       </aside>
 
