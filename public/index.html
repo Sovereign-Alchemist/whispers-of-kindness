@@ -859,8 +859,24 @@ h1{
    scaleY(-1) flips the torn edge to face upward. A strip at the bottom of a
    sheet tears along its top, and reusing the same clip-path unflipped would
    put the ragged edge against the table. */
+/* THE OFFSET IS A PERCENTAGE, AND IT IS MEASURED, NOT GUESSED.
+   This strip used to sit at bottom:-.5rem, on the same reasoning as the top
+   one: a negative offset crosses the box edge, so it must cross the paper.
+   It does not. The top and the bottom of this sheet are not symmetrical,
+   because the mask is a photograph of a real torn sheet rather than a shape.
+   Reading the alpha channel of images/torn-edge-mask.png column by column,
+   the paper reaches within 2% of the box at the top, and stops between 90%
+   and 93% of the way down at the bottom. So a strip hung below the box was
+   floating a clear 24px under the paper with nothing behind it, reading as a
+   loose scrap rather than as tape holding an edge down.
+
+   Percentages track the paper, where rem does not. mask-size is 100% 100%,
+   so the torn edge sits at a fixed FRACTION of the box however the box is
+   sized, and the same value survives the narrow breakpoints changing the
+   padding. bottom:7% puts the strip across the 90% to 93% band: most of it
+   lies on the sheet, and the lower sliver hangs past the tear. */
 .offertag-face > .offertag-tape-b{
-  top:auto; bottom:-.5rem;
+  top:auto; bottom:7%;
   left:auto; right:12%;
   width:72px; height:24px;
   transform:rotate(-7deg) scaleY(-1);
@@ -2384,9 +2400,9 @@ footer .fsa{
           <p class="offertag-lead">Send a full recipe while this promotion runs, and that month's card is mailed to you.</p>
 
           <ul class="offertag-terms">
-            <li>No membership needed, now or ever.</li>
+            <li>No membership needed to submit a recipe, now or ever.</li>
             <li>One card per person, however many recipes you send.</li>
-            <li>If that month's card is already printing, yours is the next one.</li>
+            <li>Same 15th cutoff as membership. Your card follows whichever side you land on.</li>
           </ul>
 
           <!-- No email address on the tag. There is already one under the

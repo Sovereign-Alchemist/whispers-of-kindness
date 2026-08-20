@@ -22,6 +22,74 @@ claim was last checked and how.
 
 ---
 
+## 2026-08-20 — Offer tag copy, the bottom tape, and the 15th in the submission record
+
+Three changes to the offer tag beside the Send a recipe form, plus one fix
+underneath it that the copy change exposed.
+
+**Two bullets reworded.** "No membership needed, now or ever" became "No
+membership needed to submit a recipe, now or ever", which says what the
+membership is not needed *for*. "If that month's card is already printing,
+yours is the next one" became "Same 15th cutoff as membership. Your card
+follows whichever side you land on", which points at the rule already stated
+on `/refunds` instead of describing a production detail.
+
+**The bottom tape strip was not touching the paper, and now is.** It sat at
+`bottom:-.5rem`, on the same reasoning that works for the top strip: a
+negative offset crosses the box edge, so it crosses the sheet. The sheet is
+not a box. It is `images/torn-edge-mask.png`, a photograph of Pela's own torn
+paper, and its two ends are not symmetrical. Reading the alpha channel column
+by column: the paper reaches within 2% of the box at the top, and stops
+between 89.8% and 93.5% of the way down at the bottom. In the strip's own x
+range, 68% to 88% across, it stops at about 90%. The tape was therefore
+hanging roughly 24px clear underneath the paper with nothing behind it,
+reading as a loose scrap. Now `bottom:7%`, a percentage rather than a rem
+because `mask-size` is `100% 100%`, so the tear sits at a fixed fraction of
+the box at every size and through both narrow breakpoints.
+
+**The 15th was not actually implemented anywhere, and still is not, by
+design.** The new bullet was checked against the code rather than assumed.
+Nothing in `functions/` mentions a cutoff, a month, or a promotion: grep for
+`15th`, `cutoff`, `promo`, `card_month`, `issue_month` and `getDate()` across
+every function returns nothing. `submit.js` writes `date_submitted` and
+`status: 'new'` and stops. No field records which card a submission earns.
+That is correct for where this is: which card someone gets is Pela's decision,
+made by eye from the review sheet, and `mailing` has no interface yet by
+deliberate deferral. **So the copy does not contradict the code. It rests
+entirely on one stored date being right.**
+
+**That date was wrong for seven hours of every day.** `date_submitted` was
+`new Date().toISOString().slice(0, 10)`, which is UTC. Vancouver is UTC-7 in
+summer, so anything sent after 5pm local on the 15th was stamped the 16th. A
+contributor sending a recipe on the evening of the deadline would have been
+recorded as a day late, and under the new bullet would be told they had
+missed that month's card. The error only ran one way, and it ran against the
+contributor. Now `submissionDate()`, using `Intl.DateTimeFormat('en-CA', {
+timeZone: 'America/Vancouver' })`, which emits `YYYY-MM-DD` directly.
+
+**Verified:** the mask measured with `System.Drawing` `LockBits` over the
+alpha channel, 800x587, threshold 128, sampled every 5% of width. The live
+mask was downloaded from `whispersofkindness.ca` first and its SHA256 matched
+the local file exactly, so the measurement is of what production actually
+serves, not of a working copy. The live `.offertag-tape-b` rule was read back
+off the deployed page and matched what was measured against.
+
+**Not verified, and both worth knowing.** Nobody has *looked* at the tag. The
+new offset is arithmetic against a measured edge, not a visual confirmation,
+and there is no browser on this machine. If it still reads wrong, `bottom`
+is the one number to turn, and the paper it has to meet is at 90% to 93.5%.
+Separately, `Intl` with a named timezone needs full ICU in the runtime.
+Netlify's Node 20 has it, but there is no Node here to prove it, and nothing
+else in `functions/` uses `Intl`, so there is no working precedent in this
+codebase either. **`submissionDate()` therefore falls back to the old UTC
+line inside a `try`/`catch` and logs `submission-date-fallback`.** The worst
+case is exactly the behaviour it replaced, because submission is the one path
+in this project that must never fail. Check the function log after the next
+real submission: if that string appears, the timezone fix is not in effect
+and the 15th is still being judged in UTC.
+
+---
+
 ## 2026-08-20 — Correction: the orphan alert went live inside the repricing merge
 
 **The 2026-08-18 entry below says the orphan subscription alert was "built on
