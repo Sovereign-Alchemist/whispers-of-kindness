@@ -22,6 +22,71 @@ claim was last checked and how.
 
 ---
 
+## 2026-08-19 — Domestic repricing, shipped and proven at every price point
+
+**Done, live, and verified against Stripe rather than against the source.**
+
+The domestic Mailing tier is repriced. Founding is $45.00, $85.00 and $165.00.
+Regular is $55.00, $95.00 and $175.00. International Digital did not change
+and was confirmed not to have changed.
+
+Six new live prices were created by `tools/Migrate-StripePricesToLive.ps1` and
+the six they replace are archived. Archiving cannot cancel anything: every
+existing subscription keeps billing at the price it was created with, so
+founding members from before today still pay $39 and still pay less than the
+current rate, which is the promise the site makes.
+
+**`stripe-webhook.js` now carries twelve domestic prices, not six**, and that
+asymmetry is deliberate. `create-checkout.js` sells only the current six.
+`PRICE_FACTS` has to recognise whatever a real person is actually on, and
+every member who joined before today renews against an archived id for as
+long as their subscription runs. Dropping them would send each of those
+renewals through the metadata fallback to be logged as an unknown price, on
+every renewal, for years.
+
+**The per card framing is gone from this tier.** No `$X a card` figure
+survives anywhere a reader can see. `membership-status.js` no longer sends an
+`each` field, the page script no longer reads one, the `.term-each` spans are
+removed rather than emptied, and `perCard()` is deleted rather than left
+unused. The digital tier keeps its per recipe wording untouched, on purpose.
+
+Mailing mechanics were added to `/refunds` under their own subhead: October
+2026 start, the 15th as the cutoff, cards in the third week, video in the
+fourth, billing on the subscriber's own signup date.
+
+**There was an outage, and it belongs in the record.** Creating the new prices
+archives the old ones, and an archived price cannot start a subscription, so
+domestic checkout answered 502 from the moment the migration ran until this
+merge deployed. It was observed as a 502 on production and confirmed restored
+at 09:34. International was unaffected throughout, because its three ids never
+changed. This is inherent to repricing in two steps and is the argument for
+running the migration and merging the code in one sitting rather than across a
+break.
+
+**This also proves the entry below.** The 18 August entry records the
+international `rate` metadata fix as merged without being run. It has now been
+run. All three international terms came back with no `rate` key at all, which
+is what that change was for. That entry's "NOT verified" line is superseded
+here rather than edited there.
+
+> Verified 2026-08-19 by `tools/Test-CheckoutMetadata.ps1` against
+> `https://whispersofkindness.ca`, which created six real Checkout Sessions in
+> live mode and read every one back out of Stripe. All six price points passed
+> on amount, currency and renewal interval, and each domestic amount was
+> compared against what `membership-status` displays, which is the mismatch
+> that endpoint exists to prevent. The three international amounts passed
+> unchanged as the regression half. Separately confirmed without a key: the
+> served page, the served JSON-LD and `membership-status` all quote the same
+> three domestic totals, and stripping comments and scripts from the served
+> HTML leaves zero priced per-card phrases. **NOT proven: the founding cap
+> switching at member 100.** That needs 100 member rows. The run reports which
+> rate is live, and it was `founding` with `degraded: false`, so the result
+> should be read as covering the founding prices only. The regular prices are
+> verified as Stripe objects and have not been verified as the thing checkout
+> selects, because nothing can make it select them yet.
+
+---
+
 ## 2026-08-18 — An invoice for a subscription nobody holds now emails somebody
 
 **Built on `chunk-orphan-subscription-alert`. Not yet run against a deploy.**
