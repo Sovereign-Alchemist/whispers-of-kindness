@@ -22,6 +22,321 @@ claim was last checked and how.
 
 ---
 
+## 2026-09-02 — Social pipeline Phase 1 chunk 1: connections and content intake
+
+Commit `11e2874`. Migrations `0004` to `0006`. **No account has actually been
+connected**, because no platform credentials exist on this machine.
+
+**Nine endpoints built** under `/api/v1`, per architecture section 04: connect,
+callback, status and revoke for social accounts; list, create, patch, delete
+and upload-asset for content. Instagram and Pinterest OAuth clients, token
+exchange and "who am I" only. No publish method anywhere, which is chunk 2.
+
+**The web app can write a credential and can never read one back.** Vault
+access goes through two SECURITY DEFINER functions granted only to
+`authenticated`, and there is deliberately no read counterpart. That also
+means no service role key needs to live in the web app at all. The worker will
+read Vault directly when it exists.
+
+**Two faults found that were already there, neither introduced by this work.**
+
+1. **CI never built the app, only typechecked it.** The workspace packages
+   import each other with `.js` extensions, which `tsc` resolves and webpack
+   does not, so `next build` had been failing since Phase 0 and nothing was
+   watching. Extensions dropped, and a build step added to CI. **A green
+   pipeline was reporting on a build that had never run.**
+2. **`assets.storage_bucket` still defaulted to `social-assets`** after
+   migration 0003 made it nullable, so an external long-form asset silently
+   claimed a bucket holding none of its bytes. Nothing had broken yet because
+   the route passes null explicitly, but the schema permitted a row that would
+   send someone looking in the bucket for a file never put there. Default
+   dropped, bucket and path now all-or-nothing. Found by inserting a row the
+   way the route does and reading the result rather than assuming it.
+
+**The Meta Graph API version was checked, not recalled.** v26.0, confirmed
+against Meta's changelog. Writing it from memory would have pinned v21.0,
+nearly two years stale.
+
+**Verified:** `pnpm typecheck` and `next build` both clean locally; CI green on
+`11e2874` with the new Build step and all six migrations applied to a fresh
+database twice. The full credential lifecycle exercised against the live
+project with a synthetic token: stored and decrypted back through Vault, no
+raw token anywhere in the row, reconnect rotating in place without orphaning
+the secret, revoke destroying the secret and leaving status `revoked` with the
+row intact, and the audit trail recording all three. Now asserted in CI too.
+Asset constraints proven in all three failing directions. All nine endpoints
+confirmed returning 401 unauthenticated against a real running server,
+including the OAuth callback. All tables back to 0 rows.
+
+**Not verified, and this is the gap:** no real OAuth connection has been made.
+There are no Meta or Pinterest credentials on this machine, and the
+authenticated HTTP paths could not be exercised because signing in needs the
+admin password, which correctly is not available to tooling. Everything past
+the auth gate is verified at the database layer rather than through the API.
+
+---
+
+## 2026-09-01 — Auth hardened. Two of three closed, and MFA is not enrolled
+
+Commit `cac64ca`. Phase 0 is complete.
+
+**Password minimum raised 6 to 16**, no character-class requirements. Length
+rather than punctuation soup, because forced character classes push people
+toward predictable substitutions and writing the password down. **Applies to
+new passwords only**, so the existing admin login is untouched and the rule
+bites at the next change.
+
+**TOTP MFA capability enabled.** The "Insufficient MFA Options" advisor has
+cleared, which is independent confirmation rather than a claim.
+
+**MFA IS ENABLED BUT NOT ENROLLED, AND THERE IS NO DASHBOARD FLOW TO ENROL
+IT.** The dashboard's MFA settings govern the Supabase *account*, not a
+project's end users. Enrolling a factor for the admin login needs an app-side
+`supabase.auth.mfa.enroll()` screen, and this app has only placeholder pages.
+**Nothing about signing in has changed and login is still AAL1.** The security
+benefit is not real until that screen exists and has been used.
+
+**Leaked password protection could not be closed.** There is no key for it in
+the CLI's config schema, so `config push` cannot set it. It is a dashboard
+setting and may be gated behind a paid plan, which would collide with the
+free-tier decision taken for storage. Left open deliberately rather than
+quietly dropped.
+
+**The long-form export backup-scope question is folded into the Phase 3 backup
+work** rather than tracked separately, per Pela.
+
+**Verified:** the push diff showed only the two intended lines changing and
+nothing else, the follow-up push reported the auth config up to date, and the
+MFA advisor cleared on its own. Working tree clean and in sync at `cac64ca`,
+six commits. `pnpm typecheck` exits 0. CI green with all three migrations
+applied to a fresh database twice and four assertions passing. **Not
+verified:** the app has never been run, nobody has signed in, no MFA factor is
+enrolled, and no platform API has been touched.
+
+---
+
+## 2026-09-01 — Long-form video leaves the bucket, and a full auth key audit
+
+Commit `70e714a`. Migration `0003`.
+
+**Long-form video will never be stored in Supabase.** The free tier caps a
+file at 50MiB and the monthly recipe video does not fit. Decision was to stay
+on the free tier rather than upgrade, so the YouTube resumable upload reads
+the source export directly and the `assets` row keeps metadata only.
+`storage_path` and `storage_bucket` are nullable now, `source_uri` says where
+the bytes actually are, and a constraint requires one or the other so an asset
+can never point at nothing.
+
+**The cost is written down rather than buried.** There is no Supabase-hosted
+copy of a long-form video. The only copies are the source export, whatever the
+nightly backup covers, and YouTube's own once the upload succeeds. **Two
+things follow: do not delete a source export before the upload is confirmed,
+and check that long-form exports actually sit inside the 02:00 job's scope.**
+Otherwise, between export and upload, that file exists on exactly one disk,
+which is the situation the outreach letter was held back over in August.
+
+**A full audit of every auth key the CLI manages.** Prompted by the near-miss
+where two settings were weakened purely by being absent from the local file.
+Result: **nothing else had drifted.** Fourteen previously undeclared keys are
+now pinned at their existing values, and the push that followed reported no
+auth diff at all, which is the proof: every pinned value already matched the
+server. A future CLI default cannot move them silently now.
+
+**The audit did find three weak Supabase defaults, and all three are still
+open.** `minimum_password_length` is 6 with no character requirements, leaked
+password protection is off, and MFA is off. None were changed, because
+altering live auth policy is Pela's call. **These matter from Phase 1 onward,
+not now:** the admin account currently guards nothing, since no platform
+tokens are stored yet. That stops being true the first time an OAuth flow
+runs.
+
+**Also confirmed, because it had dropped out of two reports:** the roughly
+eight column renames to section 03's naming did land, in `0002` alongside the
+other two changes, not left pending. Fourteen rename statements, verified
+against both the live schema and the generated types.
+
+**Verified:** working tree clean and in sync at `70e714a`. `pnpm typecheck`
+exits 0. CI green with all three migrations applied to a fresh database twice
+and four assertions passing: the five tables, the timezone in both DST states,
+the approval gate in both directions, and an asset having to point at bytes
+somewhere. Live schema queried directly for all nineteen section 03 column
+names, every one present; all seventeen old names return nothing. All tables
+at 0 rows. **Not verified:** the app has still never been run and no platform
+API has been touched.
+
+---
+
+## 2026-09-01 — Social pipeline schema aligned to the real architecture document
+
+The architecture document arrived after the schema was already built from a
+summary. Four divergences closed by Pela's decision, while every table was
+still empty and the changes were free. Migration `0002`, commit `e5fb237`.
+
+**`content_items.platform` is singular now.** It was a `platform[]` array.
+Section 03 and the section 08 worker loop both give a content item one
+platform, so creative going to three platforms is three rows. That is what
+lets each row carry its own caption, and Instagram and Pinterest wanting
+different text for the same image is the normal case rather than an edge one.
+
+**The approval gate is real and enforced by the database.**
+`approved_by_pela_at` is not just a column. A check constraint refuses to let
+any row reach `ready`, `scheduled` or `posted` while it is null. Section 00
+defines "full automation" as one periodic go-ahead and then hands-off, which
+makes this single transition the entire human checkpoint. It should not be
+something application code can forget or route around. Tested both directions
+and asserted in CI, including the too-strict direction, so a future change
+that blocks approved rows also fails the build.
+
+**Column names aligned to section 03** across all five tables.
+`social_accounts` gained a `connected | expired | revoked` status in place of
+`is_active`, because a boolean could not tell an expired token from a revoked
+one, and those are different problems with different fixes.
+
+**One new constraint to remember:** section 03 says the two video formats are
+YouTube-only, so that is now enforced. **This will need relaxing if Instagram
+Reels or Pinterest video ever enter scope.** One line to change, written up in
+section 12 of the architecture doc rather than left to be discovered.
+
+**A CI break was caught by CI, which is the point.** Making `platform` NOT NULL
+invalidated the timezone assertion's INSERT, which did not supply it. Fixed in
+the same commit.
+
+**Two new security advisories, both open and neither acted on.** Leaked
+password protection is disabled, and MFA options are insufficient. Both are
+auth-level settings on a single admin account that guards Instagram, Pinterest
+and YouTube tokens. Left alone deliberately rather than changed unilaterally,
+since they alter live auth policy. Worth closing before Phase 1 connects real
+platform credentials.
+
+**Verified:** migration history reads `0001 core_schema | 0002
+align_to_architecture_section_03`. All five new `content_items` columns
+present, the old array column gone, both new constraints present, zero tables
+without RLS, one auth user, all tables at 0 rows. `pnpm typecheck` exits 0.
+CI green on `e5fb237` with all twenty-one steps `success`, including the new
+approval-gate assertion, having applied both migrations to a fresh database
+twice. **Not verified:** the app has still never been run and no platform API
+has been touched.
+
+---
+
+## 2026-09-01 — Social pipeline Phase 0 closed out. The three unverified items are now verified
+
+Follow-up to the entry below, which ended by saying CI had never run, no admin
+user existed, and sign-up was still enabled on the server. All three are now
+done and checked. Written as a new entry rather than an edit to that one.
+
+**Pushed and CI is green.** `github.com/Sovereign-Alchemist/whispers-of-kindness-social`,
+private. Three commits, `f24ebff`, `e444cc7`, `192769a`. Both jobs pass on the
+current head.
+
+**The first CI run failed**, and it is worth recording why rather than only
+that it now passes. `pnpm/action-setup` treats a `version:` input plus a
+`packageManager` field in `package.json` as a hard error, not a precedence
+rule, so typecheck died before installing anything. `package.json` is now the
+single source of truth for the pnpm version.
+
+**Sign-up is disabled on the live server, not just in the file.** Checked by
+sending a real sign-up request and getting `422 signup_disabled`, not by
+reading `config.toml` and not by looking at the dashboard.
+
+**`config push` silently weakened two settings, and this is the part to
+remember.** It sends the whole file and treats an absent key as "use the CLI
+default", not "leave the server alone". The first push moved `otp_length` from
+8 to 6 and `max_frequency` from `1m0s` to `1s`. Both are weaker than what the
+project already had, both were pushed because the keys were simply missing
+from the local file, and **the output announced them in a diff that looked
+like ordinary success.** Same shape as the backup logs that read
+`ALL STEPS PASSED` while writing to the wrong folder: every line true, the
+overall impression wrong. Both keys are now pinned explicitly and the runbook
+says to read the diff before answering yes.
+
+**A storage setting was rejected and this constrains Phase 2.**
+`file_size_limit` of 500MiB returned a 402 on the free tier and the storage
+config did not apply at all. Now 50MiB, the free ceiling. **The monthly
+long-form YouTube video will not fit in 50MiB at any sensible quality**, so
+before Phase 2 either the project moves to a paid tier or long-form uploads
+bypass that bucket.
+
+**The real architecture document arrived and the schema was reconciled against
+it.** `content_status` changed from values invented during the build to the
+document's own: `idea, draft, ready, scheduled, posted, failed`. All five
+open decisions are resolved and recorded in section 11 of
+`docs/architecture.md`. Five further divergences are listed there unresolved,
+one of them structural: the document gives `content_items` a single `platform`
+where the build has an array. **Phase 1's content intake API depends on which
+way that goes and it is not decided.**
+
+**Verified:** working tree clean and in sync with `origin/main` at `192769a`.
+`pnpm typecheck` exits 0 locally; CI reports success for both jobs on that same
+commit, with all twenty steps individually `success`. The CI timezone assertion
+was confirmed to do real work (`INSERT 0 2`, `DO`, `DELETE 2` in its log) and
+confirmed to be capable of failing, by running the same block against a
+deliberately wrong expected value and watching it raise. RLS was tested against
+a table with a row actually in it, since an empty table returns `[]` whether
+RLS works or not: the anon key read `[]` and was refused on write with `42501`.
+Three `config push` runs to convergence, the third reporting every service
+`up_to_date`. All five tables back to 0 rows, one auth user,
+`lela@whispersofkindness.ca`, email confirmed. **Not verified:** the app has
+never been run, nobody has signed in, and no platform API has been touched.
+
+---
+
+## 2026-09-01 — Social pipeline Phase 0 built, out of phase order, on purpose
+
+**This is not this repo.** A separate project was scaffolded at
+`Documents/Whispers of Kindness/whispers-of-kindness-social/`, a sibling of
+`site/` and outside it, the same way the working folders sit beside the
+project. It is recorded here because this file is where build state is
+written down, and because the sequencing decision belongs in the record rather
+than only in a conversation.
+
+**It was built ahead of the documented phase sequence.** CLAUDE.md lists
+Phase 3 Stripe billing, Phase 4 accounts, Phase 5 member area, Phase 6 archive
+browsing. A social posting pipeline is not among them, and the governing rule
+is "gather first, build second." The archive holds zero recipes. This was
+raised before any work started and Pela decided to proceed anyway, for a
+reason that does not fit the phase list: **the Thanksgiving and Christmas
+marketing window.** The pipeline has to exist before those dates, and those
+dates do not move to accommodate a build order. Same shape of decision as
+finishing Phase 2 ahead of gathering because a job was starting.
+
+**What is actually built.** A pnpm monorepo, a five table schema
+(`social_accounts`, `content_items`, `assets`, `publish_jobs`,
+`activity_log`), Supabase Auth with sign-ups disabled, and CI. There is no
+posting logic and no Instagram, Pinterest or YouTube API call anywhere in it.
+Those are later phases.
+
+**A separate Supabase project, not new tables in this one.** "Whispers Social
+Pipeline" (`fulqsbitynlxjvjyefac`, ca-central-1). No shared tables with
+`fulnenhnycaeyzrhplch`, no foreign keys across the boundary. The pipeline
+holds social platform tokens, and its credentials must not be able to reach
+contributor names, addresses or member records.
+
+**The no-dev-tooling decision was reversed, deliberately.** Node 24.19.0,
+pnpm 11.25.0 and the Supabase CLI 2.116.0 are now installed on this machine.
+CLAUDE.md still describes it as kept free of developer tooling and that
+sentence is now out of date. Pela's call: the machine was set up for these
+projects going forward.
+
+**Two gaps left open, neither closed.** The nightly 02:00 backup does not
+cover the new repo, and `Export-Database.ps1` points at this project only, so
+nothing exports the social pipeline's database. Both are harmless while its
+tables are empty and both need closing before real scheduled content exists,
+because at that point the content board is the only record of what goes out
+and when.
+
+**Verified:** `pnpm install` and `pnpm typecheck` both run clean on this
+machine, typecheck exiting 0 across all five packages. The schema was applied
+to the live project and the five tables confirmed present. The scheduling
+trigger was tested with real rows in both daylight saving states: 9am Pacific
+resolved to 16:00Z in July and 17:00Z in November, and read back as 09:00 in
+both cases. The two offsets differ, which is the part that matters, since a
+hardcoded offset passes one and fails the other. Test rows were deleted after.
+**Not verified:** CI has never run, because nothing is pushed to GitHub yet,
+and no admin user exists yet.
+
+---
+
 ## 2026-08-20 — The offer tag was looked at, and it is right
 
 Pela confirmed the tag on the live site after the clearance fix. The bottom
