@@ -22,6 +22,63 @@ claim was last checked and how.
 
 ---
 
+## 2026-09-03 — Pinterest connected for real, and disconnected again
+
+Chunk 1 of the social pipeline's Phase 1 is done. Commit `c09eef2`, CI green.
+**A real Pinterest account was connected, used, and revoked**, not simulated.
+
+`@Whispers_of_kindness`, account id `1136596162116632390`, BUSINESS account.
+Pinterest granted `boards:read boards:write pins:read pins:write
+user_accounts:read`, so **Chunk 2 will not need a second authorisation.**
+
+**The token never touched a table or a log.** Verified by substring-matching
+the real token out of Vault against the full JSON of the row and every audit
+entry: absent from both. The row holds only a pointer.
+
+**The "who am I" call was proven live rather than inferred.** Pinterest
+answered 200 with the matching account id, using the stored token, several
+minutes after the connect. The token never left the database to do it: the
+`http` extension was installed, the call made from inside Postgres, and the
+extension dropped again.
+
+**Two auth bugs were found and fixed on the way**, both dating from Phase 0
+and both making the app unusable rather than merely wrong.
+
+1. **Nobody could ever have signed in.** `[auth.email] enable_signup = false`
+   disables the email PROVIDER, not just signups, so every login attempt
+   answered 422 `email_provider_disabled`, correct password or not. **The
+   symptom had been recorded twice in this file as "nobody has signed in yet"
+   and read as not-yet-tried rather than cannot.** Signups stay blocked by the
+   top-level switch, which is the right place for it.
+2. **The worker could not start.** Chunk 1 removed `.js` import extensions to
+   fix `next build`, which broke plain Node ESM. Explicit `.ts` extensions
+   satisfy tsc, webpack and Node together. Neither typecheck nor the build
+   catches a broken worker, so CI now starts it.
+
+**Disconnect does less than its name says, and this is open.** It destroys the
+Vault copy and marks the row `revoked`, but never calls Pinterest, so the
+token stays valid there until it expires. Fine for an ordinary disconnect.
+**Not fine for the case someone would actually use the button in a hurry, a
+token they think has leaked.** Pinterest publishes a revocation endpoint;
+calling it is flagged for Chunk 2. Until then an emergency disconnect is not
+finished until the app is also removed from the account's connected-apps
+settings.
+
+**Verified:** after revoke, `status = revoked`, `credentials_secret_id` null,
+`vault.secrets` count 0 with zero dangling pointers, the row still present with
+`connected_at` intact, and two audit entries reading `social_account.connected`
+then `social_account.revoked {"secret_destroyed": true}`.
+
+**Not verified, and it cannot be:** the promised re-test of the dead token
+against Pinterest did not happen. The token was deliberately never surfaced
+outside the database, and revoke destroyed it, so there was nothing left to
+test with. The design that protects the token is the same design that
+prevented that check. Worth knowing rather than papering over: what is proven
+is that our copy is gone, not that Pinterest considers the token dead. On the
+evidence above, Pinterest almost certainly still does.
+
+---
+
 ## 2026-09-02 — Privacy policy page is live
 
 `https://whispersofkindness.ca/privacy`. Commit `4561d10`, deployed by Netlify
