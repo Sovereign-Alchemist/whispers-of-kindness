@@ -22,6 +22,64 @@ claim was last checked and how.
 
 ---
 
+## 2026-09-02 — Privacy policy page is live
+
+`https://whispersofkindness.ca/privacy`. Commit `4561d10`, deployed by Netlify
+about twenty seconds after the push.
+
+Pinterest's and Meta's developer app forms both require a privacy policy URL
+that resolves, and both were blocked on it. That is the reason this exists now
+rather than later.
+
+**Cloned from refunds.html rather than written fresh.** The head, design
+system, header, footer, favicon block and consent stamp are identical because
+they are the same bytes, so the two policy pages cannot drift apart. There is
+still no shared template on this site, which is why cloning was the safer
+move than reimplementing.
+
+**The wording is Pela's, reproduced exactly.** Not asserted: the rendered page
+was stripped back to plain text and diffed against the source, first locally
+and then against the live URL. 25 of 25 lines identical, nothing reworded,
+added or dropped. Two pieces of chrome are NOT policy text and match the
+pattern refunds.html already set: the handwritten kicker, and the "back to the
+front page" link.
+
+**The footer gained a third link**, added identically on index, refunds and
+privacy. thank-you.html has no footer at all, so there was nothing to add
+there and the tooling correctly skipped it rather than inventing one.
+
+**Four comments that said the shared blocks "live in three places" now say
+four** and name privacy.html. They were one page away from being quietly
+wrong, which is the kind of comment that misleads a later reader.
+
+**Verified:** all six live URLs return 200, including both `/privacy` and
+`/privacy.html`. The live text diff matched exactly. The footer link is
+present on all three live pages and resolves; note it is served as
+`href='/privacy'` because Pretty URLs rewrites the `.html` on the way out, so
+a grep for the authored form finds nothing and that is expected. Front page
+and refunds still carry their headings, robots.txt still 200, sitemap lists
+`/privacy`. Rendering confirmed by headless screenshot of the live page at
+1280 wide, and locally at true 390 and 360 CSS px viewports where the measured
+`document.scrollWidth` equalled `innerWidth`, meaning no horizontal overflow.
+
+**One false alarm worth recording.** The first mobile screenshots looked badly
+clipped on the right. They were not. Windows display scaling made the layout
+viewport 492 CSS px while the capture was cropped to 390 physical px. The
+existing refunds page showed the identical artifact, which is what prompted
+measuring rather than trusting the picture. **The measurement disproved the
+screenshot.** Same lesson as the offer tag in August, reached from the
+opposite direction: there, arithmetic was not a substitute for looking; here,
+looking was not a substitute for measuring.
+
+**Not verified:** the footer was never captured in a screenshot. Repeated
+headless attempts failed on a locked Edge profile and then on oversized
+captures. It is confirmed three other ways, by markup, by the link resolving,
+and by the CSS being the same bytes as the working refunds page, but nobody
+has looked at it. **A human should glance at the bottom of the page**, the
+same way the offer tag ultimately needed a person.
+
+---
+
 ## 2026-09-02 — Social pipeline Phase 1 chunk 1: connections and content intake
 
 Commit `11e2874`. Migrations `0004` to `0006`. **No account has actually been
