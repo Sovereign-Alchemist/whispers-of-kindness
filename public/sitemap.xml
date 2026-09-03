@@ -7,6 +7,9 @@
   fragments, so an entry per anchor would be listing the same URL nine
   times.
 
+  The privacy page was added 2 September 2026, listed for the same reason and
+  because Pinterest and Meta both check that the URL resolves.
+
   The refunds page is a second real page, added 16 August 2026. It is meant
   to be findable by somebody looking for the terms before they join, so it is
   listed. Lower priority than the front page and changefreq yearly, because
@@ -35,6 +38,12 @@
   <url>
     <loc>https://whispersofkindness.ca/refunds</loc>
     <lastmod>2026-08-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://whispersofkindness.ca/privacy</loc>
+    <lastmod>2026-09-03</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
