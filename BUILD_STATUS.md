@@ -22,6 +22,88 @@ claim was last checked and how.
 
 ---
 
+## 2026-09-15 — The Instagram image race is fixed, and one real post proves it
+
+Commit `9a2f7f6` in `whispers-of-kindness-social`. **This entry was held back
+deliberately until a post went out on the fixed code.** The commit's own
+verification was seven stubbed-fetch cases and a requeue rehearsed inside
+transactions that rolled back. That is a fix that typechecks, not a fix that has
+run, and this file is the wrong place for that difference to go unrecorded.
+
+**What was wrong.** `publishToInstagram` polled the media container only for
+video. For an image it created the container and published immediately, which
+usually works, so it read as sound code rather than a race. It had in fact been
+failing quietly for a week: `activity_log` shows HTTP 400 code 9007 subcode
+2207027 on 9, 10, 11 and 14 September. The first three recovered on a retry and
+went out 1 to 15 minutes late with nothing saying so. The fourth, content item
+`82204437` "Every Family Has a Keeper of Recipes", used all three attempts and
+never published.
+
+**The second bug is the one that trapped it.** Nothing wrote the failure onto
+the content item, so it stayed `scheduled`: invisible as a failure on the board,
+and permanently unqueueable, because `enqueueDueItems` keys a job on
+`content_items.updated_at` and a row whose `updated_at` never moves can never
+get a second job row. The fix sets `content_items.status = 'failed'` when
+attempts are exhausted, and migration `0015` adds `requeue_content_item()`.
+
+**The live post, with times.** All UTC, 15 September:
+
+- `19:48:50` — `publish-worker` redeployed, version 5, the bundle carrying the
+  polling loop.
+- `19:49:19` — migration `0015` applied.
+- `20:01:55` — `content.marked_failed` on `82204437`, **applied by hand via SQL
+  at Pela's instruction**, because the item had been stranded before the code
+  that now sets that status existed. A one-off repair, not the routine.
+- `20:15:57` — `content.requeued`, `failed` → `scheduled`, `updated_at` moved.
+- `20:30:19` — **published, on attempt 1.** Instagram media id
+  `18484039066107651`. The item is `posted`.
+
+**The 17:00 post the same day is not evidence of the fix.** "Cozy Season Is
+Coming (Autumn)" published on attempt 1 at `17:00:12`, but that was nearly three
+hours before the redeploy. It ran on the old bundle and simply won the race,
+which is what the old bundle usually did.
+
+**Verified:** 17 September, against the hosted database and the Supabase API.
+`publish_jobs` shows the 20:30 job `succeeded` at `attempt_count = 1` carrying
+the media id above, and the earlier row for the same content item still sitting
+at `failed` with its 9007 body, untouched. `activity_log` carries the
+marked_failed, requeued and succeeded entries at the times listed. The redeploy
+time is the Supabase API's own `updated_at` for `publish-worker`; the committed
+bundle under `supabase/functions/publish-worker/` contains `CONTAINER_POLL`, and
+the working tree is clean at `9a2f7f6`.
+
+**Corroborating, and worth knowing:** that job took 17.8 seconds from claim to
+post, against 8 to 10 seconds for every earlier Instagram publish. Its image is
+2.41MB, the largest in the set and the one that never published on the old code.
+The extra seconds are the loop waiting for the container, which is the fix doing
+the thing it was added to do.
+
+**Still open.**
+
+- **One post is one post.** Nothing has published since `20:30` on 15 September,
+  because nothing is queued: `content_items` holds 9 `posted` rows and 1
+  `draft`, and no scheduled item remains. The fix has a single live success
+  behind it, not a run of quiet days.
+- **The terminal-failure path has not run for real.** `recordFailure` setting
+  `content_items.status` was proven in tests only. The one item that needed it
+  was marked by hand, and no failure has happened since to exercise it.
+- **No post URL is stored.** `external_post_url` is null on every row, successes
+  included; only the media id is kept. What is proven above is that Meta
+  returned a media id for a publish, not that the post has been opened and
+  looked at.
+
+**Also open, and not a small thing: this file skips twelve days.** Between the 3
+September entry below and this one, the social repo shipped Phase 1 chunk 2 (the
+publish worker), chunk 3 (content board, job history, weekly approval,
+connections), scheduled database backups, the MFA enrolment screen, the 15
+minute scheduler, token refresh, the credential expiry alarm and the Notion
+push — and Instagram published to a live account for the first time on 6
+September, on attempt 2. None of that is recorded here. Read this file today and
+you would believe the pipeline had never posted anything. Verified by `git log`
+in the social repo and by the `publish_jobs` row posted `2026-09-06 00:22:43Z`.
+
+---
+
 ## 2026-09-03 — Pinterest connected for real, and disconnected again
 
 Chunk 1 of the social pipeline's Phase 1 is done. Commit `c09eef2`, CI green.
