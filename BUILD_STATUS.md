@@ -22,6 +22,60 @@ claim was last checked and how.
 
 ---
 
+## 2026-09-23 — The batch is committed, pushed and live
+
+**Supersedes the "NOT yet committed, NOT yet deployed" line in the two entries
+below.** Both were true when written. Neither is now.
+
+Commit `746a2c3` on `main`, pushed to `origin`, auto-deployed by Netlify.
+It carries the story page, the FAQ contributor cluster, `ld-organization`, the
+photograph swap, the Lois Sagle vignette, the Instagram footer link and the
+removal of all three parent-brand references.
+
+**Two data fixes outside the repo, made the same day.**
+
+`provenance.place_of_origin` for `recipe-0005` corrected from `Ottawa, BC`
+to `Ottawa, Ontario`, matching the contributor's own submitted story. Nothing
+public had ever shown the wrong value, because the vignette says "Ottawa" with
+no province. The local archive was checked and holds no copy of this submission
+yet, so there was nothing on disk to correct alongside it.
+
+**`CLAUDE.md` was rewritten where it caused the `talked_to_them` misread.**
+The sentence "A database value is not the same as a person having been asked"
+is gone, and the section now states outright which fields are the gate, that
+they are captured at submission with no waiting period, that they work the same
+way for form, email and phone submissions, and that the three `talked_*`
+columns are explicitly NOT a gate and a `null` in them means nothing was
+logged rather than that consent is missing. The correction is dated in the file
+and says what went wrong. Saving the correction to a session memory was not
+treated as sufficient, because a fresh session reads `CLAUDE.md` and would
+have been misled by it again.
+
+> **Verified live 2026-09-23, against https://whispersofkindness.ca, after the
+> deploy finished.** `/`, `/about`, `/about.html`, `/privacy`,
+> `/refunds`, `/sitemap.xml` and `/images/balcony-portrait.jpg` all return
+> 200. Zero occurrences of either banned brand term on any of the five public
+> pages, thank-you included. `ld-organization` present on the four indexable
+> pages and absent from `thank-you.html`; every JSON-LD block on every page
+> parses, two on the front page and one elsewhere; `sameAs` carries the three
+> expected profiles. The teaser link resolves to `/about`, all seven
+> `faq-contribute-*` anchors are present, the footer shows Instagram, YouTube
+> and Pinterest and an "Our story" link, the sitemap lists four URLs including
+> `/about`, and the front page now references `balcony-portrait.jpg` with no
+> reference to `blank-card.jpg` anywhere. `/about` carries the measurement
+> ID and zero unconditional `googletagmanager` `<script src>` tags.
+>
+> **STILL NOT verified, and unchanged by the deploy:** that any of it renders
+> correctly in a browser. No browser tooling was available in this session.
+> Everything above is fetched markup, not a rendered page. The photograph swap
+> and the `.vignette` rule in particular have been reasoned about from the CSS
+> and never looked at.
+>
+> **Still open, deliberately left:** `public/images/blank-card.jpg` is
+> committed and referenced by nothing.
+
+---
+
 ## 2026-09-23 — CORRECTION: talked_to_them is not a permission gate, and a testimonial was written after all
 
 **This corrects the entry "Contributor testimonials: not written, and why", further
