@@ -90,9 +90,14 @@
      apart. Search for ld-membership further down. The offer @ids are
      what that code matches on, so do not rename them casually.
 
-     No logo and no sameAs. There is no logo file and no social
-     profile, and inventing either would be describing a project that
-     does not exist yet.
+     No logo and no sameAs HERE, on purpose. Both now exist and both
+     are declared, in the separate ld-organization block further down
+     this head. This graph is rewritten at runtime when the founding
+     rate changes, and an identity record has no business sitting
+     inside something a price rewrite touches. The two carry the same
+     @id, so a consumer still reads them as one Organization, which is
+     what keeps the "brand" reference below resolving to the full
+     record. Edit one, edit the other.
 
      NO FAQPage, deliberately. Google retired FAQ rich results in May
      2026. The markup would add weight and return nothing. The FAQ
@@ -167,8 +172,7 @@
       "name": "Whispers of Kindness",
       "url": "https://whispersofkindness.ca/",
       "email": "lela@whispersofkindness.ca",
-      "description": "An archive of human kindness, gathered through family recipes.",
-      "parentOrganization": { "@type": "Organization", "name": "Sovereign Alchemist" }
+      "description": "An archive of human kindness, gathered through family recipes."
     },
     {
       "@type": "Product",
@@ -569,6 +573,21 @@ h1{
   color:var(--ink);
   margin-bottom:1.3rem;
 }
+/* the way on to the full story, at the foot of the teaser. Set in the
+   hand, like .gift-line and .hero-scroll, because it is an aside in the
+   letter's own voice rather than a button. */
+.letter-more{
+  font-family:var(--font-hand);
+  font-size:1.4rem;
+  margin-top:1.5rem;
+}
+.letter-more a{
+  color:var(--olive);
+  text-decoration:none;
+  border-bottom:1px solid rgba(122,131,82,.45);
+  padding-bottom:1px;
+}
+.letter-more a:hover{ border-bottom-color:var(--rose); }
 /* the postage stamp on the letter */
 .postage{
   position:absolute;
@@ -1719,6 +1738,22 @@ h1{
    as one block. Same rule the footer already uses. */
 .faq{ background:var(--paper); border-top:1px solid rgba(63,57,52,.14); }
 .qa-list{ max-width:760px; }
+/* The two clusters answer two different people: somebody deciding whether
+   to join, and somebody deciding whether to send a recipe. They are not
+   the same reader and the questions do not interleave usefully, so the
+   list is split and each half is labelled. Set like the section kickers
+   rather than like a heading, so it divides without announcing itself. */
+.qa-group{
+  font-family:var(--font-hand);
+  font-weight:400;
+  font-size:1.5rem;
+  color:var(--olive);
+  max-width:760px;
+  margin:2.9rem 0 1rem;
+  transform:rotate(-.7deg);
+  transform-origin:left;
+}
+.qa-list + .qa-group{ margin-top:3.2rem; }
 .qa{
   background:var(--paper-light);
   box-shadow:var(--shadow-soft);
@@ -1787,7 +1822,7 @@ footer .ftag{
 footer .flinks{ font-size:.98rem; color:var(--ink-soft); }
 footer .flinks a{ color:var(--ink-soft); text-decoration:none; border-bottom:1px dotted var(--ink-soft); }
 footer .fsep{ opacity:.5; padding:0 .5rem; }
-/* ---------- the two social links ----------------------------------------
+/* ---------- the three social links ----------------------------------------
    Inline SVG rather than an icon font or a hosted image. Two reasons, and
    the second is the one that matters: an icon font is a whole network
    request for two glyphs, and anything loaded from another host is a third
@@ -1959,6 +1994,60 @@ footer .fsa{
 }
 </style>
 
+<!-- ============================================================
+     WHO THIS IS
+
+     Sitewide, and deliberately a second script rather than another
+     node bolted into the merchant graph on the front page. That
+     graph exists to describe two things that are for sale, and it
+     is rewritten at runtime when the founding rate changes. This
+     one describes the project itself and never changes. Keeping
+     them apart means a price rewrite can never disturb the
+     identity record, and a change of social account can never
+     disturb a price.
+
+     IT CARRIES THE SAME @id ON PURPOSE. Both this and the
+     Organization node inside the merchant graph are
+     https://whispersofkindness.ca/#organization, so a consumer
+     merges them into one entity and the Product's "brand"
+     reference resolves to the full record, logo and profiles
+     included. The properties they share are written identically
+     in both places, so a merge cannot produce a contradiction. If
+     one is edited, edit the other.
+
+     logo is the wax seal, already on the site as the 512px icon.
+     It is a real file at a real address rather than a logo
+     invented for the markup.
+
+     sameAs carries only accounts that exist and answer. All three
+     were checked by opening them. An account listed here that
+     404s is worse than no sameAs at all, because it is a claim
+     about identity that fails on inspection.
+
+     Lives in four places: index.html, about.html, refunds.html
+     and privacy.html. There is no shared head template.
+     thank-you.html is deliberately left out. It carries noindex,
+     and structured data on a page asking not to be indexed is
+     weight for nobody.
+     ============================================================ -->
+<script type="application/ld+json" id="ld-organization">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://whispersofkindness.ca/#organization",
+  "name": "Whispers of Kindness",
+  "url": "https://whispersofkindness.ca/",
+  "logo": "https://whispersofkindness.ca/favicon-512x512.png",
+  "description": "An archive of human kindness, gathered through family recipes.",
+  "email": "lela@whispersofkindness.ca",
+  "sameAs": [
+    "https://www.instagram.com/wofk_thecherishedtable/",
+    "https://www.pinterest.com/Whispers_of_kindness/",
+    "https://www.youtube.com/@Whispers-Of-Kindness"
+  ]
+}
+</script>
+
 <!-- Google Analytics 4 is not loaded here. It used to be. The tag and
      the consent stamp that gates it now sit together at the foot of
      the body, so nothing reaches googletagmanager.com before a reader
@@ -2010,23 +2099,31 @@ footer .fsa{
         </div>
         <span class="kicker">where this came from</span>
 
+        <!-- SHORTENED 23 September 2026. This letter used to run the
+             whole length of the story, seventeen paragraphs, and it was
+             the longest thing on a page that also has to sell a
+             membership, take a recipe and answer questions. It asked a
+             first time reader for a great deal of attention before they
+             had any reason to give it.
+
+             The full account now lives at /about, expanded rather than
+             moved across: this is the short version and that is the
+             long one, and the two are written to be read in that order.
+             What is kept here is the hook, the argument in miniature,
+             and the line the whole project turns on. What was cut is
+             the detail that earns its place only once somebody has
+             decided to keep reading.
+
+             The nav still points at #story and still lands here. The
+             link at the foot of the letter is the way on. -->
         <p class="opening">This began with a question. Someone asked an AI what human beings would be remembered for, and kindness did not make the list.</p>
         <p>The answer stayed with us. Not because the machine was necessarily wrong, but because it made us wonder what happens when we look at humanity through the things we have chosen to record. We write down our victories and our losses. We preserve the stories of wars and atrocities, discoveries and acquisitions, moments that changed the course of history.</p>
         <p>Kindness is different. We rarely stop to write it down.</p>
-        <p>Nobody writes, "I was generous today," in a diary. You make dinner for someone who is hungry. You bring a meal to a neighbour. You stay a little longer. You sit with someone through a difficult time. You care for someone when they need you. Then life continues, and the kindness simply becomes part of your day.</p>
-        <p>Those moments still happen. They are part of your life rather than part of the written record.</p>
-        <p>So the record is skewed. Not because kindness is absent, but because so much of it has never been recorded. It's there in a hand-knit sweater, a quilt pieced together over a long winter, a driveway shoveled before anyone else is awake. Some of it is sitting quietly in our kitchens too, written in the margins of old recipe cards, waiting for someone to carry it forward.</p>
+        <p>Nobody writes, "I was generous today," in a diary. You make dinner for someone who is hungry. You bring a meal to a neighbour. You stay a little longer. You sit with someone through a difficult time. Then life continues, and the kindness simply becomes part of your day.</p>
+        <p>So the record is skewed. Not because kindness is absent, but because so much of it has never been recorded. Some of it is sitting quietly in our kitchens, written in the margins of old recipe cards, waiting for someone to carry it forward.</p>
         <p>Many of these cards are still out there. In drawers and boxes and the backs of cupboards, disappearing one household at a time as the people who kept them go.</p>
-        <p>We hope to gather some of these recipes and the memories around them into an archive: preserving not only the words on the card, but remembering the people who created them and the lives they touched.</p>
-        <p>The recipe is where the story begins.</p>
-        <p>What you know about the person who made it, who they made it for, or what it meant in your family can help us see what the card itself cannot tell us. Sometimes you may know the whole story. Sometimes you may only know a name, a place, a small detail, or the memory of someone making it.</p>
-        <p>Not every recipe will come with a story. Not every story will be known to us. Every recipe is still worth giving a place to.</p>
-        <p>In these small records of everyday life, we may begin to notice what has been there all along: the quiet, ordinary ways you have cared for one another, often without ever calling it kindness.</p>
-        <p>Perhaps you have a recipe card tucked away somewhere, stained from years of use, written in a familiar hand. Perhaps you remember who made it, or who sat around the table. Whatever you know, we would love to hear it.</p>
-        <p>This matters more now than it did ten years ago. As machines make endless words, the things only a lived life can make become precious. A machine can write forever. It cannot make the potato salad your aunt brought every summer, or hold the reason she kept bringing it.</p>
-        <p>This project is an archive of human kindness, gathered through the recipes people wrote down. In a digital world, this is an analog moment.</p>
         <p>The recipe was never really about the food. Kindness was the meal.</p>
-        <p>That's what this archive is for. If you have a card like that, tucked in a drawer or copied into a cookbook, we would love to see it. Send us the recipe, and whatever you remember about the person who made it. That's how this grows: one card, one story, one act of kindness at a time.</p>
+        <p class="letter-more"><a href="/about.html">read the whole story</a></p>
       </article>
       <figure class="print print-bundle reveal">
         <img src="images/letters-bundle.jpg" alt="Bundles of old handwritten letters tied with lace ribbon" loading="lazy">
@@ -2038,7 +2135,7 @@ footer .fsa{
   <!-- ============ 3 · HOW IT WORKS ============ -->
   <section class="how" id="how" aria-label="How it works">
     <div class="inner">
-      <span class="kicker reveal">the Heirloom Archive</span>
+      <span class="kicker reveal">the monthly card</span>
       <h2 class="reveal">One recipe a month, made beautiful and mailed to you</h2>
       <hr class="rule">
 
@@ -2311,8 +2408,28 @@ footer .fsa{
       </div>
 
       <div class="invite-side">
+        <!-- SWAPPED 23 September 2026, from blank-card.jpg.
+             That photograph was a blank sheet clipped to linen with fresh
+             tomatoes around it. Nothing was wrong with it except that it
+             was a modern styled flat lay in colour, sitting in the one
+             section that asks a stranger to hand over a family
+             photograph. The rest of the page is aged paper and old
+             prints, and it was the single image that looked bought
+             rather than kept.
+
+             There is no crop and no aspect-ratio box here. .print pads a
+             cream border round the image and .print img is width:100%,
+             height:auto, so the frame takes whatever shape the file has.
+             The old file was 1100x1650 and this one is 1429x2000, so the
+             print renders about seven percent shorter at the same width.
+             The -2.6rem overlap onto the waiting-list card below is a
+             fixed margin and is unaffected by that.
+
+             Still decorative, still aria-hidden, still alt="". It carries
+             nothing the surrounding copy does not already say, and the
+             two prints that do carry something both have a caption. -->
         <figure class="print print-blank reveal" aria-hidden="true">
-          <img src="images/blank-card.jpg" alt="" loading="lazy">
+          <img src="images/balcony-portrait.jpg" alt="" loading="lazy">
         </figure>
         <!-- KEPT, AND REPOINTED.
              This was a waiting list for a project that had not opened. It has
@@ -2673,6 +2790,97 @@ footer .fsa{
         </details>
 
       </div>
+
+      <!-- ============ THE CONTRIBUTOR CLUSTER ============
+           Added 23 September 2026. Everything above this point answers
+           somebody deciding whether to join. Nothing answered somebody
+           deciding whether to send a recipe, which is the harder ask of
+           the two and the one the whole archive depends on.
+
+           EVERY ANSWER BELOW RESTATES SOMETHING ALREADY ON THIS PAGE.
+           The form's own labels and hints, the promotion tag, the
+           how-it-works cards and the thank-you panel are the sources,
+           and the wording here was written from them rather than around
+           them. Nothing here is a new policy, because a FAQ is not
+           where a policy should first appear. If one of these answers
+           ever disagrees with the form, the form is right and this is
+           the thing to fix.
+
+           Deliberately NOT answered, because the site does not say and
+           an invented answer here would become the policy by default:
+           whether a contributor gets a copy of the card once the
+           promotion ends, whether originals sent by post come back,
+           how long the wait actually is, whether contributors are paid,
+           and exactly how credit is printed on the card. Those are open
+           questions, not gaps to fill in.
+           ============================================== -->
+      <h3 class="qa-group reveal">If you are sending a recipe</h3>
+
+      <div class="qa-list reveal">
+
+        <details class="qa" id="faq-contribute-member">
+          <summary>Do I have to be a member to send a recipe?</summary>
+          <div class="qa-body">
+            <p>No. Contributing and joining are two separate things, and no membership is needed to send a recipe, now or ever.</p>
+            <!-- THE PROMOTION'S PARAGRAPH. It comes out when the promotion
+                 does, along with the tag beside the form and the address
+                 hint inside it. Three places, one promotion. -->
+            <p>While the promotion beside the form is running, sending a full recipe also means that month's card is mailed to you. One card per person, however many recipes you send, and the same 15th cutoff applies as it does to membership, so your card follows whichever side of it you land on.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-contribute-little">
+          <summary>What if I only know a little about the person?</summary>
+          <div class="qa-body">
+            <p>Send it anyway. Not every recipe comes with a story, and not every story is known to whoever ended up holding the card. A name, a place, a small detail, or just the memory of someone making it is enough.</p>
+            <p>A blank is always better than a guess. Leave anything you are unsure of empty, and we will not quietly fill it in.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-contribute-what">
+          <summary>What do you actually need from me?</summary>
+          <div class="qa-body">
+            <p>Four things: your name, an email, what the recipe is called, and the recipe itself. Everything else on the form is optional.</p>
+            <p>A photograph of the handwriting is the single most valuable thing you can send, but a typed recipe with a story behind it is worth every bit as much. You can also add photographs of the person, the kitchen or the dish, and a recording if somebody told you this out loud. A voice memo from your phone is perfect, and length does not matter.</p>
+            <p>If a form is not how you want to do this, <a href="mailto:lela@whispersofkindness.ca">write to us instead</a>. If you would rather send something by post, an original, a photograph, a handwritten card, write and we will send you the mailing address.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-contribute-credit">
+          <summary>Will my name be on the card?</summary>
+          <div class="qa-body">
+            <p>Only if you want it there. The form has a box for how you would like to be credited, and a box to say you would rather not be named publicly. Tick that second one and your name stays in our records so we can reach you, and appears nowhere on the card or anywhere on this site.</p>
+            <p>The original cook's name is a separate question again, with its own box. If you leave it unticked we still record the name, so the archive stays accurate. It simply is not displayed.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-contribute-permission">
+          <summary>What am I agreeing to when I tick the permission boxes?</summary>
+          <div class="qa-body">
+            <p>Four separate things, asked separately, because they are not one ask. Only the first is required: that we may keep the recipe in the archive and print it on a card. Without that one we cannot accept the recipe at all.</p>
+            <p>The second lets us write a modern adaptation alongside the original. The original always appears exactly as written, and an adaptation sits beside it rather than replacing it. The third makes the recipe eligible to be considered for a video, which is a bigger ask than a printed card, because a video tells the story of the person as much as it cooks the food. Saying yes does not mean it will be chosen, and we would always write to you first. The fourth is whether the original cook's name may be shown.</p>
+            <p>You can change any of these later by writing to us.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-contribute-after">
+          <summary>What happens after I send it?</summary>
+          <div class="qa-body">
+            <p>You get a reference number straight away, and your recipe is in the archive from that moment, with everything you told us about the person behind it.</p>
+            <p>We read every one by hand, so it may be a little while before you hear from us, but you will hear from us. Your email is used to ask questions and to tell you if your recipe is chosen. Nothing else is ever sent there.</p>
+            <p>If you remember something later, a photograph you find, a detail that surfaces at two in the morning, write to us and quote the reference.</p>
+          </div>
+        </details>
+
+        <details class="qa" id="faq-contribute-chosen">
+          <summary>How do you decide which recipes become a card?</summary>
+          <div class="qa-body">
+            <p>Recipes are chosen for the strength of the story attached to them, not for culinary merit. An ordinary recipe with a rich history is exactly what this archive exists for.</p>
+            <p>One recipe is chosen each month, and we write and tell you if yours is the one. A recipe that is not chosen is not turned away. It stays in the archive, which is the part that outlasts any single month.</p>
+          </div>
+        </details>
+
+      </div>
     </div>
   </section>
 
@@ -2682,11 +2890,14 @@ footer .fsa{
 <footer>
   <p class="fname">Whispers of Kindness</p>
   <p class="ftag">Kindness whispers.</p>
-  <p class="flinks"><a href="https://whispersofkindness.ca">whispersofkindness.ca</a><span class="fsep">·</span><a href="/refunds.html">Refunds and cancellation</a><span class="fsep">·</span><a href="/privacy.html">Privacy policy</a></p>
+  <p class="flinks"><a href="https://whispersofkindness.ca">whispersofkindness.ca</a><span class="fsep">·</span><a href="/about.html">Our story</a><span class="fsep">·</span><a href="/refunds.html">Refunds and cancellation</a><span class="fsep">·</span><a href="/privacy.html">Privacy policy</a></p>
   <!-- The label is on the link and the glyph is hidden from screen readers.
        An SVG path announced on its own is noise, and "YouTube" alone would
        not say whose. -->
   <p class="fsocial">
+    <a href="https://www.instagram.com/wofk_thecherishedtable/" aria-label="Whispers of Kindness on Instagram" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+    </a>
     <a href="https://www.youtube.com/@Whispers-Of-Kindness" aria-label="Whispers of Kindness on YouTube" target="_blank" rel="noopener noreferrer">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
     </a>
@@ -2694,7 +2905,6 @@ footer .fsa{
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/></svg>
     </a>
   </p>
-  <p class="fsa">a Sovereign Alchemist project</p>
 </footer>
 
 <script>

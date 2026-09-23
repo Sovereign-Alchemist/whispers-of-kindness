@@ -22,6 +22,248 @@ claim was last checked and how.
 
 ---
 
+## 2026-09-23 — CORRECTION: talked_to_them is not a permission gate, and a testimonial was written after all
+
+**This corrects the entry "Contributor testimonials: not written, and why", further
+down, written earlier the same day. That entry is left exactly as it was, per this
+file's rule. Its reasoning about permission was wrong.**
+
+**The misread.** `recipe.talked_to_them`, `talked_how` and `talked_note` were
+treated as a gate on whether a contributor's story could be used publicly. They are
+not, and never were, for any submission channel. They log that a contact happened,
+which is a real internal purpose, particularly for recipes that arrive by email or by
+phone rather than through the form. They say nothing about publishability.
+
+**The actual gate, confirmed by Pela against production and true regardless of how a
+recipe arrives**, is on the `contributor` table: `permission_status`,
+`adaptation_permission` and `video_consideration_consent`, each
+`pending` / `granted` / `declined` / `withdrawn`, **captured at submission
+time**. There is no waiting period after submission. Consent is the tick, and the tick
+is recorded when it is made.
+
+**Decision: the three `talked_*` columns stay.** No migration. They are simply never
+to be read as a usability gate again.
+
+**Why this matters beyond one testimonial.** The earlier entry used a null
+`talked_to_them` to argue that a contributor with all three permissions `granted`
+was not usable. That reasoning would have blocked every email and phone submission in
+the archive indefinitely, since those will routinely have permissions recorded and no
+form-driven conversation logged. CLAUDE.md's own framing, that "a database value is
+not the same as a person having been asked", is about internal diligence. It is not a
+publishing rule, and it was read as one.
+
+**So the testimonial was written.** `recipe-0005`, Lois Sagle's Christmas cake,
+submitted 23 September 2026 by her daughter Ana-La-Rai Sagle, Vancouver Island.
+`permission_status`, `adaptation_permission` and `video_consideration_consent` all
+`granted`; `original_cook_public` true; `anonymous` false;
+`name_display` "Ana-La-Rai Sagle".
+
+One vignette, not three, on `about.html`, between "What we are actually gathering"
+and "What arrives". Set as a `.vignette` note ruled off down the left edge rather
+than as a testimonial card, because this site has no testimonial pattern and a review
+panel would be the one corporate object on a page made of paper.
+
+**Every detail in it is out of `provenance.remembered_story`** and nothing is added:
+1953, the move to Ottawa for a medical internship, the bus stop, the lifelong
+friendship, the nickname Red, the recipe of unknown origin, the more-than-doubled
+batch for two households, the bathtub, and the contributor's own insistence that it
+was a clean one.
+
+**The friend is named twice in the submitted story, nickname and first name.** Only
+the nickname is on the page. She is a third party who never filled in a form, and the
+nickname carries the warmth without identifying her. The first name is in the record
+if it is ever wanted.
+
+**A data-entry slip worth knowing about, not fixed here.**
+`provenance.place_of_origin` for this recipe reads `Ottawa, BC`. The contributor's
+own story says Ottawa, Ontario. The page says "Ottawa" and no province, so nothing
+wrong is published, but the field is wrong in the database and nothing in this session
+touched it.
+
+**The FAQ was re-checked and deliberately left as shipped.** None of the five open
+questions in the contributor cluster came from this misread. They are about the card
+after the promotion ends, the return of posted originals, turnaround time, contributor
+payment and the exact printed credit format. The `faq-contribute-permission` answer
+already describes the four permission boxes as the thing that governs use, which is
+correct under the clarified rule, and `faq-contribute-chosen` never mentioned a
+conversation. No edit was needed and none was made.
+
+**Instagram added to the footer.** `instagram.com/wofk_thecherishedtable/`, placed first,
+ahead of the YouTube and Pinterest links that were already there. Those two keep the
+order they had. The footer therefore reads Instagram, YouTube, Pinterest while the
+`sameAs` array reads Instagram, Pinterest, YouTube. That mismatch is cosmetic and was
+left alone rather than reordering live markup for it. The three `.fsocial` blocks were two links and are now three,
+byte-identical across `index`, `about`, `privacy` and `refunds`. The share link
+Pela supplied carried a `?stkn=` parameter, which is a personal share token rather
+than part of the profile address; it is not in the markup, on any page, in any form.
+
+> **Verified 2026-09-23.** Permission fields, `original_cook_public`, `anonymous`
+> and the full `remembered_story` read directly from `fulnenhnycaeyzrhplch`, not
+> from the earlier summary. `.fsocial` identical across the four pages by sha256.
+> Grep for `stkn=` across `public/` returns nothing. Re-ran the full check script:
+> all JSON-LD parses, no banned brand terms, every internal link resolves, tag balance
+> holds, no em dashes in new copy.
+>
+> **Still NOT verified:** that any of this renders in a browser. Still no browser
+> tooling. The `.vignette` rule in particular has been reasoned about and not looked
+> at.
+
+---
+
+## 2026-09-23 — Story page, contributor FAQ, Organization schema, photograph swap, and two brand-rule breaches removed
+
+**Done and verified locally. NOT yet committed, NOT yet deployed.** Everything
+below is in the working tree only. Nothing in this entry has been seen by a
+browser, because no browser tooling was available in the session that built it.
+
+**A brand rule was set the same day and two live pages were breaking it.** The
+rule: the public site must never name Sovereign Alchemist or The Heirloom
+Archive. See the 23 September Activity Log entry "Brand boundary clarified".
+Three breaches were live at the time, all of them shipped months earlier:
+
+- `public/index.html`, the merchant JSON-LD, carried
+  `"parentOrganization": { "@type": "Organization", "name": "Sovereign Alchemist" }`.
+  Removed. This was machine-readable identity, handed to Google on every crawl.
+- `public/index.html`, the how-it-works kicker, read `the Heirloom Archive`.
+  Now reads `the monthly card`.
+- `public/index.html`, `privacy.html` and `refunds.html` each closed the
+  footer with `a Sovereign Alchemist project`. Removed from all three, and not
+  added to `about.html`. The `.fsa` CSS rule is left in place in all four
+  files, unused, because deleting it is churn in four copies of a stylesheet
+  that has no shared source.
+
+**No replacement comment was left where any of them stood.** An HTML comment is
+public, and a comment saying which brand name was taken out is the brand name,
+still on the page. The reason lives here instead, outside `public/`.
+
+**New page: `public/about.html`, at /about.** The front page's story letter was
+seventeen paragraphs and was the longest thing on a page that also sells a
+membership, takes a recipe and answers questions. It is now a seven paragraph
+teaser ending in a link, and the long account lives on its own page, expanded
+rather than moved: new sections on why recipes specifically carry this record,
+on what the back of the card is for, and a closing on what the archive becomes
+as it grows. No unbuilt feature is named in that closing, deliberately.
+
+Cloned from `privacy.html`, which cloned from `refunds.html`. Header, footer,
+consent stamp and GA4 loader are byte-identical to it by sha256. Two CSS rules
+are new on that page, `.sheet .opening` and `.closing-line`, both copied from
+values already on the front page rather than invented.
+
+**New: `ld-organization`, a second JSON-LD block, sitewide.** name, url, logo,
+description, email and sameAs to Instagram, Pinterest and YouTube. Kept separate
+from `ld-membership` on purpose: that graph is rewritten in the browser when
+the founding rate changes, and an identity record should not sit inside
+something a price rewrite touches. Both carry
+`https://whispersofkindness.ca/#organization` as `@id`, so a consumer merges
+them and the Product's `brand` reference still resolves to the full record.
+Shared properties are written identically in both. Edit one, edit the other.
+
+It is on `index.html`, `about.html`, `privacy.html` and `refunds.html`, and
+byte-identical across all four. `thank-you.html` is left out: it carries
+noindex, and structured data on a page asking not to be indexed is weight for
+nobody.
+
+`logo` points at `/favicon-512x512.png`, the wax seal, a real file already on
+the site. All three `sameAs` URLs were opened before being listed. The Instagram
+one, `instagram.com/wofk_thecherishedtable/`, was not linked anywhere on the
+site before this and still is not in the footer, which carries only YouTube and
+Pinterest. That mismatch is deliberate for now and worth a decision.
+
+**New: a contributor cluster in the FAQ**, seven questions under a second
+heading, "If you are sending a recipe". The four existing questions all answer
+somebody deciding whether to join. Nothing answered somebody deciding whether to
+send a recipe.
+
+**Every answer restates something already on the page** and was written from the
+form's own labels and hints, the promotion tag, the how-it-works cards and the
+thank-you panel. Nothing in it is a new policy. Five things were deliberately
+left unanswered because the site does not say and an invented answer would
+become the policy by default: whether a contributor gets a card once the
+promotion ends, whether posted originals come back, how long the wait is,
+whether contributors are paid, and exactly how credit is printed. Those went
+back to Pela as open questions.
+
+**Photograph swapped in the invitation section.** `images/blank-card.jpg`
+(1100x1650), a colour flat lay of a blank sheet and fresh tomatoes, replaced by
+`images/balcony-portrait.jpg` (1429x2000, 281 KB), a vintage black and white
+photograph of a woman on a balcony. There is no crop and no aspect-ratio box in
+that slot: `.print img` is `width:100%; height:auto`, so the frame takes
+whatever shape the file has. The new file is proportionally about seven percent
+shorter at the same width, and the `-2.6rem` overlap onto the waiting-list card
+is a fixed margin and is unaffected. Still `aria-hidden` with `alt=""`, as it
+was.
+
+**`blank-card.jpg` is still in `public/` and is now referenced by nothing.**
+Deleting it was refused by tooling in the session and it was left rather than
+worked around. It should come out.
+
+**Sitemap:** `/about` added at priority 0.8, changefreq monthly, listed without
+the extension like the other two. The front page's `lastmod` moved from
+2026-08-16 to 2026-09-23 because its content changed.
+
+**Testimonials were asked for and deliberately not written.** See the separate
+entry below.
+
+> **Verified 2026-09-23, by script, not by eye.** All 5 public pages: every
+> JSON-LD block parses; `ld-organization` byte-identical across the 4 that
+> carry it and absent from `thank-you.html`; consent stamp plus GA4 loader
+> byte-identical across all 5 by sha256 and no unconditional `gtag.js`
+> `<script src>` on any of them; zero occurrences of either banned brand term
+> anywhere under `public/`; every internal `href` and `src` on all 5 pages
+> resolves to a file that exists; tag balance on `index.html` and
+> `about.html`; no em dashes in any new copy. Served locally on port 8477 and
+> fetched: `/`, `/about`, `/about.html`, `/privacy`, `/refunds`,
+> `/sitemap.xml` and both images all returned 200.
+>
+> **NOT verified:** that any of it renders correctly in a browser. No browser
+> was available. The photograph swap in particular has been reasoned about from
+> the CSS and not looked at.
+
+---
+
+## 2026-09-23 — Contributor testimonials: not written, and why
+
+**Asked for, deliberately not delivered.** The request was two or three real
+contributor story vignettes in the third person, matching the voice already used
+in Instagram captions, with no invented first-person quotes and no invented
+detail, and to flag rather than draft placeholders if no real approved story
+content existed.
+
+**No approved contributor story content could be found, and the caption library
+that would have been the source does not match the database.**
+
+What is actually in `fulnenhnycaeyzrhplch` as of this date: **one** recipe,
+`recipe-0005`, "Lois Sagle Light Christmas Cake Recipe", contributor
+Ana-La-Rai Sagle, Vancouver Island, submitted 2026-09-23, status `new`. Its
+`talked_to_them` column is **null**, so the Chunk 4 read-it-back conversation
+has not happened. One contributor row, one provenance row, one member row
+(international digital, joined 18 August).
+
+The Notion Social Pipeline holds several captions written in exactly the voice
+that was asked for, including "A member told us she almost deleted her
+submission twice", "This week a member sent us her mother's biscuit recipe...
+she included the exact time of day her mother baked them", "Water damage had
+blurred half the words on the page", and one describing a submission tracing a
+dish through three generations with all three versions kept. **None of those
+corresponds to anything in the database.** Four are already `Pushed to
+Supabase` or `Ready to Post`.
+
+**This is recorded as a discrepancy, not as a finding of fabrication.** The site
+invites recipes by email as well as through the form, and a recipe that arrived
+by email would never appear in the database at all. So those captions may well
+describe real submissions that live only in an inbox. That cannot be checked
+from here, and it is the question that went back to Pela.
+
+Either way, the one submission that does exist is not usable as a testimonial:
+the contributor has not been spoken to, and publish permission on a recipe is
+not the same as approval to be used as marketing.
+
+> **Verified 2026-09-23.** Row counts and column values read directly from the
+> hosted Supabase project. Captions read from the Notion Social Pipeline data
+> source. Nothing here is from conversation memory.
+
+---
+
 ## 2026-09-17 — Ten entries backfilled for 3 to 8 September
 
 This file had nothing between 3 and 15 September. The ten entries below now

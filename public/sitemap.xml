@@ -10,6 +10,13 @@
   The privacy page was added 2 September 2026, listed for the same reason and
   because Pinterest and Meta both check that the URL resolves.
 
+  The story page was added 23 September 2026. It is the one secondary page
+  that is not a policy: it carries the long account the front page used to
+  hold, so it is the only other page here worth ranking on its own. Priority
+  0.8 and changefreq monthly, below the front page and well above the two
+  policies, because it is real reading rather than terms somebody checks
+  once.
+
   The refunds page is a second real page, added 16 August 2026. It is meant
   to be findable by somebody looking for the terms before they join, so it is
   listed. Lower priority than the front page and changefreq yearly, because
@@ -31,9 +38,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://whispersofkindness.ca/</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://whispersofkindness.ca/about</loc>
+    <lastmod>2026-09-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://whispersofkindness.ca/refunds</loc>

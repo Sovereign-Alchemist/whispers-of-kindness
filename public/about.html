@@ -3,19 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Refunds and cancellation · Whispers of Kindness</title>
-<meta name="description" content="How membership renewal, cancelling, and refunds work at Whispers of Kindness.">
-<!-- Canonical drops the .html because that is the address Netlify actually
-     serves. Its Pretty URLs post-processing rewrites every href on the way
-     out, so a link written here as /refunds.html reaches a reader as
-     /refunds, and /refunds is therefore the address that gets copied,
-     shared and pasted into Stripe. Both forms return 200.
-
-     The links themselves are deliberately left as /refunds.html. They work
-     whether or not Pretty URLs is on. If that setting is ever turned off,
-     this line, the sitemap entry and the three merchantReturnLink values in
-     index.html are the three places that have to go back to .html. -->
-<link rel="canonical" href="https://whispersofkindness.ca/refunds">
+<title>Our Story · Whispers of Kindness</title>
+<meta name="description" content="Why Whispers of Kindness exists: the question that started it, why kindness goes unrecorded, and why family recipes are where it survives.">
+<!-- Canonical drops the .html for the same reason as refunds.html and
+     privacy.html: Netlify Pretty URLs rewrites hrefs on the way out, so a
+     link written here as /about.html reaches a reader as /about. Both
+     forms return 200, and the sitemap lists the form without the
+     extension so a crawler is never handed two addresses for one page. -->
+<link rel="canonical" href="https://whispersofkindness.ca/about">
 
 <!-- ============================================================
      THE SEAL IN THE TAB
@@ -42,29 +37,22 @@
 <!-- ============================================================
      WHY THIS IS ITS OWN PAGE
 
-     Signing up is an instant Stripe checkout. Cancelling is an
-     email to a person. The FTC's Negative Option Rule expects
-     cancelling to take no more steps than joining did, and it
-     expects the terms to be readable BEFORE the card is charged,
-     not discoverable afterwards in a receipt.
+     The front page used to carry the whole of this. It was the
+     longest thing on a page that also has to sell a membership,
+     take a recipe, and answer questions, and it asked a first
+     time reader for a lot of attention before they had any
+     reason to give it.
 
-     An anchor on the single page would have been less work and
-     would not have survived being quoted. A policy needs an
-     address of its own, so it can be linked from checkout, from
-     the footer, from an email, and from Stripe's own settings,
-     and so it still resolves if the front page is rewritten
-     around it.
+     So the front page keeps a teaser, six paragraphs and a link,
+     and the full account lives here where somebody has chosen to
+     read it. This is not the same words moved across. The teaser
+     is the short version and this is the long one, and the two
+     are written to be read in that order.
 
-     NO noindex here, unlike thank-you.html. This one is meant to
-     be found, including by somebody searching for it before they
-     decide to join.
-
-     THE WORDING IN THE BODY BELOW IS APPROVED AS WRITTEN, and a
-     bare tag name is kept out of this comment on purpose, since a
-     search for one should only ever find the real thing. It is split
-     into paragraphs for reading, and not one word of it is
-     changed. If it needs to change, that is Pela's edit, not a
-     layout decision.
+     Everything except the sheet below is cloned from
+     privacy.html, which cloned it from refunds.html, so the
+     three secondary pages cannot drift apart. There is still no
+     shared template.
      ============================================================ -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -415,6 +403,57 @@ footer .fsa{
 @media (max-width:520px){
   .consent-stamp{ right:16px; bottom:16px; width:auto; max-width:250px; }
 }
+
+/* ---------- the story page ---------- */
+/* The italic first line, the same rule the letter on the front page uses
+   for its opening, copied rather than invented. There is still no shared
+   stylesheet on this site. If one is ever introduced, this goes with it. */
+.sheet .opening{
+  font-family:var(--font-display);
+  font-size:1.5rem;
+  font-style:italic;
+  color:var(--ink);
+  margin-bottom:1.3rem;
+}
+/* ---------- a story out of the archive ----------
+   NOT a testimonial card, deliberately. There is no testimonial pattern on
+   this site, and a review panel with a rating and a headshot would be the
+   one corporate object on a page made of paper. This is set as a note laid
+   into the sheet: a rule down the left edge, the hand for the label, and
+   the attribution in the same quiet grey the footer uses. */
+.vignette{
+  margin:2.3rem 0 2.6rem;
+  padding:.1rem 0 .1rem 1.5rem;
+  border-left:2px solid rgba(122,131,82,.45);
+}
+.vignette .vignette-k{
+  font-family:var(--font-hand);
+  font-size:1.35rem;
+  color:var(--olive);
+  display:block;
+  margin-bottom:.55rem;
+  transform:rotate(-1deg);
+  transform-origin:left;
+}
+.vignette .vignette-by{
+  font-size:.95rem;
+  color:var(--ink-soft);
+  margin-bottom:0;
+}
+@media (max-width:640px){
+  .vignette{ padding-left:1.1rem; }
+}
+
+/* The last line, signed off in the hand. Same values as .gift-line on the
+   front page, which is the only other sentence on this site set this way. */
+.closing-line{
+  font-family:var(--font-hand);
+  font-size:1.5rem;
+  color:var(--olive);
+  transform:rotate(-1deg);
+  display:inline-block;
+  margin-top:1.6rem;
+}
 </style>
 
 <!-- ============================================================
@@ -495,43 +534,109 @@ footer .fsa{
 
 <main class="page">
   <article class="sheet">
-    <span class="kicker">the plain terms</span>
-    <h1>Refunds and cancellation</h1>
+    <span class="kicker">where this came from</span>
+    <h1>Our Story</h1>
     <hr class="rule">
 
-    <p>Membership renews automatically at the length you chose, until you cancel.</p>
+    <p class="opening">This began with a question. Someone asked an AI what human beings would be remembered for, and kindness did not make the list.</p>
 
-    <p>You can cancel anytime by writing to <a href="mailto:lela@whispersofkindness.ca">lela@whispersofkindness.ca</a>. It will be done right away, no forms.</p>
+    <p>The answer stayed with us. Not because the machine was necessarily wrong, but because it was reading the record we actually left behind. It had been handed our written history and asked to sum us up, and it summed us up honestly. Kindness simply was not in the file.</p>
 
-    <p>Cancelling stops future renewal. It doesn't refund the card already being prepared for you that month, since printing, mailing, and hand-collaging happen before it reaches you.</p>
+    <p>That is not a complaint about machines, or about historians, or about anyone reading the record carefully. It is a fact about paperwork.</p>
 
-    <p>If a payment fails, you'll hear from us directly rather than being quietly cancelled.</p>
+    <h2 class="subhead">What gets written down</h2>
 
-    <!-- Added 16 August 2026, below the approved wording and outside it. The
-         structured data on the front page declares free shipping, and a claim
-         made to a search engine that a reader cannot find anywhere on the site
-         is the kind of gap that is worth closing while it is still small. -->
-    <h2 class="subhead">What the price includes</h2>
+    <p>We write down our victories and our losses. We preserve the stories of wars and atrocities, discoveries and acquisitions, moments that changed the course of history. Cruelty in particular leaves a heavy trail, because cruelty tends to be performed for an audience, or investigated, or punished, and every one of those things generates a document.</p>
 
-    <p>Postage is included in the membership price. Nothing extra is added at checkout. Cards are mailed to Canada and the United States.</p>
+    <p>Kindness leaves almost nothing. It is the most practised and least recorded thing people do. Nobody writes, "I was generous today," in a diary. You make dinner for someone who is hungry. You bring a meal to a neighbour. You stay a little longer. You sit with someone through a difficult time. You care for someone when they need you. Then life continues, and the kindness becomes part of your day rather than part of your record.</p>
 
-    <!-- Added 19 August 2026, with the domestic repricing. It sits here
-         rather than on the front page because these are terms: what arrives,
-         when, and what decides which envelope is your first. Somebody
-         deciding whether to join needs it before they pay, and the link under
-         both Join buttons is how they reach it. -->
-    <h2 class="subhead">When cards are mailed</h2>
+    <p>That wordlessness is part of what makes it genuine. It is also why the record leans the way it does. Not because kindness is absent from human life, but because so much of it never went into words at all. It went into the meal, the mended coat, the garden somebody else got to eat from.</p>
 
-    <p>The first mailing is October 2026.</p>
+    <p>So anyone reading the written record for evidence of human character, a historian, a grandchild, a machine, would reasonably conclude that people are worse than they are. The reading would be careful. The file is just incomplete.</p>
 
-    <p>Join by the 15th of a month to receive that month's mailing. Join after the 15th and your first envelope is the following month's edition. Sign up on September 16th, for example, and October's mailing is the one that comes to you.</p>
+    <p>The answer to that is not to argue with the file. It is to put something in it, on purpose.</p>
 
-    <p>Cards go out around the third week of each month. When there is a video that month, it is released in the fourth week. Video does not happen every month. The card does.</p>
+    <h2 class="subhead">Why recipes</h2>
 
-    <p>Billing follows your own signup date rather than a fixed day of the month. If you join on the 16th, that is the date your membership renews on.</p>
+    <p>Kindness did leave one written trace, almost by accident, and it is sitting in kitchen drawers.</p>
 
-    <p class="updated">Last updated 19 August 2026.</p>
-    <a class="back" href="/#membership">back to the membership</a>
+    <p>Feeding people had to be done again and again, and it had to be remembered exactly, so it got written down when almost nothing else about caring for someone did. A recipe card is a set of instructions for repeating an act of care. That is the whole reason it exists on paper.</p>
+
+    <p>So recipes are the medium here, not the point. Food is simply what kindness chose, because food was the thing that needed the note. The same care is there in a hand-knit sweater, in a quilt pieced together over a long winter, in a driveway shoveled before anyone else is awake. None of those left a document behind them. The potato salad did.</p>
+
+    <p>Many of those cards are still out there. In drawers and boxes and the backs of cupboards, disappearing one household at a time as the people who kept them go.</p>
+
+    <h2 class="subhead">What we are actually gathering</h2>
+
+    <p>The recipe is where the story begins. It is not the whole of it.</p>
+
+    <p>What you know about the person who made it, who they made it for, or what it meant in your family tells us what the card itself never could. Sometimes you may know the whole story. Sometimes you may know only a name, a place, a small detail, or the memory of someone standing at a stove.</p>
+
+    <p>Not every recipe will come with a story. Not every story will be known to us. Every recipe is still worth giving a place to.</p>
+
+    <p>Recipes are chosen for the strength of the story attached to them, rather than for culinary merit. An ordinary recipe with a rich history is exactly what this archive exists for. A flawless recipe with nothing behind it is not.</p>
+
+    <p>Every submission is read by hand. That is slow, and it is meant to be.</p>
+
+    <!-- A REAL SUBMISSION, AND THE ONLY ONE ON THE SITE.
+         Recipe recipe-0005 in the archive. Every detail below is out of the
+         contributor's own written account, and nothing is added to it: the
+         year, the bus stop, the nickname, the doubled batch, the bathtub and
+         the insistence that it was a clean one are all hers.
+
+         Permission for this comes from the contributor record, where
+         permission_status, adaptation_permission and video_consideration_consent
+         are all granted, original_cook_public is true, and the contributor is
+         not anonymous. That is the gate. Nothing else is.
+
+         Her friend is named in the submitted story, first name and nickname
+         both. Only the nickname is used here, because she is a third party who
+         never filled in a form of her own and the nickname carries the warmth
+         without the identification. The full name is in the record if it is
+         ever wanted.
+
+         ONE, NOT THREE. There is one real story in the archive, so there is
+         one here. A row of three would have meant inventing two. -->
+    <div class="vignette">
+      <span class="vignette-k">from the archive</span>
+      <p>One of the first recipes sent to us is a Christmas cake, and the story attached to it begins at a bus stop.</p>
+      <p>In 1953 Lois Sagle moved to Ottawa so her husband could finish his medical internship. She got talking to another woman while they were waiting for a bus, and it turned into a friendship that lasted the rest of her life. The family came to know her as Red.</p>
+      <p>The two of them decided to make Christmas cake together that first year. Nobody now remembers where the recipe came from. They more than doubled it, because they were baking for two households, and then they ran out of anything big enough to mix it in, so the whole batch went into the bathtub. A very clean bathtub, her daughter is careful to point out.</p>
+      <p>Her daughter grew up hearing that story every December, and this year she sent it to us with the recipe.</p>
+      <p class="vignette-by">Lois Sagle's Christmas cake, submitted by her daughter Ana-La-Rai Sagle, Vancouver Island.</p>
+    </div>
+
+    <h2 class="subhead">What arrives, and why it takes that shape</h2>
+
+    <p>Once a month, one recipe is chosen, collaged by hand, and mailed out as a keepsake card.</p>
+
+    <p>The front carries the recipe as it was originally written. The back carries the archive record: who made it, who they made it for, where and when, and how it travelled to reach you. Where possible, a reproduction of the original handwriting itself.</p>
+
+    <p>That back face is the reason the whole thing exists. A recipe with no person attached is a set of instructions. A recipe with the person attached is a record of somebody caring for somebody else, on a date, in a place, by name. One of those belongs in a cookbook. The other belongs in an archive.</p>
+
+    <p>It arrives as an object because an object survives differently than a file does. Paper gets kept in a drawer by people who never meant to archive anything, which is exactly how these recipes reached us in the first place.</p>
+
+    <p>This matters more now than it did ten years ago. As machines make endless words, the things only a lived life can make become precious. A machine can write forever. It cannot make the potato salad your aunt brought every summer, or hold the reason she kept bringing it.</p>
+
+    <h2 class="subhead">As the archive grows</h2>
+
+    <p>There is no back catalogue here. This is the beginning of one.</p>
+
+    <p>What is being built is slow on purpose. One recipe a month, gathered, read, and mailed, is not many recipes in a year. It is a great many in a decade, and the decade is the point of an archive.</p>
+
+    <p>So the honest answer about what comes next is: more of this, and more room to hold it. As recipes arrive, more of them get a place, and the record of the people behind them gets thicker and harder to lose. The work does not change shape as it grows. It accumulates.</p>
+
+    <p>We would rather promise that and keep it than promise something larger and stay vague about when.</p>
+
+    <h2 class="subhead">If you have one of these cards</h2>
+
+    <p>Perhaps there is one tucked away somewhere, stained from years of use, written in a familiar hand. Perhaps you remember who made it, or who sat around the table. Whatever you know, we would love to hear it.</p>
+
+    <p>Send us the recipe, and whatever you remember about the person who made it. That is how this grows: <a href="/#send">one card, one story</a>, one act of kindness at a time.</p>
+
+    <p class="closing-line">The recipe was never really about the food. Kindness was the meal.</p>
+
+    <a class="back" href="/">back to the front page</a>
   </article>
 </main>
 
