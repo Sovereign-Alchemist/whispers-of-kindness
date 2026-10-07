@@ -22,6 +22,66 @@ claim was last checked and how.
 
 ---
 
+## 2026-10-07: The privacy page covers the social accounts and the analytics consent, and is live
+
+Commit `50766ca` on `main`, pushed and auto-deployed by Netlify. It touches
+two files and nothing else: `public/privacy.html` and the `/privacy`
+`<lastmod>` in `public/sitemap.xml`, now `2026-10-07`.
+
+**What changed on the page, and only this.** Four changes, made from Pela's
+approved draft (`documents/privacy_proposed.html`, SHA-256 checked before use):
+
+1. Effective date, now October 7, 2026. The draft said October 6. It was set
+   to the actual date in Vancouver on the day it shipped.
+2. A new section, "Our own social media accounts": what the publishing tool
+   reads from our Pinterest and Instagram accounts, what it stores (tokens
+   encrypted in Supabase Vault), how long, and how access is ended.
+3. "Who helps us run this" now names Google Analytics, only with consent,
+   and says we publish to Pinterest and Instagram from our own accounts.
+4. "Cookies and tracking" now describes the consent stamp as it actually
+   works. It loads Google Analytics only after "Understood", loads nothing on
+   "No thanks", and remembers the answer. The old paragraph mentioned Pinterest
+   cookies, and there is no Pinterest tag anywhere in `public/`.
+
+One wording fix was made on top of the draft, at Pela's request: "It loads
+only after you say yes." became "It loads only after you click
+"Understood".", because the button says Understood, not yes. **So the live
+page no longer matches `documents/privacy_proposed.html`**, which still has
+the old sentence and was deliberately left untouched.
+
+**The new wording was checked against the code, not just the draft.** The
+cookies paragraph matches the consent script in `public/index.html`: GA4 is
+injected only when the stored answer is exactly `given`, and `declined` loads
+nothing. The "Ending access" paragraph matches the open item in the
+2026-09-03 entry. Disconnect deletes our Vault copy but does not revoke the
+token at Pinterest, so the page says that ending access completely also means
+removing the app on the platform's side. If revocation is ever built, that
+paragraph can be revisited. It is not wrong as it stands.
+
+**The push was refused four times by GitHub before it went through.** Every
+attempt got `remote rejected (Internal Server Error)` while githubstatus.com
+reported all systems operational. Auth, push rights, branch protection and
+rulesets were all checked and none of them was the cause. Request IDs, in case
+it recurs: `EA26:133FF9:FF80C7:14F7A97:6AC67A03` (16:57:40 UTC) and
+`EA37:265BD:FFAEC5:14FCD09:6AC67AB4` (17:00:37 UTC). The first two attempts
+were not run verbose and logged no ID. A retry ten minutes later, at
+17:10:43 UTC, went through unchanged. Netlify was never deployed to directly.
+
+> **Verified live 2026-10-07 at 17:11 UTC, against
+> https://whispersofkindness.ca, with plain requests and no cookies.**
+> `/privacy` returns 200 with no redirect and sets no cookies. `/sitemap.xml`
+> returns 200 and is byte-identical to the committed file, `/privacy` lastmod
+> `2026-10-07`. The live privacy page is byte-identical to the committed file
+> once Netlify's Pretty URLs footer rewrite (`/about.html` served as
+> `/about`, already recorded in an earlier entry and present on the untouched
+> `refunds.html` too) is reversed: SHA-256 `2f1703dd...ebea` both ways.
+> Against the previous live version, only the four changes above differ,
+> paragraph for paragraph. On the live page: the new section heading,
+> the "Understood" sentence, the "No thanks" sentence and October 7, 2026
+> each appear once. "say yes", September 3, 2026, both brand terms, em and en
+> dashes in every form, [NEW]/[CHANGED] markers and Etsy all appear zero times.
+> Not checked: how the page renders in a browser.
+
 ## 2026-09-23 — The batch is committed, pushed and live
 
 **Supersedes the "NOT yet committed, NOT yet deployed" line in the two entries
