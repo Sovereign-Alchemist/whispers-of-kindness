@@ -493,7 +493,7 @@ footer .fsa{
     <h1>Privacy Policy</h1>
     <hr class="rule">
 
-    <p><strong>Effective date:</strong> September 3, 2026</p>
+    <p><strong>Effective date:</strong> October 7, 2026</p>
 
     <p>Whispers of Kindness ("we," "us," "our") runs whispersofkindness.ca and the membership built around it. This page explains what personal information we collect, how we use it, and what choices you have. We've kept it plain on purpose.</p>
 
@@ -509,13 +509,25 @@ footer .fsa{
 
     <p>If you submit a recipe or a family story, we may feature it, including your name or the name you submit it under, in the archive, on the Site, and in our marketing, including Instagram, Pinterest, and YouTube. If you'd rather your name not appear publicly, tell us and we won't use it. We will never share the personal details behind a submission, your mailing address or payment information, publicly or with any third party for marketing purposes.</p>
 
+    <h2 class="subhead">Our own social media accounts</h2>
+
+    <p>We post to the Whispers of Kindness accounts on Pinterest and Instagram using a small publishing tool of our own. It connects to those platforms through their official APIs, and only ever to our own accounts. It doesn't offer a Pinterest or Instagram sign-in to anyone else, and it never reads, collects or stores anything about anyone else's account.</p>
+
+    <p><strong>What it reads.</strong> From our Pinterest account: the account's username and ID, so we can confirm which account is connected, our list of boards, so we can publish to one of them, and the pins we create, so we can confirm they were published. From our Instagram account, through the Facebook Page linked to it: the account's username and ID, and the posts we publish. We don't sell or share anything we read from these accounts, and we don't use it for advertising.</p>
+
+    <p><strong>What it stores.</strong> The access tokens Pinterest and Meta issue when we connect our accounts, kept encrypted in Supabase Vault inside our own database. Next to them we keep only the account's username and ID, whether the connection is active, and the dates it was made and is due to expire.</p>
+
+    <p><strong>How long we keep it.</strong> A token is kept only while the account is connected, and renewed when the platform requires it. When we disconnect an account, our stored copy of its token is deleted. A short record that the connection existed, meaning the username, account ID and dates, stays in our own audit log.</p>
+
+    <p><strong>Ending access.</strong> Disconnecting in our tool deletes our copy of the token. To end the tool's access completely, we remove it from the connected apps in the Pinterest account's settings, or from the business integrations in the linked Facebook account's settings. Either one takes effect straight away.</p>
+
     <h2 class="subhead">Who helps us run this</h2>
 
-    <p>A small number of service providers process certain information on our behalf: Stripe for payments, Supabase for our database and account infrastructure, Resend for transactional email, and Netlify for hosting the Site. Each has its own privacy practices governing what they handle for us. We do not sell your personal information to anyone, full stop.</p>
+    <p>A small number of service providers process certain information on our behalf: Stripe for payments, Supabase for our database and account infrastructure, Resend for transactional email, Netlify for hosting the Site, and Google Analytics for counting visits, only if you agree to it. We also publish to Pinterest and to Meta's Instagram from our own accounts, as described above. Each has its own privacy practices governing what they handle for us. We do not sell your personal information to anyone, full stop.</p>
 
     <h2 class="subhead">Cookies and tracking</h2>
 
-    <p>The Site may use cookies or similar tools, including ones provided by platforms like Pinterest, for basic analytics and to understand how our marketing is doing. You're free to control cookies through your browser settings at any time.</p>
+    <p>If you agree when the Site asks, we use Google Analytics to count visits and see which pages people read. It loads only after you click "Understood". If you choose "No thanks", it doesn't load at all, and we remember that choice. You're free to control cookies through your browser settings at any time.</p>
 
     <h2 class="subhead">How long we keep your information</h2>
 
