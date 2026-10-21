@@ -1,0 +1,79 @@
+/* ============================================================
+   WHISPERS OF KINDNESS · Christmas decorations
+   Everything here is scoped to html.xmas, and christmas.js only
+   adds that class during the season. Nothing is on unless the JS
+   switches it on, so removing the two tags from index.html (or
+   setting on:false in christmas.js) takes every decoration down.
+   Colours reuse the site's own plum and teal, plus a warm gold.
+   ============================================================ */
+html.xmas{
+  --xmas-gold:#B8913A;
+  --xmas-gold-soft:#E4D3A0;
+  --xmas-berry:#8E2B52;
+  --xmas-teal-deep:#2E6B6A;
+}
+
+/* ---- bunting hanging from the header ---- */
+html.xmas .xmas-bunting{
+  position:absolute; left:0; right:0; top:100%;
+  height:40px; width:100%;
+  pointer-events:none; z-index:0;
+}
+html.xmas .xmas-bunting .s{ fill:none; stroke:var(--walnut); stroke-width:1.6; opacity:.7; }
+html.xmas .xmas-bunting .t{ fill:var(--teal); }
+html.xmas .xmas-bunting .p{ fill:var(--plum); }
+html.xmas .xmas-bunting .g{ fill:var(--xmas-gold); }
+html.xmas .xmas-bunting .c{ fill:var(--paper-card); stroke:var(--xmas-gold); stroke-width:1.6; }
+@media (max-width:720px){ html.xmas .xmas-bunting{ width:143%; transform:scale(.7); transform-origin:0 0; } }
+
+/* ---- holly in the hero corners ---- */
+html.xmas .hero{ overflow:hidden; }
+html.xmas .xmas-holly{
+  position:absolute; width:190px; height:auto; pointer-events:none; opacity:.95;
+}
+html.xmas .xmas-holly.l{ left:-14px; top:34px; transform:rotate(-8deg); }
+html.xmas .xmas-holly.r{ right:-14px; top:34px; transform:scaleX(-1) rotate(-8deg); }
+html.xmas .xmas-holly .lf{ fill:var(--teal); }
+html.xmas .xmas-holly .lf2{ fill:var(--xmas-teal-deep); }
+html.xmas .xmas-holly .bb{ fill:var(--xmas-berry); }
+html.xmas .xmas-holly .bp{ fill:var(--plum); }
+@media (max-width:900px){ html.xmas .xmas-holly{ width:110px; top:22px; } }
+@media (max-width:480px){ html.xmas .xmas-holly{ width:84px; } }
+
+/* ---- small gold touches ---- */
+html.xmas .rule{ background:var(--xmas-gold); opacity:.8; }
+
+/* ---- the gift tag (links to the free chart page) ---- */
+html.xmas .xmas-gift{
+  display:inline-block; position:relative; text-decoration:none;
+  margin:0 auto 2.2rem; padding:.85rem 1.6rem .9rem 3.1rem; max-width:34rem;
+  background:var(--paper-card); color:var(--ink);
+  border:1.6px solid var(--teal); border-radius:4px;
+  box-shadow:var(--shadow-soft);
+  transform:rotate(-1.2deg);
+  font-family:var(--font-body); font-size:1.08rem; line-height:1.4;
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+html.xmas .xmas-gift:hover{ transform:rotate(0deg) translateY(-2px); box-shadow:var(--shadow-lift); }
+html.xmas .xmas-gift::before{ /* gold star */
+  content:""; position:absolute; left:.9rem; top:50%; width:1.5rem; height:1.5rem; margin-top:-.75rem;
+  background:var(--xmas-gold);
+  clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);
+}
+html.xmas .xmas-gift b{ font-family:var(--font-display); font-weight:600; color:var(--plum); font-size:1.18rem; display:block; }
+html.xmas .xmas-gift span{ color:var(--ink-soft); }
+html.xmas .xmas-gift em{ font-style:normal; color:var(--teal); border-bottom:1px solid var(--teal); }
+html.xmas .xmas-giftwrap{ display:block; text-align:center; }
+
+/* ---- snow: a few quiet flecks ---- */
+html.xmas .xmas-snow{ position:fixed; inset:0; pointer-events:none; z-index:90; overflow:hidden; }
+html.xmas .xmas-snow i{
+  position:absolute; top:-12px; border-radius:50%; background:var(--xmas-gold-soft); opacity:0;
+  animation:xmasfall linear infinite;
+}
+@keyframes xmasfall{
+  0%{ transform:translate(0,-10px); opacity:0; }
+  10%{ opacity:.8; }
+  100%{ transform:translate(26px,105vh); opacity:0; }
+}
+@media (prefers-reduced-motion: reduce){ html.xmas .xmas-snow{ display:none; } }
