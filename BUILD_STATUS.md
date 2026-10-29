@@ -22,6 +22,38 @@ claim was last checked and how.
 
 ---
 
+## 2026-10-29: The freebie signup function and its two tables now have a copy on disk
+
+The gifts site (`gifts.whispersofkindness.ca`, Netlify project
+`joyful-sawine-257463`) is not in this repo or any repo. It is deployed by
+drag-and-drop from `Documents/Whispers of Kindness/WoK_Gift_Pages/site/`. Its
+signups run on the `signup` edge function and two tables, `signup_campaigns`
+and `email_signups`, in this site's Supabase project `fulnenhnycaeyzrhplch`.
+**Until today none of that existed anywhere on disk.** Nothing in `supabase/`,
+`schema.sql` or this file mentioned them.
+
+A read-only export now sits in `WoK_Gift_Pages/supabase-export/`, outside
+`site/` so it is never published:
+
+- `functions/signup/index.ts`, the function as deployed (version 6,
+  `verify_jwt = false`). It names its secrets but holds no values.
+- `tables.sql`, both tables' columns, constraints, index, comments and row
+  level security, plus the three `signup_campaigns` rows (`conversion-chart`,
+  `recipe-scaler`, `turkey-chart`), which are email wording.
+- The rows of `email_signups` are deliberately not exported. They are names
+  and email addresses.
+
+**Nothing in Supabase was changed.** Every query was a read.
+
+**Verified 2026-10-29.** All three campaign rows were fingerprinted (MD5 over
+every field) in the database and in `tables.sql`, and matched. The first
+comparison failed. The fault was in the checker, which was not converting
+`\n` in the file, and not in the export. The table definitions come from
+`information_schema` and `pg_catalog`: RLS on, no policies, no triggers, and
+no privileges for `anon` or `authenticated`. **The function source was not
+compared byte for byte.** Supabase's checksum covers the deployed bundle,
+not the source file, so there was nothing to compare against.
+
 ## 2026-10-20: The Christmas decorations are merged and live, switched off until November 15
 
 Commit `3204837` on `main`, fast-forwarded from the `christmas` branch, pushed
