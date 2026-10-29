@@ -22,6 +22,45 @@ claim was last checked and how.
 
 ---
 
+## 2026-10-29: The Holiday Safe Temps Chart page is live at gifts.whispersofkindness.ca/temps/
+
+The second page built from the freebie template, modelled on `/fridge/`. It
+has the same consent box, honeypot, thank-you screen and Christmas switch, a
+taped-on card with four rows from the chart, and a "What is on the chart"
+band. There is no Recipe Scaler content on the page.
+
+- **The PDF** is hosted at `d/holiday-safe-temps-chart-c489323101e0.pdf`, a
+  byte-identical copy of `WoK_Gift_Pages/Holiday-Safe-Temps-Chart.pdf`
+  (218,608 bytes). Two different files of that name existed on this machine.
+  Pela chose the 218,608-byte one, which was copied there, and the other was
+  left alone.
+- **The email** is a new `signup_campaigns` row, `safe-temps`, copied from
+  `conversion-chart` with only the subject, tagline, reason line, body
+  opening, attachment and PDF address changed. There is no button. No
+  existing campaign row was edited.
+- **`pdf_url` pointed at the draft deploys while testing**, because the
+  function downloads the PDF at send time. It was moved to the production
+  address straight after publishing. No row holds a draft address now.
+- **`supabase-export/tables.sql`** was updated to match the database: four
+  campaign rows, all fingerprint-matched.
+- **Two test rows were left in `email_signups`** for Pela to clear:
+  `adfa1909-2bd9-4dfc-b137-b546422ea465` (+temps, sent from the draft) and
+  `a7159de0-698d-4bef-8aeb-12d5287ec241` (+temps2, sent from production).
+
+**How it shipped.** Draft 6 (`6ae3b8f9c47aead9aade8677`) was published as is
+with `restoreSiteDeploy`, replacing draft 4 (`6ae39e92c9e5a08078ccb361`),
+which Netlify keeps for rollback.
+
+**Verified 2026-10-29.** 51 offline checks. In headless Edge on the draft and
+on production, all five handwritten accents are drawn in Caveat in both
+views. One real signup through production `/temps/` was reported `delivered`
+by Resend, and its attachment matched the hosted PDF and the source file
+byte for byte. After publishing, `/fridge/`, `/scaler/`, `/turkey/`,
+`/privacy/`, `/terms/`, both older PDFs, the shared template files and
+recipe-scaler.com all matched fingerprints taken before the draft, and `/`
+still redirects to `/scaler/`. **Not verified:** inbox placement, and
+opening the attachment on a phone.
+
 ## 2026-10-29: The Kitchen Conversion Chart page is live at gifts.whispersofkindness.ca/fridge/
 
 `/fridge/` matches the Instagram comment keyword FRIDGE, which CreatorFlow
