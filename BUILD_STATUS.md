@@ -22,6 +22,63 @@ claim was last checked and how.
 
 ---
 
+## 2026-10-29: The Kitchen Conversion Chart page is live at gifts.whispersofkindness.ca/fridge/
+
+`/fridge/` matches the Instagram comment keyword FRIDGE, which CreatorFlow
+answers with that link. It is the first page built from the new freebie
+template. It was first built as `/chart/`, and that address was never
+published and does not exist. This is the gifts site (Netlify
+`joyful-sawine-257463`, not in any repo), whose source is
+`WoK_Gift_Pages/site/`.
+
+- **The template:** `site/assets/freebie.css` is the `/scaler/` everyday look
+  with the `/turkey/` Christmas look laid over it. `site/assets/freebie.js`
+  holds the form, the honeypot, the consent box (same wording as `/scaler/`)
+  and the one Christmas switch: on from 2026-11-15, up through 6 January,
+  off from 2027-01-07, the same as the main site. `?xmas=on` previews it.
+  The Christmas fonts (Playfair Display, Lora, Special Elite) load only while
+  it is on. Every handwritten accent stays in Caveat in both looks.
+  `WoK_Gift_Pages/freebie-template/` is a blank page to copy for the next
+  freebie.
+- **The page** posts `source: conversion-chart`, reusing the existing
+  campaign. The label, the campaign row and the PDF name were kept on purpose.
+  The thank-you screen offers "Send us a family recipe" and nothing else.
+- **The email** (`signup_campaigns`, `conversion-chart` row), changed twice
+  today at Pela's request. The reason line now reads "You are getting this
+  email because you asked for the free Kitchen Conversion Chart on our
+  website." The "Open the Recipe Scaler" button and the Recipe Scaler
+  paragraph were removed. The same email also goes to people who ask for the
+  chart on recipe-scaler.com. The PDF is still attached. The PDF itself still
+  mentions the Recipe Scaler twice and was used as is, by decision.
+  `supabase-export/tables.sql` was updated to match.
+- **Unchanged:** `/scaler/`, `/turkey/`, `/privacy/`, `/terms/`, both PDFs,
+  recipe-scaler.com, and `/` still redirecting to `/scaler/`. The shelf home
+  page waits until it is asked for.
+- **Three test rows were left in `email_signups`** for Pela to clear:
+  `2d8a9f2e-c8a7-409b-a743-7d54e61e53ec` (+charttest),
+  `0ed21fb7-e01f-488a-899b-470541f8d198` (+charttest-noconsent),
+  `07d5af28-8010-4d0f-9136-c4f0ab3093da` (+charttest2).
+
+**How it shipped.** Four Netlify draft deploys, each confirmed as
+`deploy-preview` and never published. Then draft 4
+(`6ae39e92c9e5a08078ccb361`) was published as is with `restoreSiteDeploy`,
+not rebuilt, replacing the 21 October deploy `6ad9069a4427a87c4f161470`.
+Netlify keeps that one, so rollback is one click.
+
+**Verified 2026-10-29.** Offline: 42 checks in jsdom, including the switch
+dates, the font loading, and the exact data sent. On the drafts, through
+headless Edge, real signups for consent ticked and unticked, plus the
+honeypot (nothing stored, nothing sent) and the 10-minute repeat limit
+(blocked at 22 seconds, sent normally after 10 minutes). Resend reported
+each email `delivered`, and every attachment was downloaded and matched the
+live PDF by SHA-256. On production after publishing: `/fridge/`,
+`freebie.css` and `freebie.js` load and match the draft files, `/chart/` is
+404, Edge reports all five handwritten accents drawn in Caveat in both views,
+and everything listed as unchanged matches fingerprints taken before the
+first deploy. No form was submitted on production. **Not verified:** inbox
+placement (Resend's "delivered" means Gmail accepted it) and opening the
+attachment on a phone.
+
 ## 2026-10-29: The freebie signup function and its two tables now have a copy on disk
 
 The gifts site (`gifts.whispersofkindness.ca`, Netlify project
