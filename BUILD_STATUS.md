@@ -22,6 +22,39 @@ claim was last checked and how.
 
 ---
 
+## 2026-10-20: The Christmas decorations are merged and live, switched off until November 15
+
+Commit `3204837` on `main`, fast-forwarded from the `christmas` branch, pushed
+and auto-deployed by Netlify. Three files: `public/christmas.css` and
+`public/christmas.js` are new, and `public/index.html` gains three lines
+straight after the Google Fonts link (a comment, the stylesheet, and the
+script with `defer`). Nothing else in `index.html` changed. The diff matched
+the supplied `christmas-layer.patch` exactly, checked with
+`git apply --check -R`.
+
+**They are live but switched off.** `christmas.js` only adds the `xmas` class
+to the page between `from: '2026-11-15'` and `until: '2027-01-06'`, with
+`on: true`. Until then the site looks exactly as before. `?xmas=on` shows
+them at any time, and `?xmas=off` hides them during the season. After
+January 6, 2027 they switch themselves off with no editing needed.
+
+**The gift tag points to `https://gifts.whispersofkindness.ca`.** That page
+is not part of this commit. On 2026-10-20 it answered HTTP 200, but what it
+serves was not checked.
+
+The unzipped folder `public/WoK_Christmas_Decorations/` was never committed.
+It was moved to `Downloads/WoK_Christmas_Decorations/` before the merge,
+with all four files checked identical by SHA-256.
+
+**Verified 2026-10-20** with curl against the live site after the deploy:
+`/christmas.js` returns 200 as `application/javascript` and matches the
+committed file by SHA-256 (line endings normalised). `/christmas.css` returns
+200 as `text/css`. The live home page carries the three new lines at 315 to
+317. `/WoK_Christmas_Decorations/README.txt` returns 404, so the stray folder
+did not reach the site. **The "off until November 15" claim was checked by
+reading the date logic in `christmas.js`, not by rendering the page.** Neither
+the off state nor `?xmas=on` has been looked at in a browser yet.
+
 ## 2026-10-07: The privacy page covers the social accounts and the analytics consent, and is live
 
 Commit `50766ca` on `main`, pushed and auto-deployed by Netlify. It touches
